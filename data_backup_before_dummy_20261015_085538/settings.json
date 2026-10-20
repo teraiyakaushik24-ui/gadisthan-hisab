@@ -1,0 +1,39 @@
+{
+  "adminPin": "1234",
+  "currencySymbol": "₹",
+  "defaultBanks": [
+    "IOB TRF",
+    "BOB TRF",
+    "SBI TRF"
+  ],
+  "defaultVouchers": [
+    "મંદિર ખર્ચ",
+    "RASODAKHARCH",
+    "PAGAR",
+    "UPAD",
+    "હિંડોળા ખર્ચ"
+  ],
+  "exportFolder": "D:\\Account Report",
+  "language": "gu",
+  "notes": [
+    500,
+    200,
+    100,
+    50,
+    20,
+    10
+  ],
+  "orgName": "Gadisthan Jetpur",
+  "orgSubtitle": "",
+  "phone": "",
+  "printLeftOffset": 43,
+  "printTopOffset": 140,
+  "signChecked": "તપાસનાર / સેક્રેટરી",
+  "signPrepared": "હિસાબનીશ / એકાઉન્ટન્ટ",
+  "signPresident": "પ્રમુખ / ટ્રસ્ટી",
+  "theme": "light",
+  "adminAlertEmail": "Teraiya.Kaushik24@gmail.com",
+  "smtpAppPassword": "bkqxvlmeqnpvoomb",
+  "smtpEmail": "Teraiya.Kaushik24@gmail.com",
+  "smtpSenderName": "Gadisthan Jetpur"
+}

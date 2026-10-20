@@ -1,0 +1,184 @@
+{
+  "timestamp": "2026-10-14T06:35:51.688Z",
+  "totalTests": 25,
+  "passCount": 25,
+  "failCount": 0,
+  "tests": [
+    {
+      "topicNumber": 1,
+      "topicName": "Daily Hisab & Math",
+      "testName": "Fetch Today Daily Record",
+      "passed": true,
+      "details": "Fetched 2026-10-14 status: 200"
+    },
+    {
+      "topicNumber": 1,
+      "topicName": "Daily Hisab & Math",
+      "testName": "Denomination Multiplication (500x10 + 200x5 = 6000)",
+      "passed": true,
+      "details": "Calc: 6000"
+    },
+    {
+      "topicNumber": 1,
+      "topicName": "Daily Hisab & Math",
+      "testName": "Save Daily Record with Admin Token",
+      "passed": true,
+      "details": "Save response: {\"success\":true,\"record\":{\"date\":\"2026-10-14\",\"notes\":[{\"note\":500,\"count\":10,\"amount\":5000},{\"note\":200,\"count\":5,\"amount\":1000},{\"note\":100,\"count\":0,\"amount\":0}],\"cashTotal\":6000,\"noteCountTotal\":15,\"banks\":[{\"name\":\"SBI TRF\",\"amount\":3000}],\"bankTotal\":3000,\"vouchers\":[{\"name\":\"MANDIRKHARCH\",\"amount\":2000}],\"voucherTotal\":2000,\"grandTotal\":11000,\"expenseItems\":[],\"remarks\":\"Automated Test Verification\",\"updatedAt\":\"2026-10-14T06:35:51.806Z\"},\"employeesUpdated\":false}"
+    },
+    {
+      "topicNumber": 1,
+      "topicName": "Daily Hisab & Math",
+      "testName": "Past Date Editing Locked for Non-Admin (Security Protection)",
+      "passed": true,
+      "details": "Status: 403, Error: તારીખ 2026-08-01 નો હિસાબ લૉક છે. પાછલી તારીખમાં સુધારો કરવા એડમિન સેશન ટોકન (લૉગિન) જરૂરી છે."
+    },
+    {
+      "topicNumber": 2,
+      "topicName": "Advance Cash (Uchak)",
+      "testName": "Fetch Uchak List API",
+      "passed": true,
+      "details": "Total Uchak items: 4"
+    },
+    {
+      "topicNumber": 2,
+      "topicName": "Advance Cash (Uchak)",
+      "testName": "Add Uchak Advance Record",
+      "passed": true,
+      "details": "Created ID: uchak_1791959751824_322"
+    },
+    {
+      "topicNumber": 2,
+      "topicName": "Advance Cash (Uchak)",
+      "testName": "Settle Uchak Advance Record",
+      "passed": true,
+      "details": "Settle response: {\"success\":true,\"item\":{\"id\":\"uchak_1791959751824_322\",\"employeeId\":null,\"personName\":\"Ramesh Test Sevak\",\"phone\":\"9876543210\",\"purpose\":\"Uchak Advance Test\",\"givenDate\":\"2026-10-14\",\"givenTime\":\"11:40 AM\",\"givenAmount\":2500,\"remainingAmount\":2500,\"installments\":[{\"id\":\"inst_1791959751827_969\",\"settledDate\":\"2026-10-14\",\"settledTime\":\"12:05 PM\",\"settleType\":\"all_cash_returned\",\"voucherAmount\":0,\"voucherCategory\":\"\",\"voucherTitle\":\"\",\"cashReturned\":0,\"extraPaid\":0,\"clearedAmount\":0,\"remainingBefore\":2500,\"remainingAfter\":2500,\"notes\":\"Full cash returned\",\"remarks\":\"Full cash returned\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":null,\"addedToHisab\":false,\"expenseItemId\":null,\"createdAt\":\"2026-10-14T06:35:51.827Z\"}],\"remarks\":\"Automated test\",\"status\":\"partial\",\"settlement\":{\"id\":\"inst_1791959751827_969\",\"settledDate\":\"2026-10-14\",\"settledTime\":\"12:05 PM\",\"settleType\":\"all_cash_returned\",\"voucherAmount\":0,\"voucherCategory\":\"\",\"voucherTitle\":\"\",\"cashReturned\":0,\"extraPaid\":0,\"clearedAmount\":0,\"remainingBefore\":2500,\"remainingAfter\":2500,\"notes\":\"Full cash returned\",\"remarks\":\"Full cash returned\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":null,\"addedToHisab\":false,\"expenseItemId\":null,\"createdAt\":\"2026-10-14T06:35:51.827Z\"},\"createdAt\":\"2026-10-14T06:35:51.824Z\",\"updatedAt\":\"2026-10-14T06:35:51.827Z\"},\"installment\":{\"id\":\"inst_1791959751827_969\",\"settledDate\":\"2026-10-14\",\"settledTime\":\"12:05 PM\",\"settleType\":\"all_cash_returned\",\"voucherAmount\":0,\"voucherCategory\":\"\",\"voucherTitle\":\"\",\"cashReturned\":0,\"extraPaid\":0,\"clearedAmount\":0,\"remainingBefore\":2500,\"remainingAfter\":2500,\"notes\":\"Full cash returned\",\"remarks\":\"Full cash returned\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":null,\"addedToHisab\":false,\"expenseItemId\":null,\"createdAt\":\"2026-10-14T06:35:51.827Z\"}}"
+    },
+    {
+      "topicNumber": 3,
+      "topicName": "Employees & Staff",
+      "testName": "Fetch Employees with Calculated Balances",
+      "passed": true,
+      "details": "Total employees: 3"
+    },
+    {
+      "topicNumber": 3,
+      "topicName": "Employees & Staff",
+      "testName": "Add New Employee Record",
+      "passed": true,
+      "details": "Created Emp ID: emp_1791959751839"
+    },
+    {
+      "topicNumber": 3,
+      "topicName": "Employees & Staff",
+      "testName": "Record Employee Upad Deduction",
+      "passed": true,
+      "details": "Upad recorded: true"
+    },
+    {
+      "topicNumber": 4,
+      "topicName": "Bhakts & Mahapuja",
+      "testName": "Fetch Bhakts List with Deposit Summaries",
+      "passed": true,
+      "details": "Total bhakts: 5"
+    },
+    {
+      "topicNumber": 4,
+      "topicName": "Bhakts & Mahapuja",
+      "testName": "Add New Bhakt Record (Protected)",
+      "passed": true,
+      "details": "Created Bhakt ID: bhakt_1791959751859"
+    },
+    {
+      "topicNumber": 5,
+      "topicName": "Printing & Layout",
+      "testName": "Print Margin Top/Left Offsets (140mm / 43mm)",
+      "passed": true,
+      "details": "Top: 140mm, Left: 43mm"
+    },
+    {
+      "topicNumber": 5,
+      "topicName": "Printing & Layout",
+      "testName": "Print Signatures (Prepared, Checked, President)",
+      "passed": true,
+      "details": "Prepared: હિસાબનીશ / એકાઉન્ટન્ટ, Checked: તપાસનાર / સેક્રેટરી"
+    },
+    {
+      "topicNumber": 6,
+      "topicName": "Admin Security & Email",
+      "testName": "Admin PIN Bearer Auth Generation",
+      "passed": true,
+      "details": "Token: adm_tok_59f9c4e..."
+    },
+    {
+      "topicNumber": 6,
+      "topicName": "Admin Security & Email",
+      "testName": "English Test Email Sent (From: Gadisthan Jetpur)",
+      "passed": true,
+      "details": "Response: Test email sent successfully to Teraiya.Kaushik24@gmail.com as \"Gadisthan Jetpur\"!"
+    },
+    {
+      "topicNumber": 6,
+      "topicName": "Admin Security & Email",
+      "testName": "6-Digit OTP Generated & Sent to Gmail",
+      "passed": true,
+      "details": "Response: A 6-digit OTP has been sent to your registered email (Te***************@gmail.com)!"
+    },
+    {
+      "topicNumber": 7,
+      "topicName": "Backup & Export",
+      "testName": "Full JSON Database Backup Download (Records + Settings)",
+      "passed": true,
+      "details": "Records backed up: 44"
+    },
+    {
+      "topicNumber": 7,
+      "topicName": "Backup & Export",
+      "testName": "Export Daily Excel Sheet (.xlsx)",
+      "passed": true,
+      "details": "Excel HTTP status: 200"
+    },
+    {
+      "topicNumber": 7,
+      "topicName": "Backup & Export",
+      "testName": "Export Multi-Month History Excel (.xlsx)",
+      "passed": true,
+      "details": "Status: 200"
+    },
+    {
+      "topicNumber": 8,
+      "topicName": "Cloud Sync (MongoDB)",
+      "testName": "MongoDB Atlas Cloud Connectivity",
+      "passed": true,
+      "details": "Cloud Status: Online Connected"
+    },
+    {
+      "topicNumber": 10,
+      "topicName": "Validation & Error Prevention",
+      "testName": "Prevent Negative Note Counts & Amounts in Daily Hisab",
+      "passed": true,
+      "details": "Server rejected negative cash"
+    },
+    {
+      "topicNumber": 13,
+      "topicName": "Year End & Dates",
+      "testName": "Fiscal Year Boundary Date Records Support",
+      "passed": true,
+      "details": "March 31: 200, April 01: 200"
+    },
+    {
+      "topicNumber": 18,
+      "topicName": "Audit Trail & Timestamps",
+      "testName": "Record Modification Timestamp (updatedAt)",
+      "passed": true,
+      "details": "updatedAt: 2026-10-14T06:35:51.845Z"
+    },
+    {
+      "topicNumber": 19,
+      "topicName": "Performance & Stress",
+      "testName": "Rapid Concurrent API Requests (30 calls)",
+      "passed": true,
+      "details": "Completed in 87ms (Avg 2.9ms/call)"
+    }
+  ],
+  "bugsFound": []
+}

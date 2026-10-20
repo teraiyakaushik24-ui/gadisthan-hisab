@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="gu">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>લૉગિન | શ્રી ગાદીસ્થાન જેતપુર - દૈનિક હિસાબ</title>
+  <link rel="icon" type="image/png" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Noto Sans Gujarati', 'Outfit', sans-serif;
+      min-height: 100vh;
+      background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 50%, #020617 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      color: #334155;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background Glow */
+    body::before {
+      content: '';
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(217, 119, 6, 0.18) 0%, rgba(217, 119, 6, 0) 70%);
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(40px);
+    }
+
+    .login-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 440px;
+      animation: fadeInScale 0.4s ease-out;
+    }
+
+    @keyframes fadeInScale {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.97);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .login-card {
+      background: linear-gradient(160deg, #ffffff 0%, #fffdfa 100%);
+      border: 2px solid #e8dec8;
+      border-radius: 24px;
+      padding: 36px 32px;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 40px rgba(217, 119, 6, 0.18);
+      text-align: center;
+      position: relative;
+    }
+
+    .sacred-logo-box {
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 16px;
+      background: radial-gradient(circle, #fffdf5 0%, #fef3c7 100%);
+      border: 2px solid #fde68a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(217, 119, 6, 0.22);
+      transition: transform 0.3s ease;
+    }
+
+    .sacred-logo-box:hover {
+      transform: scale(1.05) rotate(2deg);
+    }
+
+    .sacred-logo {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));
+    }
+
+    .org-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: #92400e;
+      letter-spacing: -0.2px;
+      margin-bottom: 4px;
+    }
+
+    .org-subtitle {
+      font-size: 0.88rem;
+      color: #64748b;
+      font-weight: 600;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .org-subtitle .badge {
+      display: inline-block;
+      background: #fef3c7;
+      color: #b45309;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+      border: 1px solid #fde68a;
+    }
+
+    .alert-box {
+      display: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      margin-bottom: 18px;
+      text-align: left;
+      line-height: 1.4;
+      animation: alertSlide 0.25s ease-out;
+    }
+
+    @keyframes alertSlide {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .alert-error {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+    }
+
+    .alert-success {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      color: #16a34a;
+    }
+
+    .form-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      color: #94a3b8;
+      font-size: 1rem;
+      pointer-events: none;
+    }
+
+    .form-control {
+      width: 100%;
+      height: 46px;
+      padding: 0 42px 0 40px;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      color: #1e293b;
+      background: #ffffff;
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .form-control:focus {
+      border-color: #d97706;
+      box-shadow: 0 0 0 3.5px rgba(217, 119, 6, 0.18);
+    }
+
+    .toggle-pass-btn {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 1.1rem;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.2s;
+    }
+
+    .toggle-pass-btn:hover {
+      color: #d97706;
+    }
+
+    .form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      font-size: 0.84rem;
+    }
+
+    .remember-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: #475569;
+      font-weight: 600;
+      user-select: none;
+    }
+
+    .remember-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #d97706;
+      cursor: pointer;
+    }
+
+    .btn-login {
+      width: 100%;
+      height: 48px;
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 20px rgba(217, 119, 6, 0.35);
+      transition: all 0.2s ease;
+    }
+
+    .btn-login:hover {
+      background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(217, 119, 6, 0.45);
+    }
+
+    .btn-login:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+    }
+
+    .btn-login:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .card-footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px dashed #e2e8f0;
+      font-size: 0.78rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-wrapper">
+    <div class="login-card">
+      <!-- Sacred Logo -->
+      <div class="sacred-logo-box">
+        <img src="images/logo.png" alt="શ્રી ગાદીસ્થાન જેતપુર" class="sacred-logo">
+      </div>
+
+      <h1 class="org-title">શ્રી ગાદીસ્થાન જેતપુર</h1>
+      <div class="org-subtitle">
+        <span>દૈનિક હિસાબ સોફ્ટવેર</span>
+        <span class="badge">સુરક્ષિત પ્રવેશ</span>
+      </div>
+
+      <!-- Alert Notification Banner -->
+      <div id="login-alert" class="alert-box"></div>
+
+      <!-- Login Form -->
+      <form id="login-form" onsubmit="handleLoginSubmit(event)" autocomplete="on">
+        <!-- Email / Username -->
+        <div class="form-group">
+          <label class="form-label" for="login-email">ઇમેઇલ અથવા યુઝરનેમ</label>
+          <div class="input-wrapper">
+            <span class="input-icon">👤</span>
+            <input type="text" id="login-email" class="form-control" placeholder="admin અથવા ઇમેઇલ લખો"
+              value="Teraiya.Kaushik24@gmail.com" required autocomplete="username">
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label" for="login-password">પાસવર્ડ / પિન</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔑</span>
+            <input type="password" id="login-password" class="form-control" placeholder="તમારો પાસવર્ડ દાખલ કરો"
+              required autocomplete="current-password">
+            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility()" title="પાસવર્ડ જુઓ/છુપાવો">
+              <span id="eye-icon">👁️</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Options: Remember Me -->
+        <div class="form-options">
+          <label class="remember-label">
+            <input type="checkbox" id="login-remember" checked>
+            <span>મને યાદ રાખો (Auto-Login)</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="btn-submit" class="btn-login">
+          <span class="spinner" id="login-spinner"></span>
+          <span id="btn-text">🔒 સુરક્ષિત લૉગિન કરો</span>
+        </button>
+      </form>
+
+      <div class="card-footer">
+        <span>🛡️ 256-Bit SSL Encrypted • અધિકૃત ટ્રસ્ટીઓ અને સંચાલકો માટે</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 1. Initial Check: If user already has a valid token, auto-redirect to dashboard
+    (async function checkExistingAuth() {
+      const token = localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
+      if (token) {
+        try {
+          const res = await fetch('/api/auth/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+          });
+          const data = await res.json();
+          if (data && data.valid) {
+            // Already authenticated, redirect immediately
+            window.location.replace('/');
+            return;
+          }
+        } catch (e) {
+          // Network issue or offline, continue to show login
+        }
+      }
+      
+      // Auto-focus password
+      setTimeout(() => {
+        const pass = document.getElementById('login-password');
+        if (pass) pass.focus();
+      }, 100);
+    })();
+
+    // 2. Toggle password visibility
+    function togglePasswordVisibility() {
+      const passInput = document.getElementById('login-password');
+      const eyeIcon = document.getElementById('eye-icon');
+      if (passInput.type === 'password') {
+        passInput.type = 'text';
+        eyeIcon.textContent = '🙈';
+      } else {
+        passInput.type = 'password';
+        eyeIcon.textContent = '👁️';
+      }
+    }
+
+    // 3. Show Alert Message
+    function showAlert(msg, type = 'error') {
+      const alertBox = document.getElementById('login-alert');
+      alertBox.textContent = msg;
+      alertBox.className = 'alert-box ' + (type === 'success' ? 'alert-success' : 'alert-error');
+      alertBox.style.display = 'block';
+    }
+
+    function hideAlert() {
+      const alertBox = document.getElementById('login-alert');
+      alertBox.style.display = 'none';
+    }
+
+    // 4. Handle Form Submit
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value.trim();
+      const rememberMe = document.getElementById('login-remember').checked;
+
+      const btn = document.getElementById('btn-submit');
+      const spinner = document.getElementById('login-spinner');
+      const btnText = document.getElementById('btn-text');
+
+      if (!password) {
+        showAlert('કૃપા કરીને પાસવર્ડ દાખલ કરો!');
+        return;
+      }
+
+      // Set loading state
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      btnText.textContent = 'ચકાસણી ચાલુ છે...';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, rememberMe })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success && data.token) {
+          // Store token
+          if (rememberMe) {
+            localStorage.setItem('hisab_auth_token', data.token);
+            sessionStorage.removeItem('hisab_auth_token');
+          } else {
+            sessionStorage.setItem('hisab_auth_token', data.token);
+            localStorage.removeItem('hisab_auth_token');
+          }
+
+          showAlert('✅ લૉગિન સફળ થયું! સ્વાગત છે...', 'success');
+          btnText.textContent = 'પ્રવેશ કરી રહ્યા છીએ...';
+
+          setTimeout(() => {
+            window.location.replace('/');
+          }, 350);
+        } else {
+          showAlert(data.error || 'અમાન્ય ઇમેઇલ અથવા પાસવર્ડ! કૃપા કરીને ફરી તપાસો.');
+          btn.disabled = false;
+          spinner.style.display = 'none';
+          btnText.textContent = '🔒 સુરક્ષિત લૉગિન કરો';
+          document.getElementById('login-password').select();
+        }
+      } catch (err) {
+        showAlert('સર્વર સાથે સંપર્ક થઈ શક્યો નથી. કૃપા કરીને થોડીવાર પછી પ્રયત્ન કરો.');
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = '🔒 સુરક્ષિત લૉગિન કરો';
+      }
+    }
+  </script>
+</body>
+
+</html>

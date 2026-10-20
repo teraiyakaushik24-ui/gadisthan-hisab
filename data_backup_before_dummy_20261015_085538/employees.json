@@ -1,0 +1,268 @@
+[
+  {
+    "id": "emp_1790750002",
+    "joiningDate": "2025-06-15",
+    "name": "હરેશભાઈ પટેલ",
+    "pagars": [
+      {
+        "id": "pgr_1792034678190_184",
+        "date": "2026-10-15",
+        "time": "08:54 AM",
+        "forMonth": "2026-10",
+        "amount": 18000,
+        "title": "હરેશભાઈ પટેલ - October 2026 માસનો પગાર",
+        "remarks": "માસિક પગાર: ₹18000 | ચૂકવેલ ચોખ્ખો પગાર: ₹18000 | (October 2026 માસનો પગાર ચૂકવ્યો)",
+        "totalMonthDays": 30,
+        "absentDays": 0,
+        "absentDeduction": 0,
+        "earnedSalary": 18000,
+        "openingBalance": 0,
+        "upadDeduction": 0,
+        "expenseItemId": "exp_1792034678187_129"
+      },
+      {
+        "id": "pgr_1792034645872_530",
+        "date": "2026-10-15",
+        "time": "08:54 AM",
+        "forMonth": "2026-10",
+        "amount": 18000,
+        "title": "હરેશભાઈ પટેલ - October 2026 માસનો પગાર",
+        "remarks": "માસિક પગાર: ₹18000 | ચૂકવેલ ચોખ્ખો પગાર: ₹18000 | (October 2026 માસનો પગાર ચૂકવ્યો)",
+        "totalMonthDays": 30,
+        "absentDays": 0,
+        "absentDeduction": 0,
+        "earnedSalary": 18000,
+        "openingBalance": 0,
+        "upadDeduction": 0,
+        "expenseItemId": "exp_1792034645862_9"
+      },
+      {
+        "id": "pgr_1791519794108_3885",
+        "date": "2026-10-09",
+        "time": "09:53 am",
+        "forMonth": "2026-08",
+        "amount": 18000,
+        "title": "હરેશભાઈ પટેલ - August 2026 માસનો પગાર",
+        "remarks": "માસિક પગાર: ₹18000, August 2026 ઉપાડ કપાત: ₹0"
+      },
+      {
+        "id": "pgr_1791519742576_4586",
+        "date": "2026-10-09",
+        "time": "09:52 am",
+        "forMonth": "2026-07",
+        "amount": 18000,
+        "title": "હરેશભાઈ પટેલ - July 2026 માસનો પગાર",
+        "remarks": "માસિક પગાર: ₹18000, July 2026 ઉપાડ કપાત: ₹0"
+      },
+      {
+        "id": "pgr_1790769375777_2856",
+        "date": "2026-09-30",
+        "time": "05:26 pm",
+        "forMonth": "2026-09",
+        "amount": 12745,
+        "title": "હરેશભાઈ પટેલ (Haresh) - સપ્ટેમ્બર 2026 માસનો પગાર",
+        "remarks": "માસિક પગાર: ₹18000, સપ્ટેમ્બર 2026 ઉપાડ કપાત: ₹5255"
+      }
+    ],
+    "phone": "98980 11223",
+    "role": "પૂજારી / સેવક (Pujari)",
+    "salary": 18000,
+    "status": "active",
+    "upads": [
+      {
+        "id": "upd_1791521193273_597",
+        "date": "2026-10-09",
+        "time": "10:16 am",
+        "forMonth": "2026-08",
+        "amount": 3333,
+        "title": "Advance Given",
+        "remarks": ""
+      },
+      {
+        "id": "upd_1791352012818_512",
+        "date": "2026-10-07",
+        "time": "11:16 am",
+        "forMonth": "2026-09",
+        "amount": 1000,
+        "title": "ઉપાડ આપ્યો",
+        "remarks": ""
+      },
+      {
+        "id": "upd_1790769112338_264",
+        "date": "2026-09-30",
+        "time": "05:21 PM",
+        "forMonth": "2026-09",
+        "amount": 255,
+        "title": "હરેશભાઈ પટેલ (Haresh) - સપ્ટેમ્બર 2026 માસનો ઉપાડ",
+        "remarks": "સપ્ટેમ્બર 2026 માસ સામે ઉપાડ આપ્યો"
+      },
+      {
+        "id": "upd_1790750202",
+        "date": "2026-09-28",
+        "time": "02:30 PM",
+        "forMonth": "2026-09",
+        "amount": 2000,
+        "title": "ખાસ જરૂરિયાત ઉપાડ",
+        "remarks": "રોકડ"
+      },
+      {
+        "id": "upd_1790750201",
+        "date": "2026-09-15",
+        "time": "10:00 AM",
+        "forMonth": "2026-09",
+        "amount": 3000,
+        "title": "ઘર ખર્ચ ઉપાડ",
+        "remarks": "ચૂકવ્યા"
+      }
+    ],
+    "monthlyHistory": [
+      {
+        "month": "2026-07",
+        "monthLabel": "જુલાઈ 2026",
+        "openingBalance": 0,
+        "salary": 18000,
+        "totalMonthDays": 30,
+        "absentDays": 0,
+        "absentDeduction": 0,
+        "earnedSalary": 18000,
+        "upadTotal": 0,
+        "pagarTotal": 18000,
+        "closingBalance": 0,
+        "upadsCount": 0,
+        "pagarsCount": 1
+      },
+      {
+        "month": "2026-08",
+        "monthLabel": "ઓગસ્ટ 2026",
+        "openingBalance": 0,
+        "salary": 18000,
+        "totalMonthDays": 30,
+        "absentDays": 0,
+        "absentDeduction": 0,
+        "earnedSalary": 18000,
+        "upadTotal": 3333,
+        "pagarTotal": 18000,
+        "closingBalance": -3333,
+        "upadsCount": 1,
+        "pagarsCount": 1
+      },
+      {
+        "month": "2026-09",
+        "monthLabel": "સપ્ટેમ્બર 2026",
+        "openingBalance": -3333,
+        "salary": 18000,
+        "totalMonthDays": 30,
+        "absentDays": 0,
+        "absentDeduction": 0,
+        "earnedSalary": 18000,
+        "upadTotal": 6255,
+        "pagarTotal": 12745,
+        "closingBalance": -4333,
+        "upadsCount": 4,
+        "pagarsCount": 1
+      },
+      {
+        "month": "2026-10",
+        "monthLabel": "ઓક્ટોબર 2026",
+        "openingBalance": -4333,
+        "salary": 18000,
+        "totalMonthDays": 30,
+        "absentDays": 0,
+        "absentDeduction": 0,
+        "earnedSalary": 18000,
+        "upadTotal": 0,
+        "pagarTotal": 13667,
+        "closingBalance": 0,
+        "upadsCount": 0,
+        "pagarsCount": 1
+      }
+    ]
+  },
+  {
+    "id": "emp_1791223536029",
+    "joiningDate": "2026-10-05",
+    "name": "રમેશ પટેલ (ટેસ્ટ)",
+    "pagars": [
+      {
+        "id": "pgr_1791897347905_772",
+        "date": "2026-10-13",
+        "time": "06:45 pm",
+        "forMonth": "2026-10",
+        "amount": 222,
+        "title": "રમેશ પટેલ (ટેસ્ટ) - October 2026 Salary",
+        "remarks": ""
+      },
+      {
+        "id": "pgr_1791897046538_868",
+        "date": "2026-10-13",
+        "time": "06:40 pm",
+        "forMonth": "2026-10",
+        "amount": 5000,
+        "title": "રમેશ પટેલ (ટેસ્ટ) - October 2026 Salary",
+        "remarks": ""
+      },
+      {
+        "id": "pgr_1791519794108_2006",
+        "date": "2026-10-09",
+        "time": "09:53 am",
+        "forMonth": "2026-08",
+        "amount": 15000,
+        "title": "Ramesh Patel (Test) - August 2026 માસનો પગાર",
+        "remarks": "માસિક પગાર: ₹15000, August 2026 ઉપાડ કપાત: ₹0"
+      },
+      {
+        "id": "pgr_1791519742576_4890",
+        "date": "2026-10-09",
+        "time": "09:52 am",
+        "forMonth": "2026-07",
+        "amount": 15000,
+        "title": "Ramesh Patel (Test) - July 2026 માસનો પગાર",
+        "remarks": "માસિક પગાર: ₹15000, July 2026 ઉપાડ કપાત: ₹0"
+      }
+    ],
+    "phone": "9876543210",
+    "role": "પુજરિ",
+    "salary": 15000,
+    "status": "active",
+    "upads": [
+      {
+        "id": "upd_1791897032557_800",
+        "date": "2026-10-13",
+        "time": "06:40 pm",
+        "forMonth": "2026-10",
+        "amount": 2000,
+        "title": "Advance Given",
+        "remarks": ""
+      },
+      {
+        "id": "upd_1791895933052_910",
+        "date": "2026-10-13",
+        "time": "06:22 pm",
+        "forMonth": "2026-10",
+        "amount": 6000,
+        "title": "ઉપાડ આપ્યો",
+        "remarks": ""
+      },
+      {
+        "id": "upd_1791223536044_593",
+        "date": "2026-10-04",
+        "time": "11:35 pm",
+        "forMonth": "2026-10",
+        "amount": 2000,
+        "title": "ઉપાડ",
+        "remarks": ""
+      }
+    ]
+  },
+  {
+    "id": "emp_1791959280036",
+    "joiningDate": "2026-10-14",
+    "name": "જયેશભાઈ પૂજારી",
+    "pagars": [],
+    "phone": "9191919191",
+    "role": "સહાયક",
+    "salary": 8000,
+    "status": "active",
+    "upads": []
+  }
+]

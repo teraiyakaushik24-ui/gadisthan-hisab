@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: shree-gadisthan-hisab
+    env: node
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: TZ
+        value: Asia/Kolkata
+      - key: MONGODB_URI
+        sync: false
+      - key: SMTP_EMAIL
+        sync: false
+      - key: SMTP_APP_PASSWORD
+        sync: false
+      - key: ADMIN_ALERT_EMAIL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "bhakt_1",
+    "donorId": "101",
+    "name": "રમેશભાઈ પટેલ",
+    "phone": "9876543210",
+    "dailyAmount": 10,
+    "payType": "date_wise",
+    "status": "active",
+    "createdAt": "2026-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "bhakt_5",
+    "donorId": "105",
+    "name": "અશોકભાઈ સોની",
+    "phone": "9712345678",
+    "dailyAmount": 500,
+    "payType": "month_wise",
+    "status": "active",
+    "createdAt": "2026-08-01T00:00:00.000Z"
+  },
+  {
+    "id": "bhakt_3",
+    "donorId": "103",
+    "name": "કિરીટભાઈ મહેતા",
+    "phone": "9426098765",
+    "dailyAmount": 25,
+    "payType": "month_wise",
+    "status": "active",
+    "createdAt": "2026-07-15T00:00:00.000Z"
+  },
+  {
+    "id": "bhakt_2",
+    "donorId": "102",
+    "name": "હરેશભાઈ શાહ",
+    "phone": "9825012345",
+    "dailyAmount": 50,
+    "payType": "daily",
+    "status": "active",
+    "createdAt": "2026-07-01T00:00:00.000Z"
+  },
+  {
+    "id": "bhakt_4",
+    "donorId": "104",
+    "name": "ભાવેશભાઈ જોષી",
+    "phone": "9909988776",
+    "dailyAmount": 100,
+    "payType": "month_wise",
+    "status": "active",
+    "createdAt": "2026-08-01T00:00:00.000Z"
+  }
+]

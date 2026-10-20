@@ -1,0 +1,60 @@
+[
+  {
+    "id": 1,
+    "title": "Single Pagar Payout & Complete Reversal",
+    "passed": true,
+    "details": "Baseline: ₹0 -> Added: ₹8000 -> After Reversal: ₹0",
+    "proof": {
+      "pagarBefore": 0,
+      "pagarAfterPay": 8000,
+      "pagarAfterDel": 0,
+      "expenseItemRemoved": true
+    }
+  },
+  {
+    "id": 2,
+    "title": "Single Upad (Advance) & Complete Reversal",
+    "passed": true,
+    "details": "Baseline: ₹3000 -> Added: ₹5500 -> After Reversal: ₹3000",
+    "proof": {
+      "upadBefore": 3000,
+      "upadAfterUpad": 5500,
+      "upadAfterDel": 3000,
+      "expenseItemRemoved": true
+    }
+  },
+  {
+    "id": 3,
+    "title": "Multi-Employee Pagar: Delete One, Preserve Other",
+    "passed": true,
+    "details": "Combined (5000+7000): ₹12000 -> After Deleting A (5000): ₹7000 (B 7000 preserved)",
+    "proof": {
+      "expectedRemaining": 7000,
+      "actualRemaining": 7000,
+      "bLedgerUntouched": true
+    }
+  },
+  {
+    "id": 4,
+    "title": "Cross-Category Isolation: Same Employee Upad vs Pagar",
+    "passed": true,
+    "details": "Upad successfully reverted to ₹3000, while Pagar safely remained intact at ₹6000",
+    "proof": {
+      "expectedUpad": 3000,
+      "actualUpad": 3000,
+      "expectedPagar": 6000,
+      "actualPagar": 6000
+    }
+  },
+  {
+    "id": 5,
+    "title": "Bulk Pagar Partial Reversal",
+    "passed": true,
+    "details": "Bulk Total (3000+4000+5000): ₹12000 -> After Deleting #2 (4000): ₹8000 (Exact 8000 remaining)",
+    "proof": {
+      "bulkTotal": 12000,
+      "expectedAfterDeleteE2": 8000,
+      "actualAfterDeleteE2": 8000
+    }
+  }
+]
