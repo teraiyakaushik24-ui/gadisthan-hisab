@@ -1,5 +1,178 @@
 [
   {
+    "id": "hist_1792904667734_1r9j",
+    "timestamp": 1792904667734,
+    "dateStr": "2026-10-25",
+    "timeStr": "10:34 am",
+    "fullDate": "25/10/2026, 10:34:27 am",
+    "action": "HISAB_UPDATE",
+    "category": "HISAB",
+    "title": "તારીખ 2026-10-14 નો હિસાબ સાચવ્યો",
+    "titleEn": "Updated Hisab for 2026-10-14",
+    "details": "કુલ રકમ: ₹13,370 (રોકડ: ₹12150, બેંક: ₹0, વાઉચર: ₹1220)",
+    "detailsEn": "Total: ₹13,370 (Cash: ₹12150, Bank: ₹0, Voucher: ₹1220)",
+    "status": "info",
+    "ip": "Localhost",
+    "meta": {
+      "type": "HISAB_UPDATE",
+      "date": "2026-10-14",
+      "changes": [
+        {
+          "field": "કુલ હિસાબ (Grand Total)",
+          "before": "₹13,370",
+          "after": "₹13,370"
+        }
+      ]
+    }
+  },
+  {
+    "id": "hist_1792904667710_sa1p",
+    "timestamp": 1792904667710,
+    "dateStr": "2026-10-25",
+    "timeStr": "10:34 am",
+    "fullDate": "25/10/2026, 10:34:27 am",
+    "action": "HISAB_UPDATE",
+    "category": "HISAB",
+    "title": "તારીખ 2026-08-01 નો હિસાબ સાચવ્યો",
+    "titleEn": "Updated Hisab for 2026-08-01",
+    "details": "કુલ રકમ: ₹1,000 (રોકડ: ₹1000, બેંક: ₹0, વાઉચર: ₹0)",
+    "detailsEn": "Total: ₹1,000 (Cash: ₹1000, Bank: ₹0, Voucher: ₹0)",
+    "status": "info",
+    "ip": "Localhost",
+    "meta": {
+      "type": "HISAB_UPDATE",
+      "date": "2026-08-01",
+      "changes": [
+        {
+          "field": "કુલ હિસાબ (Grand Total)",
+          "before": "₹1,000",
+          "after": "₹1,000"
+        }
+      ]
+    }
+  },
+  {
+    "id": "hist_1792904667686_nurq",
+    "timestamp": 1792904667686,
+    "dateStr": "2026-10-25",
+    "timeStr": "10:34 am",
+    "fullDate": "25/10/2026, 10:34:27 am",
+    "action": "STAFF_DELETE",
+    "category": "STAFF",
+    "title": "કર્મચારી કાઢી નાખ્યો: જયેશભાઈ શાસ્ત્રી (પ્રમોશન)",
+    "titleEn": "Deleted Staff Member: જયેશભાઈ શાસ્ત્રી (પ્રમોશન)",
+    "details": "કર્મચારી રેકોર્ડ સફળતાપૂર્વક હટાવી દેવામાં આવ્યો",
+    "detailsEn": "Staff record successfully removed from system",
+    "status": "warning",
+    "ip": "Localhost",
+    "meta": null
+  },
+  {
+    "id": "hist_1792904667676_dqgu",
+    "timestamp": 1792904667676,
+    "dateStr": "2026-10-25",
+    "timeStr": "10:34 am",
+    "fullDate": "25/10/2026, 10:34:27 am",
+    "action": "STAFF_UPDATE",
+    "category": "STAFF",
+    "title": "કર્મચારી વિગત અપડેટ: જયેશભાઈ શાસ્ત્રી (પ્રમોશન)",
+    "titleEn": "Updated Staff: જયેશભાઈ શાસ્ત્રી (પ્રમોશન)",
+    "details": "હોદ્દો: મુખ્ય પૂજારી, પ્રકાર: માસિક, સ્થિતિ: inactive, પગાર: ₹11000",
+    "detailsEn": "Role: મુખ્ય પૂજારી, Type: Monthly, Status: inactive, Salary: ₹11000",
+    "status": "info",
+    "ip": "Localhost",
+    "meta": {
+      "type": "STAFF_UPDATE",
+      "staffName": "જયેશભાઈ શાસ્ત્રી (પ્રમોશન)",
+      "changes": [
+        {
+          "field": "નામ (Name)",
+          "before": "જયેશભાઈ પૂજારી",
+          "after": "જયેશભાઈ શાસ્ત્રી (પ્રમોશન)"
+        },
+        {
+          "field": "હોદ્દો (Role)",
+          "before": "સહાયક",
+          "after": "મુખ્ય પૂજારી"
+        },
+        {
+          "field": "પગાર (Salary)",
+          "before": "₹8000",
+          "after": "₹11000"
+        },
+        {
+          "field": "સ્થિતિ (Status)",
+          "before": "Active (ચાલુ)",
+          "after": "Inactive (બંધ)"
+        }
+      ]
+    }
+  },
+  {
+    "id": "hist_1792904667668_c95z",
+    "timestamp": 1792904667668,
+    "dateStr": "2026-10-25",
+    "timeStr": "10:34 am",
+    "fullDate": "25/10/2026, 10:34:27 am",
+    "action": "STAFF_ADD",
+    "category": "STAFF",
+    "title": "નવો કર્મચારી ઉમેર્યો: જયેશભાઈ પૂજારી",
+    "titleEn": "Added Staff Member: જયેશભાઈ પૂજારી",
+    "details": "હોદ્દો: સહાયક, પદ્ધતિ: 💵 રોકડ, પ્રકાર: માસિક ચૂકવણી, પગાર: ₹8000",
+    "detailsEn": "Role: સહાયક, Mode: Cash, Type: Monthly, Salary: ₹8000",
+    "status": "success",
+    "ip": "Localhost",
+    "meta": null
+  },
+  {
+    "id": "hist_1792904667648_dkdu",
+    "timestamp": 1792904667648,
+    "dateStr": "2026-10-25",
+    "timeStr": "10:34 am",
+    "fullDate": "25/10/2026, 10:34:27 am",
+    "action": "STAFF_DELETE",
+    "category": "STAFF",
+    "title": "કર્મચારી કાઢી નાખ્યો: કિશોરભાઈ સેવક (Audit Test)",
+    "titleEn": "Deleted Staff Member: કિશોરભાઈ સેવક (Audit Test)",
+    "details": "કર્મચારી રેકોર્ડ સફળતાપૂર્વક હટાવી દેવામાં આવ્યો",
+    "detailsEn": "Staff record successfully removed from system",
+    "status": "warning",
+    "ip": "Localhost",
+    "meta": null
+  },
+  {
+    "id": "hist_1792904667618_w2ag",
+    "timestamp": 1792904667618,
+    "dateStr": "2026-10-25",
+    "timeStr": "10:34 am",
+    "fullDate": "25/10/2026, 10:34:27 am",
+    "action": "STAFF_ADD",
+    "category": "STAFF",
+    "title": "નવો કર્મચારી ઉમેર્યો: કિશોરભાઈ સેવક (Audit Test)",
+    "titleEn": "Added Staff Member: કિશોરભાઈ સેવક (Audit Test)",
+    "details": "હોદ્દો: પૂજારી, પદ્ધતિ: 💵 રોકડ, પ્રકાર: માસિક ચૂકવણી, પગાર: ₹10000",
+    "detailsEn": "Role: પૂજારી, Mode: Cash, Type: Monthly, Salary: ₹10000",
+    "status": "success",
+    "ip": "Localhost",
+    "meta": null
+  },
+  {
+    "id": "hist_1792904667600_p3id",
+    "timestamp": 1792904667600,
+    "dateStr": "2026-10-25",
+    "timeStr": "10:34 am",
+    "fullDate": "25/10/2026, 10:34:27 am",
+    "action": "LOGIN_FAILED",
+    "category": "SECURITY",
+    "title": "ખોટો એડમિન પિન",
+    "titleEn": "Failed Admin Login",
+    "details": "અમાન્ય પિન દાખલ કરવામાં આવ્યો (પ્રયાસ: 1/5)",
+    "detailsEn": "Invalid admin PIN entered (attempt 1/5)",
+    "status": "danger",
+    "ip": "Localhost",
+    "meta": null
+  },
+  {
     "id": "hist_1792903357706_r6we",
     "timestamp": 1792903357706,
     "dateStr": "2026-10-25",

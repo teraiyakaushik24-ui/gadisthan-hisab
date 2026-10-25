@@ -5570,7 +5570,7 @@
     "grandTotal": 1000,
     "expenseItems": [],
     "remarks": "Admin Master Audit Update",
-    "updatedAt": "2026-10-25T04:26:54.681Z"
+    "updatedAt": "2026-10-25T05:04:27.698Z"
   },
   "2026-08-04": {
     "date": "2026-08-04",
@@ -8639,10 +8639,16 @@
         "category": "RASODAKHARCH",
         "amount": 457.5,
         "title": "દૂધ શાકભાજી બિલ"
+      },
+      {
+        "id": "exp_dec_test",
+        "category": "RASODAKHARCH",
+        "amount": 457.5,
+        "title": "દૂધ શાકભાજી બિલ"
       }
     ],
     "remarks": "",
-    "updatedAt": "2026-10-25T04:26:54.829Z"
+    "updatedAt": "2026-10-25T05:04:27.723Z"
   },
   "2026-10-15": {
     "date": "2026-10-15",

@@ -268,5 +268,18 @@
     "salary": 10000,
     "status": "active",
     "upads": []
+  },
+  {
+    "id": "emp_1792904667663",
+    "joiningDate": "2026-10-25",
+    "name": "જયેશભાઈ શાસ્ત્રી (પ્રમોશન)",
+    "pagars": [],
+    "paymentMode": "cash",
+    "paymentType": "monthly",
+    "phone": "9191919191",
+    "role": "મુખ્ય પૂજારી",
+    "salary": 11000,
+    "status": "inactive",
+    "upads": []
   }
 ]
