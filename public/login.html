@@ -258,42 +258,6 @@
       cursor: pointer;
     }
 
-    .quick-role-wrapper {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .quick-btn {
-      flex: 1;
-      padding: 9px 12px;
-      font-size: 0.84rem;
-      font-weight: 700;
-      border-radius: 10px;
-      border: 1.5px solid #cbd5e1;
-      background: #f8fafc;
-      color: #475569;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-      font-family: inherit;
-    }
-
-    .quick-btn:hover {
-      background: #f1f5f9;
-      border-color: #94a3b8;
-    }
-
-    .quick-btn.active {
-      border-color: #2563eb !important;
-      background: #eff6ff !important;
-      color: #1d4ed8 !important;
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
-    }
-
     .btn-login {
       width: 100%;
       height: 48px;
@@ -396,7 +360,7 @@
       <h1 class="org-title">Shree Gadisthan Jetpur</h1>
       <div class="org-subtitle">
         <span>Daily Accounting Software</span>
-        <span class="badge" style="background: #2563eb; color: #ffffff;">🔒 Authorized Staff Login</span>
+        <span class="badge" style="background: #2563eb; color: #ffffff;">🔒 Authorized Login</span>
       </div>
 
       <!-- Alert Notification Banner -->
@@ -404,16 +368,6 @@
 
       <!-- Login Form -->
       <form id="login-form" onsubmit="handleLoginSubmit(event)" autocomplete="on">
-        <!-- Quick Role Switcher -->
-        <div class="quick-role-wrapper">
-          <button type="button" id="btn-quick-user" onclick="selectQuickUser('user')" class="quick-btn active">
-            <span>👨‍💼</span> <span>Counter Staff</span>
-          </button>
-          <button type="button" id="btn-quick-account" onclick="selectQuickUser('account')" class="quick-btn">
-            <span>📑</span> <span>Accountant</span>
-          </button>
-        </div>
-
         <!-- Username or Mobile -->
         <div class="form-group">
           <label class="form-label" for="login-username">Username or Mobile Number</label>
@@ -494,7 +448,7 @@
       </form>
 
       <div class="card-footer">
-        <span>🛡️ Secure Portal • Authorized Staff & Accountants Only</span>
+        <span>🛡️ Secure Portal • Authorized Access Only</span>
         <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8f0;">
           <a href="/admin" style="color: #94a3b8; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 700;" onmouseover="this.style.color='#b45309'" onmouseout="this.style.color='#94a3b8'">
             <span>👑</span> <span>Admin / Management Portal →</span>
@@ -531,32 +485,12 @@
         }
       }
 
-      // Auto-prefill and focus
+      // Auto-focus username field
       setTimeout(() => {
-        selectQuickUser('user');
+        const uInp = document.getElementById('login-username');
+        if (uInp) uInp.focus();
       }, 50);
     })();
-
-    // Quick user selection helper
-    function selectQuickUser(type) {
-      const uInp = document.getElementById('login-username');
-      const pInp = document.getElementById('login-password');
-      const btnUser = document.getElementById('btn-quick-user');
-      const btnAcc = document.getElementById('btn-quick-account');
-
-      if (type === 'account' || type === 'accountant') {
-        if (uInp) uInp.value = 'account';
-        if (pInp) pInp.value = 'account123';
-        if (btnAcc) btnAcc.classList.add('active');
-        if (btnUser) btnUser.classList.remove('active');
-      } else {
-        if (uInp) uInp.value = 'user';
-        if (pInp) pInp.value = 'user123';
-        if (btnUser) btnUser.classList.add('active');
-        if (btnAcc) btnAcc.classList.remove('active');
-      }
-      hideAlert();
-    }
 
     // 2. Toggle password visibility
     function togglePasswordVisibility() {
@@ -625,9 +559,6 @@
         if (res.ok && data.requireOtp && data.tempToken) {
           activeTempToken = data.tempToken;
           document.getElementById('login-form').style.display = 'none';
-          const quickSel = document.getElementById('btn-quick-user')?.parentElement;
-          if (quickSel) quickSel.style.display = 'none';
-
           const otpForm = document.getElementById('otp-form');
           otpForm.style.display = 'block';
           if (data.maskedEmail) {
@@ -770,8 +701,6 @@
       activeTempToken = null;
       document.getElementById('otp-form').style.display = 'none';
       document.getElementById('login-form').style.display = 'block';
-      const quickSel = document.getElementById('btn-quick-user')?.parentElement;
-      if (quickSel) quickSel.style.display = 'flex';
       hideAlert();
     }
   </script>
