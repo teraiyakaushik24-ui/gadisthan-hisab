@@ -5557,120 +5557,20 @@
     "notes": [
       {
         "note": 500,
-        "count": 34,
-        "amount": 17000
-      },
-      {
-        "note": 200,
-        "count": 22,
-        "amount": 4400
-      },
-      {
-        "note": 100,
-        "count": 43,
-        "amount": 4300
-      },
-      {
-        "note": 50,
-        "count": 34,
-        "amount": 1700
-      },
-      {
-        "note": 20,
-        "count": 37,
-        "amount": 740
-      },
-      {
-        "note": 10,
-        "count": 36,
-        "amount": 360
+        "count": 2,
+        "amount": 1000
       }
     ],
-    "cashTotal": 28500,
-    "noteCountTotal": 206,
-    "banks": [
-      {
-        "name": "IOB TRF",
-        "amount": 0
-      },
-      {
-        "name": "BOB TRF",
-        "amount": 0
-      },
-      {
-        "name": "SBI TRF",
-        "amount": 0
-      }
-    ],
+    "cashTotal": 1000,
+    "noteCountTotal": 2,
+    "banks": [],
     "bankTotal": 0,
-    "vouchers": [
-      {
-        "name": "MANDIRKHARCH",
-        "amount": 1300
-      },
-      {
-        "name": "RASODAKHARCH",
-        "amount": 1130
-      },
-      {
-        "name": "PAGAR",
-        "amount": 0
-      },
-      {
-        "name": "UPAD",
-        "amount": 0
-      },
-      {
-        "name": "ગૌશાળા ખર્ચ",
-        "amount": 0
-      }
-    ],
-    "voucherTotal": 2430,
-    "grandTotal": 30930,
-    "expenseItems": [
-      {
-        "id": "exp_20260801_1",
-        "time": "08:00 AM",
-        "title": "દૈનિક પૂજાપો, દીવા-વાટ અને ફૂલહાર",
-        "amount": 450,
-        "category": "MANDIRKHARCH",
-        "categoryType": "voucher",
-        "forMonth": "2026-08",
-        "remarks": ""
-      },
-      {
-        "id": "exp_20260801_2",
-        "time": "09:00 AM",
-        "title": "અગરબત્તી, ધૂપ અને કપૂર જથ્થો",
-        "amount": 850,
-        "category": "MANDIRKHARCH",
-        "categoryType": "voucher",
-        "forMonth": "2026-08",
-        "remarks": ""
-      },
-      {
-        "id": "exp_20260801_3",
-        "time": "08:30 AM",
-        "title": "દૈનિક શાકભાજી અને લીંબુ-મરચાં",
-        "amount": 650,
-        "category": "RASODAKHARCH",
-        "categoryType": "voucher",
-        "forMonth": "2026-08",
-        "remarks": ""
-      },
-      {
-        "id": "exp_20260801_4",
-        "time": "07:30 AM",
-        "title": "ડેરી દૂધ અને દહીં",
-        "amount": 480,
-        "category": "RASODAKHARCH",
-        "categoryType": "voucher",
-        "forMonth": "2026-08",
-        "remarks": ""
-      }
-    ],
-    "remarks": "ઠાકોરજીના વિશેષ ઉત્સવનો હિસાબ",
-    "updatedAt": "2026-08-01T18:00:00.000Z"
+    "vouchers": [],
+    "voucherTotal": 0,
+    "grandTotal": 1000,
+    "expenseItems": [],
+    "remarks": "Admin Master Audit Update",
+    "updatedAt": "2026-10-25T04:26:54.681Z"
   },
   "2026-08-04": {
     "date": "2026-08-04",
@@ -8660,18 +8560,18 @@
         "amount": 0
       },
       {
-        "name": "BOB TRF",
+        "name": "SBI TRF",
         "amount": 0
       },
       {
-        "name": "SBI TRF",
+        "name": "BOB TRF",
         "amount": 0
       }
     ],
     "bankTotal": 0,
     "vouchers": [
       {
-        "name": "MANDIRKHARCH",
+        "name": "મંદિર ખર્ચ",
         "amount": 300
       },
       {
@@ -8680,6 +8580,10 @@
       },
       {
         "name": "PAGAR",
+        "amount": 0
+      },
+      {
+        "name": "હિંડોળા ખર્ચ",
         "amount": 0
       },
       {
@@ -8723,10 +8627,22 @@
         "categoryType": "voucher",
         "forMonth": "2026-10",
         "remarks": ""
+      },
+      {
+        "id": "exp_dec_test",
+        "category": "RASODAKHARCH",
+        "amount": 457.5,
+        "title": "દૂધ શાકભાજી બિલ"
+      },
+      {
+        "id": "exp_dec_test",
+        "category": "RASODAKHARCH",
+        "amount": 457.5,
+        "title": "દૂધ શાકભાજી બિલ"
       }
     ],
     "remarks": "",
-    "updatedAt": "2026-10-14T18:00:00.000Z"
+    "updatedAt": "2026-10-25T04:26:54.829Z"
   },
   "2026-10-15": {
     "date": "2026-10-15",
@@ -9412,6 +9328,126 @@
       {
         "name": "UPAD",
         "amount": 0
+      }
+    ]
+  },
+  "2026-10-24": {
+    "bankTotal": 0,
+    "banks": [
+      {
+        "name": "IOB TRF",
+        "amount": 0
+      },
+      {
+        "name": "SBI TRF",
+        "amount": 0
+      },
+      {
+        "name": "BOB TRF",
+        "amount": 0
+      }
+    ],
+    "cashTotal": 0,
+    "date": "2026-10-24",
+    "expenseItems": [],
+    "grandTotal": 0,
+    "isNew": true,
+    "noteCountTotal": 0,
+    "notes": [
+      {
+        "note": 500,
+        "count": 0,
+        "amount": 0
+      },
+      {
+        "note": 200,
+        "count": 0,
+        "amount": 0
+      },
+      {
+        "note": 100,
+        "count": 0,
+        "amount": 0
+      },
+      {
+        "note": 50,
+        "count": 0,
+        "amount": 0
+      },
+      {
+        "note": 20,
+        "count": 0,
+        "amount": 0
+      },
+      {
+        "note": 10,
+        "count": 0,
+        "amount": 0
+      }
+    ],
+    "remarks": "",
+    "updatedAt": "2026-10-24T08:19:06.450Z",
+    "voucherTotal": 0,
+    "vouchers": [
+      {
+        "name": "મંદિર ખર્ચ",
+        "amount": 0
+      },
+      {
+        "name": "RASODAKHARCH",
+        "amount": 0
+      },
+      {
+        "name": "PAGAR",
+        "amount": 0
+      },
+      {
+        "name": "હિંડોળા ખર્ચ",
+        "amount": 0
+      },
+      {
+        "name": "UPAD",
+        "amount": 0
+      }
+    ]
+  },
+  "2026-10-25": {
+    "bankTotal": 3000,
+    "banks": [
+      {
+        "name": "SBI TRF",
+        "amount": 3000
+      }
+    ],
+    "cashTotal": 6000,
+    "date": "2026-10-25",
+    "expenseItems": [],
+    "grandTotal": 11000,
+    "noteCountTotal": 15,
+    "notes": [
+      {
+        "note": 500,
+        "count": 10,
+        "amount": 5000
+      },
+      {
+        "note": 200,
+        "count": 5,
+        "amount": 1000
+      },
+      {
+        "note": 100,
+        "count": 0,
+        "amount": 0
+      }
+    ],
+    "remarks": "Automated Test Verification",
+    "updatedAt": "2026-10-25T03:59:24.681Z",
+    "voucherTotal": 2000,
+    "vouchers": [
+      {
+        "name": "MANDIRKHARCH",
+        "amount": 2000
       }
     ]
   }

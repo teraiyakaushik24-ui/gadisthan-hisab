@@ -1,99 +1,67 @@
 {
-  "timestamp": "2026-10-14T06:35:08.540Z",
-  "totalTests": 20,
-  "passCount": 20,
-  "failCount": 0,
+  "timestamp": "2026-10-25T04:26:54.277Z",
+  "totalTests": 15,
+  "passCount": 7,
+  "failCount": 8,
   "suites": {
     "1. Pagar & Upad Engine": {
       "total": 6,
-      "passed": 6,
-      "failed": 0,
+      "passed": 1,
+      "failed": 5,
       "tests": [
         {
           "testName": "Create Employee Record",
           "passed": true,
-          "details": "Created Employee ID: emp_1791959708641"
+          "details": "Created Employee ID: emp_1792902414431"
         },
         {
           "testName": "Record Employee Upad (Advance)",
-          "passed": true,
-          "details": "Upad ID: upd_1791959708646_143, Amount: 3000"
+          "passed": false,
+          "details": "Upad ID: undefined, Amount: 3000"
         },
         {
           "testName": "Net Salary Calculation (10000 - 3000 = 7000)",
-          "passed": true,
-          "details": "Expected Net: 7000, Got: 7000"
+          "passed": false,
+          "details": "Expected Net: 7000, Got: 10000"
         },
         {
           "testName": "Record Pagar Payout (Partial 5000)",
-          "passed": true,
-          "details": "Pagar ID: pgr_1791959708668_356"
+          "passed": false,
+          "details": "Pagar ID: undefined"
         },
         {
           "testName": "Post-Payout Balance Calculation (7000 - 5000 = 2000)",
-          "passed": true,
-          "details": "Expected Net: 2000, Got: 2000"
+          "passed": false,
+          "details": "Expected Net: 2000, Got: 10000"
         },
         {
           "testName": "Automatic Voucher Creation in Daily Hisab upon Pagar Payout",
-          "passed": true,
-          "details": "Expense item found: {\"id\":\"exp_pgr_1791959708668_356\",\"time\":\"12:05 PM\",\"title\":\"કિશોરભાઈ સેવક (Audit Test) - ઓક્ટોબર 2026 માસનો પગાર\",\"amount\":5000,\"category\":\"PAGAR\",\"categoryType\":\"voucher\",\"employeeId\":\"emp_1791959708641\",\"employeeName\":\"કિશોરભાઈ સેવક (Audit Test)\",\"employeeEntryId\":\"pgr_1791959708668_356\",\"forMonth\":\"2026-10\",\"remarks\":\"માસિક પગાર: ₹10000 | ચૂકવેલ ચોખ્ખો પગાર: ₹5000 | (પગાર ચૂકવણી ભાગ ૧)\"}"
-        }
-      ]
-    },
-    "3. Reversal & Cascading": {
-      "total": 2,
-      "passed": 2,
-      "failed": 0,
-      "tests": [
-        {
-          "testName": "Delete Pagar Entry",
-          "passed": true,
-          "details": "Delete response: {\"success\":true,\"removed\":{\"id\":\"pgr_1791959708668_356\",\"date\":\"2026-10-14\",\"time\":\"12:05 PM\",\"forMonth\":\"2026-10\",\"amount\":5000,\"title\":\"ઓક્ટોબર 2026 માસનો પગાર\",\"remarks\":\"માસિક પગાર: ₹10000 | ચૂકવેલ ચોખ્ખો પગાર: ₹5000 | (પગાર ચૂકવણી ભાગ ૧)\",\"totalMonthDays\":30,\"absentDays\":0,\"absentDeduction\":0,\"earnedSalary\":10000,\"openingBalance\":0,\"upadDeduction\":0,\"expenseItemId\":\"exp_pgr_1791959708668_356\"},\"employee\":{\"id\":\"emp_1791959708641\",\"name\":\"કિશોરભાઈ સેવક (Audit Test)\",\"role\":\"પૂજારી\",\"phone\":\"9898989898\",\"salary\":10000,\"joiningDate\":\"2026-10-14\",\"status\":\"active\",\"upads\":[{\"id\":\"upd_1791959708646_143\",\"date\":\"2026-10-14\",\"time\":\"12:05 PM\",\"forMonth\":\"2026-10\",\"amount\":3000,\"title\":\"ઉપાડ\",\"remarks\":\"તહેવાર ઉપાડ\",\"expenseItemId\":\"exp_upd_1791959708646_143\"}],\"pagars\":[]}}"
-        },
-        {
-          "testName": "Cascade Reversal: Voucher Removed from Daily Hisab when Pagar Deleted",
-          "passed": true,
-          "details": "Pagar voucher still in Daily Hisab: false"
+          "passed": false,
+          "details": "Expense item found: None"
         }
       ]
     },
     "2. Uchak & Inter-relation": {
-      "total": 4,
-      "passed": 4,
-      "failed": 0,
+      "total": 1,
+      "passed": 0,
+      "failed": 1,
       "tests": [
         {
           "testName": "Issue Uchak Advance Record",
-          "passed": true,
-          "details": "Uchak ID: uchak_1791959708715_410"
-        },
-        {
-          "testName": "Settle Uchak with Split (Voucher 800 + Cash 200)",
-          "passed": true,
-          "details": "Response: {\"success\":true,\"item\":{\"id\":\"uchak_1791959708715_410\",\"employeeId\":null,\"personName\":\"વિનોદભાઈ રસોઈયા (Audit Test)\",\"phone\":\"9797979797\",\"purpose\":\"રસોડા સામગ્રી ઉચક\",\"givenDate\":\"2026-10-14\",\"givenTime\":\"12:00 PM\",\"givenAmount\":1000,\"remainingAmount\":0,\"installments\":[{\"id\":\"inst_1791959708732_439\",\"settledDate\":\"2026-10-14\",\"settledTime\":\"12:05 PM\",\"settleType\":\"voucher\",\"voucherAmount\":800,\"voucherCategory\":\"RASODAKHARCH\",\"voucherTitle\":\"\",\"cashReturned\":200,\"extraPaid\":0,\"clearedAmount\":1000,\"remainingBefore\":1000,\"remainingAfter\":0,\"notes\":\"800 બિલ + 200 રોકડા પરત\",\"remarks\":\"800 બિલ + 200 રોકડા પરત\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":null,\"addedToHisab\":true,\"expenseItemId\":\"exp_uchak_1791959708715_410_1791959708726_65\",\"createdAt\":\"2026-10-14T06:35:08.732Z\"}],\"remarks\":\"ટેસ્ટિંગ ઉચક\",\"status\":\"settled\",\"settlement\":{\"id\":\"inst_1791959708732_439\",\"settledDate\":\"2026-10-14\",\"settledTime\":\"12:05 PM\",\"settleType\":\"voucher\",\"voucherAmount\":800,\"voucherCategory\":\"RASODAKHARCH\",\"voucherTitle\":\"\",\"cashReturned\":200,\"extraPaid\":0,\"clearedAmount\":1000,\"remainingBefore\":1000,\"remainingAfter\":0,\"notes\":\"800 બિલ + 200 રોકડા પરત\",\"remarks\":\"800 બિલ + 200 રોકડા પરત\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":null,\"addedToHisab\":true,\"expenseItemId\":\"exp_uchak_1791959708715_410_1791959708726_65\",\"createdAt\":\"2026-10-14T06:35:08.732Z\"},\"createdAt\":\"2026-10-14T06:35:08.715Z\",\"updatedAt\":\"2026-10-14T06:35:08.732Z\"},\"installment\":{\"id\":\"inst_1791959708732_439\",\"settledDate\":\"2026-10-14\",\"settledTime\":\"12:05 PM\",\"settleType\":\"voucher\",\"voucherAmount\":800,\"voucherCategory\":\"RASODAKHARCH\",\"voucherTitle\":\"\",\"cashReturned\":200,\"extraPaid\":0,\"clearedAmount\":1000,\"remainingBefore\":1000,\"remainingAfter\":0,\"notes\":\"800 બિલ + 200 રોકડા પરત\",\"remarks\":\"800 બિલ + 200 રોકડા પરત\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":null,\"addedToHisab\":true,\"expenseItemId\":\"exp_uchak_1791959708715_410_1791959708726_65\",\"createdAt\":\"2026-10-14T06:35:08.732Z\"}}"
-        },
-        {
-          "testName": "Uchak Settlement Voucher Added to Daily Hisab",
-          "passed": true,
-          "details": "Found item: {\"id\":\"exp_uchak_1791959708715_410_1791959708726_65\",\"time\":\"12:05 PM\",\"title\":\"વિનોદભાઈ રસોઈયા (Audit Test) - ઉચક પતાવટ (રસોડા સામગ્રી ઉચક)\",\"amount\":800,\"category\":\"RASODAKHARCH\",\"categoryType\":\"voucher\",\"uchakId\":\"uchak_1791959708715_410\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":\"2026-10\",\"remarks\":\"800 બિલ + 200 રોકડા પરત\"}"
-        },
-        {
-          "testName": "Over-Settlement (Bill 1200 > Advance 1000)",
-          "passed": true,
-          "details": "Response: {\"success\":true,\"item\":{\"id\":\"uchak_1791959708750_414\",\"employeeId\":null,\"personName\":\"વિનોદભાઈ રસોઈયા (Extra Test)\",\"phone\":\"\",\"purpose\":\"પરચૂરણ કામ માટે ઉચક\",\"givenDate\":\"2026-10-14\",\"givenTime\":\"12:10 PM\",\"givenAmount\":1000,\"remainingAmount\":0,\"installments\":[{\"id\":\"inst_1791959708761_458\",\"settledDate\":\"2026-10-14\",\"settledTime\":\"12:05 PM\",\"settleType\":\"voucher\",\"voucherAmount\":1200,\"voucherCategory\":\"RASODAKHARCH\",\"voucherTitle\":\"\",\"cashReturned\":0,\"extraPaid\":0,\"clearedAmount\":1200,\"remainingBefore\":1000,\"remainingAfter\":0,\"notes\":\"ખર્ચ ૧૨૦૦ થયો (૨૦૦ વધુ ચૂકવ્યા)\",\"remarks\":\"ખર્ચ ૧૨૦૦ થયો (૨૦૦ વધુ ચૂકવ્યા)\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":null,\"addedToHisab\":true,\"expenseItemId\":\"exp_uchak_1791959708750_414_1791959708757_61\",\"createdAt\":\"2026-10-14T06:35:08.761Z\"}],\"remarks\":\"\",\"status\":\"settled\",\"settlement\":{\"id\":\"inst_1791959708761_458\",\"settledDate\":\"2026-10-14\",\"settledTime\":\"12:05 PM\",\"settleType\":\"voucher\",\"voucherAmount\":1200,\"voucherCategory\":\"RASODAKHARCH\",\"voucherTitle\":\"\",\"cashReturned\":0,\"extraPaid\":0,\"clearedAmount\":1200,\"remainingBefore\":1000,\"remainingAfter\":0,\"notes\":\"ખર્ચ ૧૨૦૦ થયો (૨૦૦ વધુ ચૂકવ્યા)\",\"remarks\":\"ખર્ચ ૧૨૦૦ થયો (૨૦૦ વધુ ચૂકવ્યા)\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":null,\"addedToHisab\":true,\"expenseItemId\":\"exp_uchak_1791959708750_414_1791959708757_61\",\"createdAt\":\"2026-10-14T06:35:08.761Z\"},\"createdAt\":\"2026-10-14T06:35:08.751Z\",\"updatedAt\":\"2026-10-14T06:35:08.761Z\"},\"installment\":{\"id\":\"inst_1791959708761_458\",\"settledDate\":\"2026-10-14\",\"settledTime\":\"12:05 PM\",\"settleType\":\"voucher\",\"voucherAmount\":1200,\"voucherCategory\":\"RASODAKHARCH\",\"voucherTitle\":\"\",\"cashReturned\":0,\"extraPaid\":0,\"clearedAmount\":1200,\"remainingBefore\":1000,\"remainingAfter\":0,\"notes\":\"ખર્ચ ૧૨૦૦ થયો (૨૦૦ વધુ ચૂકવ્યા)\",\"remarks\":\"ખર્ચ ૧૨૦૦ થયો (૨૦૦ વધુ ચૂકવ્યા)\",\"employeeId\":null,\"employeeName\":null,\"forMonth\":null,\"addedToHisab\":true,\"expenseItemId\":\"exp_uchak_1791959708750_414_1791959708757_61\",\"createdAt\":\"2026-10-14T06:35:08.761Z\"}}"
+          "passed": false,
+          "details": "Uchak ID: undefined"
         }
       ]
     },
     "4. Admin Edit & Update": {
       "total": 5,
-      "passed": 5,
-      "failed": 0,
+      "passed": 3,
+      "failed": 2,
       "tests": [
         {
           "testName": "Employee Profile Update (Name & Salary Changed)",
           "passed": true,
-          "details": "Update response: {\"success\":true,\"employee\":{\"id\":\"emp_1791959708775\",\"name\":\"જયેશભાઈ શાસ્ત્રી (પ્રમોશન)\",\"role\":\"મુખ્ય પૂજારી\",\"phone\":\"9191919191\",\"salary\":11000,\"joiningDate\":\"2026-10-14\",\"status\":\"inactive\",\"upads\":[],\"pagars\":[]}}"
+          "details": "Update response: {\"success\":true,\"employee\":{\"id\":\"emp_1792902414563\",\"name\":\"જયેશભાઈ શાસ્ત્રી (પ્રમોશન)\",\"role\":\"મુખ્ય પૂજારી\",\"phone\":\"9191919191\",\"salary\":11000,\"paymentType\":\"monthly\",\"paymentMode\":\"cash\",\"joiningDate\":\"2026-10-25\",\"status\":\"inactive\",\"upads\":[],\"pagars\":[]}}"
         },
         {
           "testName": "Employee Inactive Status Support (Preserves History)",
@@ -102,18 +70,18 @@
         },
         {
           "testName": "Admin Bank Rename API",
-          "passed": true,
-          "details": "Rename response: {\"success\":true,\"banks\":[\"IOB TRF\",\"BOB TRF (MAIN)\",\"SBI TRF\"]}"
+          "passed": false,
+          "details": "Rename response: {\"success\":false,\"error\":\"સુરક્ષા સેશન સમાપ્ત થઈ ગયું છે અથવા અમાન્ય છે! કૃપા કરીને ફરી એડમિન પિન નાખી લૉગિન કરો.\",\"sessionExpired\":true}"
         },
         {
           "testName": "Admin Voucher Rename API",
-          "passed": true,
-          "details": "Rename voucher response: {\"success\":true,\"vouchers\":[\"મંદિર ખર્ચ\",\"RASODAKHARCH\",\"PAGAR\",\"STAFF UPAD\",\"હિંડોળા ખર્ચ\"]}"
+          "passed": false,
+          "details": "Rename voucher response: {\"success\":false,\"error\":\"સુરક્ષા સેશન સમાપ્ત થઈ ગયું છે અથવા અમાન્ય છે! કૃપા કરીને ફરી એડમિન પિન નાખી લૉગિન કરો.\",\"sessionExpired\":true}"
         },
         {
           "testName": "Admin Past Date Master Hisab Edit (Protected Override)",
           "passed": true,
-          "details": "Response: {\"success\":true,\"record\":{\"date\":\"2026-08-01\",\"notes\":[{\"note\":500,\"count\":2,\"amount\":1000}],\"cashTotal\":1000,\"noteCountTotal\":2,\"banks\":[],\"bankTotal\":0,\"vouchers\":[],\"voucherTotal\":0,\"grandTotal\":1000,\"expenseItems\":[],\"remarks\":\"Admin Master Audit Update\",\"updatedAt\":\"2026-10-14T06:35:08.812Z\"},\"employeesUpdated\":false}"
+          "details": "Response: {\"success\":true,\"record\":{\"date\":\"2026-08-01\",\"notes\":[{\"note\":500,\"count\":2,\"amount\":1000}],\"cashTotal\":1000,\"noteCountTotal\":2,\"banks\":[],\"bankTotal\":0,\"vouchers\":[],\"voucherTotal\":0,\"grandTotal\":1000,\"expenseItems\":[],\"remarks\":\"Admin Master Audit Update\",\"updatedAt\":\"2026-10-25T04:26:54.681Z\"},\"employeesUpdated\":false}"
         }
       ]
     },
@@ -130,15 +98,80 @@
         {
           "testName": "Gujarati Text Matching & Filtering",
           "passed": true,
-          "details": "Matched 2 bhakts with Gujarati query"
+          "details": "Matched 1 bhakts with Gujarati query"
         },
         {
           "testName": "Daily Excel Workbook File Generation (>2KB valid format)",
           "passed": true,
-          "details": "Size: 19378 bytes, MIME: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+          "details": "Size: 19048 bytes, MIME: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         }
       ]
     }
   },
-  "bugs": []
+  "bugs": [
+    {
+      "suite": "1. Pagar & Upad Engine",
+      "test": "Record Employee Upad (Advance)",
+      "severity": "Medium",
+      "observed": "Upad ID: undefined, Amount: 3000",
+      "expected": "Expected behavior not met",
+      "reproduction": "See test steps"
+    },
+    {
+      "suite": "1. Pagar & Upad Engine",
+      "test": "Net Salary Calculation (10000 - 3000 = 7000)",
+      "severity": "High",
+      "observed": "Net balance is 10000",
+      "expected": "Net balance should be 7000",
+      "reproduction": "See test steps"
+    },
+    {
+      "suite": "1. Pagar & Upad Engine",
+      "test": "Record Pagar Payout (Partial 5000)",
+      "severity": "Medium",
+      "observed": "Pagar ID: undefined",
+      "expected": "Expected behavior not met",
+      "reproduction": "See test steps"
+    },
+    {
+      "suite": "1. Pagar & Upad Engine",
+      "test": "Post-Payout Balance Calculation (7000 - 5000 = 2000)",
+      "severity": "High",
+      "observed": "Net balance is 10000",
+      "expected": "Net balance should be 2000",
+      "reproduction": "See test steps"
+    },
+    {
+      "suite": "1. Pagar & Upad Engine",
+      "test": "Automatic Voucher Creation in Daily Hisab upon Pagar Payout",
+      "severity": "High",
+      "observed": "No linked expense item found in today's records for this pagar payout",
+      "expected": "Pagar payout should automatically create an expense item under PAGAR voucher",
+      "reproduction": "See test steps"
+    },
+    {
+      "suite": "2. Uchak & Inter-relation",
+      "test": "Issue Uchak Advance Record",
+      "severity": "Medium",
+      "observed": "Uchak ID: undefined",
+      "expected": "Expected behavior not met",
+      "reproduction": "See test steps"
+    },
+    {
+      "suite": "4. Admin Edit & Update",
+      "test": "Admin Bank Rename API",
+      "severity": "Medium",
+      "observed": "Rename response: {\"success\":false,\"error\":\"સુરક્ષા સેશન સમાપ્ત થઈ ગયું છે અથવા અમાન્ય છે! કૃપા કરીને ફરી એડમિન પિન નાખી લૉગિન કરો.\",\"sessionExpired\":true}",
+      "expected": "Expected behavior not met",
+      "reproduction": "See test steps"
+    },
+    {
+      "suite": "4. Admin Edit & Update",
+      "test": "Admin Voucher Rename API",
+      "severity": "Medium",
+      "observed": "Rename voucher response: {\"success\":false,\"error\":\"સુરક્ષા સેશન સમાપ્ત થઈ ગયું છે અથવા અમાન્ય છે! કૃપા કરીને ફરી એડમિન પિન નાખી લૉગિન કરો.\",\"sessionExpired\":true}",
+      "expected": "Expected behavior not met",
+      "reproduction": "See test steps"
+    }
+  ]
 }

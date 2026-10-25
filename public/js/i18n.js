@@ -77,6 +77,8 @@ const i18n = {
       uchak: 'ઉચક',
       menuMore: 'મેનુ',
       accumulatedCash: 'એકઠી રોકડ:',
+      calculatorMenu: 'કેલ્ક્યુલેટર',
+      shortcutsHelpMenu: 'શોર્ટકટ્સ હેલ્પ',
       adminPanel: 'એડમિન પેનલ',
       allKhata: '👁️ બધા ખાતા',
       onlyPositiveKhata: '👁️ માત્ર > 0 ખર્ચ',
@@ -169,16 +171,16 @@ const i18n = {
       staffKpiUpad: 'આ માસનો કુલ ઉપાડ',
       staffKpiBalance: 'કુલ બાકી ચૂકવવાપાત્ર પગાર',
       staffSearchPh: '🔍 કર્મચારીનું નામ કે હોદ્દો શોધો...',
-      staffMonthSelectLbl: '📅 કયા માસનો હિસાબ:',
+      staffMonthSelectLbl: '📅',
       staffAddBtn: '🔐 સ્ટાફ મેનેજ (Admin)',
-      staffBulkPayBtn: 'બધાનો પગાર એકસાથે ખર્ચમાં ચડાવો',
+      staffBulkPayBtn: 'All Salary Paid',
       staffColName: 'કર્મચારી વિગત',
-      staffColSalary: 'માસિક પગાર',
+      staffColSalary: 'પગાર',
       staffColOpening: 'અગાઉની બાકી',
-      staffColUpad: 'આ માસનો ઉપાડ',
-      staffColPaid: 'ચૂકવેલ પગાર',
-      staffColBalance: 'ચૂકવવાપાત્ર બાકી પગાર',
-      staffColActions: 'પગાર / ઉપાડ એકશન',
+      staffColUpad: 'ઉપાડ',
+      staffColPaid: 'ચૂકવેલ',
+      staffColBalance: 'બાકી પગાર',
+      staffColActions: 'પગાર / ઉપાડ',
       staffFootAllSummary: 'બધા સ્ટાફનો હિસાબ',
 
       // Modal: Employee Form
@@ -338,7 +340,7 @@ const i18n = {
       adminRenameTitle: '✏️ નામ સુધારો',
       adminRenameLabel: 'નવું નામ (ગુજરાતીમાં):',
 
-      paySelectedStaffLbl: 'પસંદ કરેલાનો પગાર ખર્ચમાં ચડાવો (0)',
+      paySelectedStaffLbl: 'Selected Salary Paid',
       quickUpadAddToHisabLbl: "આજના દૈનિક હિસાબમાં 'UPAD' વાઉચરમાં આપોઆપ ઉમેરો",
       quickUpadDeductNotice: "💡 આ રકમ કર્મચારીના માસિક પગારમાંથી આપમેળે બાદ થશે અને આજના દૈનિક 'ઉપાડ' વાઉચરમાં પ્લસ થશે.",
       quickPagarAddToHisabLbl: "આજના દૈનિક હિસાબમાં 'PAGAR' વાઉચરમાં આપોઆપ ખર્ચ ઉમેરો",
@@ -475,13 +477,17 @@ const i18n = {
       adminControlCenter: 'એડમિન કંટ્રોલ સેન્ટર',
       adminLogout: 'લૉગ આઉટ',
       adminLogoutTitle: 'એડમિન લૉગ આઉટ કરો',
-      adminSidebarTitle: 'એડમિન મેનુ નેવિગેશન',
+      adminSidebarTitle: 'એડમિન મેનુ',
+      adminCollapseMenu: 'મેનુ સંકોચો',
+      adminExpandMenu: 'મેનુ બતાવો',
       adminNavMaster: 'દૈનિક હિસાબ',
       adminNavStaff: 'કર્મચારી / સ્ટાફ',
       adminNavBhakts: 'દૈનિક મહાપૂજા',
       adminNavBanks: 'બેંક વિકલ્પો',
       adminNavVouchers: 'વાઉચર વિકલ્પો',
       adminNavGeneral: 'સેટિંગ્સ & બેકઅપ',
+      adminNavUsers: 'યુઝર્સ & લૉગિન',
+      adminBackToDaily: 'દૈનિક કાઉન્ટર હિસાબ',
 
       // Tab 1: Master Hisab
       adminMasterHeading: 'દૈનિક હિસાબ',
@@ -516,8 +522,19 @@ const i18n = {
       adminEmpRoleLbl: 'કામ / હોદ્દો:',
       adminEmpRolePh: 'દા.ત. રસોઈયા, પૂજારી, સફાઈ',
       adminEmpPhoneLbl: 'મોબાઇલ નંબર:',
-      adminEmpPhonePh: 'દા.ત. 9876543210',
-      adminEmpSalaryLbl: 'માસિક નક્કી પગાર (₹) *:',
+      adminEmpPaymentTypeLbl: 'ચૂકવણી પ્રકાર (Payment Type) *:',
+      adminEmpPaymentMonthly: '📅 માસિક ચૂકવણી (Monthly)',
+      adminEmpPayment15Days: '⏳ ૧૫ દિવસીય ચૂકવણી (15 Days)',
+      adminEmpPaymentModeLbl: 'પગાર પદ્ધતિ (Salary Mode) *:',
+      adminEmpModeCashOpt: '💵 રોકડ ચુકવણી (Cash - વાઉચરમાં એડ થશે)',
+      adminEmpModeBankOpt: '🏦 બેંક ટ્રાન્સફર (Bank - માત્ર શો થશે)',
+      adminEmpFilterCycleAll: 'બધા પ્રકાર',
+      adminEmpFilterMonthly: '🗓️ માસિક',
+      adminEmpFilter15Days: '⏳ ૧૫ દિવસ',
+      adminEmpFilterModeAll: 'બધા મોડ',
+      adminEmpFilterModeCash: '💵 રોકડ',
+      adminEmpFilterModeBank: '🏦 બેંક',
+      adminEmpSalaryLbl: 'નક્કી પગાર (₹) *:',
       adminEmpSalaryPh: 'દા.ત. 15000',
       adminEmpSaveBtn: 'કર્મચારી ઉમેરો',
       adminEmpSaveEditBtn: 'વિગતો સાચવો',
@@ -635,6 +652,55 @@ const i18n = {
       adminHistDetailSubtitle: '',
       adminClearModalTitle: 'એડમિન હિસ્ટ્રી સાફ કરવાના વિકલ્પો',
       adminClearModalSubtitle: '',
+      // Tab 8: Users & Login
+      adminUserManagementTitle: '👥 વપરાશકર્તા સંચાલન (User & Accountant Management)',
+      adminUserManagementSubtitle: 'સિસ્ટમના એકાઉન્ટન્ટ અને વપરાશકર્તા ખાતાઓ, પાસવર્ડ રીસેટ અને સુરક્ષિત લૉગિન નિયંત્રણ',
+      adminAddUserBtn: 'નવો યુઝર ઉમેરો',
+      adminRefreshBtn: 'રીફ્રેશ',
+      adminUserFormAddTitle: '➕ નવો વપરાશકર્તા ઉમેરો',
+      adminUserFormNameLbl: 'પૂરું નામ *:',
+      adminUserFormNamePh: 'દા.ત. રમેશભાઈ પટેલ',
+      adminUserFormUsernameLbl: 'યુઝરનેમ (Login ID) *:',
+      adminUserFormUsernamePh: 'દા.ત. ramesh_clerk',
+      adminUserFormPasswordLbl: 'પાસવર્ડ *:',
+      adminUserFormPasswordPh: 'પાસવર્ડ દાખલ કરો',
+      adminUserFormRoleLbl: 'હોદ્દો / રોલ *:',
+      adminUserRoleUserOpt: '👤 User (કાઉન્ટર સ્ટાફ / દૈનિક પાવતી)',
+      adminUserRoleAccountantOpt: '💼 Accountant (મુખ્ય હિસાબનીશ)',
+      adminUserFormPhoneLbl: 'મોબાઈલ નંબર:',
+      adminUserFormPhonePh: '૧૦ અંકનો નંબર',
+      adminUserFormEmailLbl: 'ઈમેલ (OTP મેળવવા માટે):',
+      adminUserFormEmailPh: 'user@gmail.com',
+      adminUserFormStatusLbl: 'સ્ટેટસ:',
+      adminUserStatusActiveOpt: '🟢 સક્રિય (Active)',
+      adminUserStatusInactiveOpt: '🔴 નિષ્ક્રિય (Inactive)',
+      adminUsersListHeading: '📋 સિસ્ટમના અધિકૃત વપરાશકર્તાઓ (Users List)',
+      adminLoginLogsHeading: 'તાજેતરની લૉગિન પ્રવૃત્તિ (Login History Logs)',
+
+      // Bhakt Form Extras
+      bhaktFormCalcModeLbl: 'ગણતરી પદ્ધતિ:',
+      bhaktOptDateWise: '📆 તારીખવાર (Date-to-Date)',
+      bhaktOptMonthWise: '📅 માસિક (Month-wise)',
+      bhaktFormStatusLbl: 'સ્થિતિ:',
+      bhaktOptActive: '🟢 સક્રિય',
+      bhaktOptInactive: '⚪ નિષ્ક્રિય',
+
+      // History Search
+      adminHistorySearchPh: '🔍 હિસ્ટ્રીમાં શોધો (તારીખ, પ્રવૃત્તિ, વિગત)...',
+
+      // Generic Table Columns
+      colIndex: 'ક્રમ',
+      colName: 'નામ',
+      colUsername: 'યુઝરનેમ',
+      colRole: 'રોલ',
+      colMobile: 'મોબાઈલ',
+      colLastLogin: 'છેલ્લું લૉગિન',
+      colStatus: 'સ્થિતિ',
+      colAction: 'ઍક્શન',
+      colDateTime: 'તારીખ & સમય',
+      colResult: 'પરિણામ',
+      colIpDetails: 'IP / વિગત',
+
 
       // Modals
       adminPinTitle: '🔐 એડમિન સુરક્ષા પિન',
@@ -649,12 +715,15 @@ const i18n = {
       adminAddExpModalTitle: 'આ તારીખમાં નવો ખર્ચ ઉમેરો',
       adminAddExpCatLbl: 'ખાતો / વાઉચર *:',
       adminAddExpSubmitBtn: 'ખર્ચ ઉમેરો',
-      expenseDiaryTitle: "ખર્ચ ડાયરી (Alt+V)",
-      employeesTitle: "કર્મચારીઓ (Alt+E)",
+      expenseDiaryTitle: "ખર્ચ ડાયરી (F1)",
+      employeesTitle: "કર્મચારીઓ (F6)",
       uchakTitle: "ઉચક પેનલ (F4)",
-      accumulatedCashTitle: "એકઠી રોકડ વિગત",
+      accumulatedCashTitle: "એકઠી રોકડ (F2)",
       adminPanelTitle: "એડમિન પેનલ",
-      historyTitle: "પાછલો હિસાબ (Alt+H)",
+      historyTitle: "પાછલો હિસાબ (F3)",
+      duesMenuTitle: "લેણાં - દેવાં (F7)",
+      calcMenuTitle: "ઓન-સ્ક્રીન કેલ્ક્યુલેટર (F8)",
+      shortcutsHelpTitle: "કીબોર્ડ શોર્ટકટ્સ માર્ગદર્શિકા (F12)",
       changeOrgNameTitle: "સંસ્થાનું નામ બદલો",
       activeUchakCashTitle: "સક્રિય ઉચક રોકડ",
       quickUchakDrawerBtnTitle: "ઉચક પેનલ (F4)",
@@ -753,7 +822,31 @@ const i18n = {
       saveSuccessToast: "✅ હિસાબ આપમેળે સાચવી લેવાયો છે!",
       saveErrorToast: "સાચવતી વખતે ભૂલ આવી!",
       adminPinIncorrect: "❌ ખોટો એડમિન પિન!",
-      dataLoadedSuccess: "✅ ડેટા લોડ થઈ ગયો!"
+      dataLoadedSuccess: "✅ ડેટા લોડ થઈ ગયો!",
+      uchakKpiPendingAmt: "કુલ બાકી:",
+      uchakPendingPersonsCount: "0 વ્યક્તિ બાકી",
+      giveUchakModalBtn: "નવા ઉચક આપો (F4)",
+      uchakSearchPh: "🔍 શોધો...",
+      clearNoteBtn: "નોંધ ભૂંસો",
+      staffKpiPaid: "આ માસે ચૂકવેલ પગાર",
+      staffKpiBankNote: "(બેંક પગાર માત્ર શો થશે)",
+      filterAll: "બધા",
+      filterCash: "રોકડ",
+      filterBank: "બેંક",
+      duesTabAll: "બધા",
+      duesTabReceivable: "🟢 લેવાના",
+      duesTabPayable: "🔴 આપવાના",
+      adminUserMgmtTitle: "વપરાશકર્તા સંચાલન (User & Accountant Management)",
+      adminUserMgmtSub: "યુઝર અને એકાઉન્ટન્ટ એકાઉન્ટ્સ, પાસવર્ડ રીસેટ અને તાજેતરના લૉગિન લૉગ્સ",
+      adminAddUserBtn: "નવો યુઝર ઉમેરો",
+      adminAddUserFormTitle: "➕ નવો વપરાશકર્તા ઉમેરો",
+      adminUsersListTitle: "📋 સિસ્ટમના અધિકૃત વપરાશકર્તાઓ (Users List)",
+      adminLoginHistoryTitle: "🕒 તાજેતરની લૉગિન પ્રવૃત્તિ (Login History Logs)",
+      resendOtp: "🔄 ફરીથી OTP મોકલો",
+      histStartDate: "📅 શરૂ:",
+      histTo: "થી",
+      histEndDate: "📅 અંતિમ:",
+      historyTotalRecords: "કુલ રેકોર્ડ્સ: 0"
     },
 
     en: {
@@ -823,6 +916,8 @@ const i18n = {
       uchak: 'Advance Cash',
       menuMore: 'Menu',
       accumulatedCash: 'Unbanked Cash:',
+      calculatorMenu: 'Calculator',
+      shortcutsHelpMenu: 'Shortcuts Help',
       adminPanel: 'Admin Panel',
       allKhata: '👁️ All Accounts',
       onlyPositiveKhata: '👁️ Only > 0 Expenses',
@@ -915,16 +1010,16 @@ const i18n = {
       staffKpiUpad: 'Current Month Advances',
       staffKpiBalance: 'Total Balance Due',
       staffSearchPh: '🔍 Search staff name or role...',
-      staffMonthSelectLbl: '📅 Accounting Month:',
+      staffMonthSelectLbl: '📅',
       staffAddBtn: '🔐 Manage Staff (Admin)',
-      staffBulkPayBtn: 'Post All Pending Salaries to Expenses',
+      staffBulkPayBtn: 'All Salary Paid',
       staffColName: 'Staff Member',
-      staffColSalary: 'Monthly Salary',
+      staffColSalary: 'Salary',
       staffColOpening: 'Previous Due',
-      staffColUpad: 'Month Advance',
-      staffColPaid: 'Paid Salary',
+      staffColUpad: 'Advance',
+      staffColPaid: 'Paid',
       staffColBalance: 'Payable Salary',
-      staffColActions: 'Salary / Advance Actions',
+      staffColActions: 'Salary / Advance',
       staffFootAllSummary: 'All Staff Summary',
 
       // Modal: Employee Form
@@ -1085,7 +1180,7 @@ const i18n = {
       adminRenameTitle: '✏️ Rename Item',
       adminRenameLabel: 'New Name:',
 
-      paySelectedStaffLbl: 'Post Selected Staff Salary to Expenses (0)',
+      paySelectedStaffLbl: 'Selected Salary Paid',
       quickUpadAddToHisabLbl: "Auto-add to today's daily accounts under 'UPAD' voucher",
       quickUpadDeductNotice: "💡 This amount will be automatically deducted from staff monthly salary and added to today's 'UPAD' voucher.",
       quickPagarAddToHisabLbl: "Auto-add to today's daily accounts under 'PAGAR' voucher expense",
@@ -1222,7 +1317,9 @@ const i18n = {
       adminControlCenter: 'Admin Control Center',
       adminLogout: 'Log Out',
       adminLogoutTitle: 'Log out of Admin',
-      adminSidebarTitle: 'Admin Navigation',
+      adminSidebarTitle: 'Admin Menu',
+      adminCollapseMenu: 'Hide Menu',
+      adminExpandMenu: 'Show Menu',
       adminNavMaster: 'Daily Hisab',
       adminNavStaff: 'Employees / Staff',
       adminNavBhakts: 'Daily Mahapuja',
@@ -1263,8 +1360,10 @@ const i18n = {
       adminEmpRoleLbl: 'Role / Designation:',
       adminEmpRolePh: 'e.g. Cook, Priest, Cleaning',
       adminEmpPhoneLbl: 'Mobile Phone:',
-      adminEmpPhonePh: 'e.g. 9876543210',
-      adminEmpSalaryLbl: 'Monthly Fixed Salary (₹) *:',
+      adminEmpPaymentTypeLbl: 'Payment Type *:',
+      adminEmpPaymentMonthly: '📅 Monthly Payment',
+      adminEmpPayment15Days: '⏳ 15 Days Payment',
+      adminEmpSalaryLbl: 'Fixed Salary (₹) *:',
       adminEmpSalaryPh: 'e.g. 15000',
       adminEmpSaveBtn: 'Add Employee',
       adminEmpSaveEditBtn: 'Save Details',
@@ -1382,6 +1481,66 @@ const i18n = {
       adminHistDetailSubtitle: '',
       adminClearModalTitle: 'Clear Admin History Options',
       adminClearModalSubtitle: '',
+      // Tab 8: Users & Login
+      adminUserManagementTitle: '👥 User & Accountant Management',
+      adminUserManagementSubtitle: 'Accountant & user credentials, password resets, and secure login control',
+      adminAddUserBtn: 'Add New User',
+      adminRefreshBtn: 'Refresh',
+      adminUserFormAddTitle: '➕ Add New User',
+      adminUserFormNameLbl: 'Full Name *:',
+      adminUserFormNamePh: 'e.g. Ramesh Patel',
+      adminUserFormUsernameLbl: 'Username (Login ID) *:',
+      adminUserFormUsernamePh: 'e.g. ramesh_clerk',
+      adminUserFormPasswordLbl: 'Password *:',
+      adminUserFormPasswordPh: 'Enter password',
+      adminUserFormRoleLbl: 'Role / Designation *:',
+      adminUserRoleUserOpt: '👤 User (Counter Staff)',
+      adminUserRoleAccountantOpt: '💼 Accountant (Chief)',
+      adminUserFormPhoneLbl: 'Mobile Number:',
+      adminUserFormPhonePh: '10-digit number',
+      adminUserFormEmailLbl: 'Email (For OTP):',
+      adminUserFormEmailPh: 'user@gmail.com',
+      adminUserFormStatusLbl: 'Status:',
+      adminUserStatusActiveOpt: '🟢 Active',
+      adminUserStatusInactiveOpt: '🔴 Inactive',
+      adminUsersListHeading: '📋 Authorized System Users List',
+      adminLoginLogsHeading: 'Recent Login Activity Logs',
+
+      // Staff Extras
+      adminEmpPaymentModeLbl: 'Salary Mode *:',
+      adminEmpModeCashOpt: '💵 Cash Payment (Add to Vouchers)',
+      adminEmpModeBankOpt: '🏦 Bank Transfer (Display Only)',
+      adminEmpFilterCycleAll: 'All Types',
+      adminEmpFilterMonthly: '🗓️ Monthly',
+      adminEmpFilter15Days: '⏳ 15 Days',
+      adminEmpFilterModeAll: 'All Modes',
+      adminEmpFilterModeCash: '💵 Cash',
+      adminEmpFilterModeBank: '🏦 Bank',
+
+      // Bhakt Form Extras
+      bhaktFormCalcModeLbl: 'Calculation Method:',
+      bhaktOptDateWise: '📆 Date-wise (Date-to-Date)',
+      bhaktOptMonthWise: '📅 Monthly (Month-wise)',
+      bhaktFormStatusLbl: 'Status:',
+      bhaktOptActive: '🟢 Active',
+      bhaktOptInactive: '⚪ Inactive',
+
+      // History Search
+      adminHistorySearchPh: '🔍 Search history (date, activity, details)...',
+
+      // Generic Table Columns
+      colIndex: '#',
+      colName: 'Name',
+      colUsername: 'Username',
+      colRole: 'Role',
+      colMobile: 'Mobile',
+      colLastLogin: 'Last Login',
+      colStatus: 'Status',
+      colAction: 'Actions',
+      colDateTime: 'Date & Time',
+      colResult: 'Result',
+      colIpDetails: 'IP / Details',
+
 
       // Modals
       adminPinTitle: '🔐 Admin Security PIN',
@@ -1396,12 +1555,15 @@ const i18n = {
       adminAddExpModalTitle: 'Add New Expense on this Date',
       adminAddExpCatLbl: 'Account / Voucher *:',
       adminAddExpSubmitBtn: 'Add Expense',
-      expenseDiaryTitle: "Expense Diary (Alt+V)",
-      employeesTitle: "Employees (Alt+E)",
+      expenseDiaryTitle: "Expense Diary (F1)",
+      employeesTitle: "Employees (F6)",
       uchakTitle: "Advance Cash (F4)",
-      accumulatedCashTitle: "Unbanked Cash Details",
+      accumulatedCashTitle: "Unbanked Cash (F2)",
       adminPanelTitle: "Admin Panel",
-      historyTitle: "Past History (Alt+H)",
+      historyTitle: "Past History (F3)",
+      duesMenuTitle: "Dues / Outstanding (F7)",
+      calcMenuTitle: "On-Screen Calculator (F8)",
+      shortcutsHelpTitle: "Keyboard Shortcuts Guide (F12)",
       changeOrgNameTitle: "Change Organization Name",
       activeUchakCashTitle: "Active Advance Cash",
       quickUchakDrawerBtnTitle: "Advance Cash (F4)",
@@ -1503,7 +1665,31 @@ const i18n = {
       saveSuccessToast: "✅ Accounts automatically saved!",
       saveErrorToast: "Error while saving!",
       adminPinIncorrect: "❌ Incorrect Admin PIN!",
-      dataLoadedSuccess: "✅ Data loaded successfully!"
+      dataLoadedSuccess: "✅ Data loaded successfully!",
+      uchakKpiPendingAmt: "Total Pending:",
+      uchakPendingPersonsCount: "0 persons pending",
+      giveUchakModalBtn: "Issue Advance Cash (F4)",
+      uchakSearchPh: "🔍 Search...",
+      clearNoteBtn: "Clear Note",
+      staffKpiPaid: "Salary Paid This Month",
+      staffKpiBankNote: "(Bank salary will only be displayed)",
+      filterAll: "All",
+      filterCash: "Cash",
+      filterBank: "Bank",
+      duesTabAll: "All",
+      duesTabReceivable: "🟢 Receivable",
+      duesTabPayable: "🔴 Payable",
+      adminUserMgmtTitle: "User & Accountant Management",
+      adminUserMgmtSub: "User accounts, role assignments, password resets and login activity",
+      adminAddUserBtn: "Add New User",
+      adminAddUserFormTitle: "➕ Add New User",
+      adminUsersListTitle: "📋 Authorized System Users List",
+      adminLoginHistoryTitle: "🕒 Recent Login Activity Logs",
+      resendOtp: "🔄 Resend OTP",
+      histStartDate: "📅 From:",
+      histTo: "To",
+      histEndDate: "📅 To:",
+      historyTotalRecords: "Total Records: 0"
     }
   },
 
@@ -1807,6 +1993,10 @@ const i18n = {
       { sel: '#admin-nav-banks .admin-nav-text', val: this.t('adminNavBanks') },
       { sel: '#admin-nav-vouchers .admin-nav-text', val: this.t('adminNavVouchers') },
       { sel: '#admin-nav-general .admin-nav-text', val: this.t('adminNavGeneral') },
+      { sel: '#admin-nav-users .admin-nav-text', val: this.t('adminNavUsers') },
+      { sel: 'button[onclick*="window.location.href='/'"] span:last-child', val: this.t('adminBackToDaily') },
+      { sel: '#admin-history-search', ph: this.t('adminHistorySearchPh') },
+
 
       // Admin Tab 1: Master Hisab
       { sel: '#admin-tab-master-hisab h4', val: this.t('adminMasterHeading') },
@@ -1824,6 +2014,7 @@ const i18n = {
       { sel: '#admin-emp-role', ph: this.t('adminEmpRolePh') },
       { sel: 'label[for="admin-emp-phone"]', val: this.t('adminEmpPhoneLbl') },
       { sel: '#admin-emp-phone', ph: this.t('adminEmpPhonePh') },
+      { sel: 'label[for="admin-emp-payment-type"]', val: this.t('adminEmpPaymentTypeLbl') },
       { sel: 'label[for="admin-emp-salary"]', val: this.t('adminEmpSalaryLbl') },
       { sel: '#admin-emp-salary', ph: this.t('adminEmpSalaryPh') },
       { sel: '#admin-btn-save-emp span:last-child', val: this.t('adminEmpSaveBtn') },
@@ -1931,8 +2122,100 @@ const i18n = {
       { sel: 'label[for="bhakt-dep-days-input"]', val: this.t('bhaktDepDaysLbl') },
       { sel: 'label[for="bhakt-dep-simple-amount-input"]', val: this.t('bhaktDepAmountLbl') },
       { sel: '#bhakt-dep-remarks', ph: this.t('bhaktDepRemarksPh') },
-      { sel: '#bhakt-deposit-modal-title', val: this.t('bhaktDepModalTitle') },
-      { sel: '#modal-bhakt-receipt h4', val: this.t('bhaktReceiptHeader') }
+      { sel: '#modal-bhakt-receipt h4', val: this.t('bhaktReceiptHeader') },
+
+      // Header & Date Navigation
+      { sel: '#date-picker-trigger', title: isEn ? 'Open Calendar' : 'કેલેન્ડર ખોલો' },
+      { sel: '#btn-prev-day', title: isEn ? 'Previous Day (Alt+←)' : 'અગાઉનો દિવસ (Alt+←)' },
+      { sel: '#btn-next-day', title: isEn ? 'Next Day (Alt+→)' : 'આગળનો દિવસ (Alt+→)' },
+      { sel: '#btn-special-remarks', title: isEn ? 'Add / View Special Remarks (Ctrl+S)' : 'વિશેષ નોંધ અને સેવ (Ctrl+S)' },
+      { sel: '#btn-logout-menu', title: isEn ? 'Log out of software' : 'સોફ્ટવેરમાંથી લૉગઆઉટ કરો' },
+      { sel: '#btn-logout-menu .menu-item-title', val: isEn ? 'Logout' : 'લૉગઆઉટ' },
+      { sel: '#popcal-btn-jump-today', val: isEn ? 'Go to Today' : 'આજે જાઓ' },
+      { sel: '#banner-uchak-count', val: isEn ? '0 Pending' : '0 વ્યક્તિ બાકી' },
+
+      // Admin PIN & Security
+      { sel: '#modal-admin-pin a[onclick*="openForgotPinModal"] span:last-child', val: isEn ? 'Forgot PIN? (Reset PIN via Email OTP)' : 'પિન ભૂલી ગયા? (Email OTP વડે નવો પિન બનાવો)' },
+      { sel: '#modal-admin-forgot-pin .modal-header h3', val: isEn ? 'Admin PIN Reset' : 'એડમિન પિન રીસેટ' },
+      { sel: '#modal-admin-forgot-pin .modal-header p', val: isEn ? 'Set a new PIN by verifying OTP sent to your registered email' : 'તમારા રજિસ્ટર્ડ ઈમેલ પર OTP મેળવીને નવો પિન સેટ કરો' },
+      { sel: '#forgot-pin-step-1 div[style*="font-weight: 700"]', val: isEn ? 'Registered Email:' : 'રજિસ્ટર્ડ ઈમેલ:' },
+      { sel: '#forgot-pin-step-1 p[style*="line-height"]', val: isEn ? 'Click below to receive a secure 6-digit OTP on this email:' : 'આ ઈમેલ પર 6-અંકનો સુરક્ષિત OTP મોકલવા નીચેના બટન પર ક્લિક કરો:' },
+      { sel: '#btn-send-forgot-otp span:last-child', val: isEn ? 'Send OTP' : 'OTP મોકલો' },
+      { sel: 'a[onclick*="requestForgotPinOtp"]', val: isEn ? '🔄 Resend OTP' : '🔄 ફરીથી OTP મોકલો' },
+
+      // Dues Register Modal
+      { sel: '#modal-dues .modal-header p', val: isEn ? 'Complete management of customer, devotee and vendor dues & payables' : 'ગ્રાહકો, ભક્તો અને વેપારીઓના બાકી લેણાં-દેવાંનું સંપૂર્ણ સંચાલન' },
+      { sel: '#modal-dues .dues-kpi-bar > div:nth-child(1) span:last-child', val: isEn ? 'Receivables Due' : 'લેવાના બાકી (Receivable)' },
+      { sel: '#modal-dues .dues-kpi-bar > div:nth-child(2) span:last-child', val: isEn ? 'Payables Due' : 'આપવાના બાકી (Payable)' },
+      { sel: '#modal-dues .dues-kpi-bar > div:nth-child(3) span:last-child', val: isEn ? 'Net Balance' : 'ચોખ્ખો તફાવત (Net)' },
+      { sel: '#modal-dues div[style*="border-radius: 12px"] > div:first-child > div:first-child span:last-child', val: isEn ? 'Add Due Entry' : 'નવો હિસાબ ઉમેરો' },
+      { sel: '#due-type-lbl-receivable span', val: isEn ? '🟢 Receivable' : '🟢 લેવાના (Receivable)' },
+      { sel: '#due-type-lbl-payable span', val: isEn ? '🔴 Payable' : '🔴 આપવાના (Payable)' },
+      { sel: 'label[for="due-input-date"]', val: isEn ? 'Date *' : 'તારીખ *' },
+      { sel: 'label[for="due-input-amount"]', val: isEn ? 'Due Amount (₹) *' : 'બાકી રકમ (₹) *' },
+      { sel: 'label[for="due-input-desc"]', val: isEn ? 'Details / Reason *' : 'વિગત / કારણ *' },
+      { sel: '#modal-dues div[style*="min-height: 0"] > div:first-child > div:first-child span:first-child', val: isEn ? '📋 Dues & Outstanding List' : '📋 બાકી હિસાબ યાદી' },
+      { sel: '#due-search-input', ph: isEn ? '🔍 Search name / details...' : '🔍 નામ / વિગત શોધો...' },
+      { sel: '#due-filter-status option[value="pending"]', val: isEn ? 'Pending Only' : 'માત્ર બાકી' },
+      { sel: '#due-filter-status option[value="all"]', val: isEn ? 'All' : 'બધા' },
+      { sel: '#due-filter-status option[value="settled"]', val: isEn ? 'Settled' : 'પૂર્ણ થયેલ' },
+      { sel: '#table-dues thead th:nth-child(2)', val: isEn ? 'Date' : 'તારીખ' },
+      { sel: '#table-dues thead th:nth-child(3)', val: isEn ? 'Type' : 'પ્રકાર' },
+      { sel: '#table-dues thead th:nth-child(4)', val: isEn ? 'Name' : 'નામ' },
+      { sel: '#table-dues thead th:nth-child(5)', val: isEn ? 'Details / Reason' : 'વિગત / કારણ' },
+      { sel: '#table-dues thead th:nth-child(6)', val: isEn ? 'Due Amount (₹)' : 'બાકી રકમ (₹)' },
+      { sel: '#table-dues thead th:nth-child(7)', val: isEn ? 'Status' : 'સ્થિતિ' },
+      { sel: '#table-dues thead th:nth-child(8)', val: isEn ? 'Action' : 'ઍક્શન' },
+      { sel: '#modal-dues .modal-footer span[style*="color: #64748b"]', val: isEn ? 'Total Outstanding: ' : 'કુલ બાકી: ' },
+      { sel: '#modal-dues button[onclick*="shareDuesWhatsApp"] span:last-child', val: isEn ? 'WhatsApp' : 'વોટ્સએપ' },
+      { sel: '#modal-dues button[onclick*="shareDuesWhatsApp"]', title: isEn ? 'Share dues list on WhatsApp' : 'વોટ્સએપ યાદી મોકલો' },
+      { sel: '#modal-dues button[onclick*="printDuesReport"] span:last-child', val: isEn ? 'Print' : 'પ્રિન્ટ' },
+      { sel: '#modal-dues button[onclick*="printDuesReport"]', title: isEn ? 'Print dues list' : 'યાદી પ્રિન્ટ કરો' },
+      { sel: '#modal-dues button[onclick*="closeModal(\'modal-dues\')"]', val: isEn ? 'Close' : 'બંધ કરો' },
+
+      // Due Settle Submodal
+      { sel: '#due-settle-title', val: isEn ? 'Record Receipt / Payment' : 'જમા / ચૂકવણી નોંધો' },
+      { sel: '#modal-due-settle div[style*="grid-template-columns: repeat(3"] > div:nth-child(1) div:first-child', val: isEn ? 'Total Amount' : 'કુલ રકમ' },
+      { sel: '#modal-due-settle div[style*="grid-template-columns: repeat(3"] > div:nth-child(2) div:first-child', val: isEn ? 'Settled So Far' : 'અત્યાર સુધી ચૂકવેલ' },
+      { sel: '#modal-due-settle div[style*="grid-template-columns: repeat(3"] > div:nth-child(3) div:first-child', val: isEn ? 'Current Remaining Due' : 'ચાલુ બાકી રકમ' },
+      { sel: '#modal-due-settle label[style*="color: #475569"]', val: isEn ? 'Date *' : 'તારીખ *' },
+      { sel: '#modal-due-settle label[style*="Note"]', val: isEn ? 'Details / Note' : 'વિગત / નોંધ (Note)' },
+      { sel: '#due-settle-input-note', ph: isEn ? 'Cash returned / Online transfer...' : 'રોકડા પાછા આપ્યા / ઓનલાઈન ટ્રાન્સફર...' },
+      { sel: '#modal-due-settle button[onclick*="closeModal(\'modal-due-settle\')"]', val: isEn ? 'Cancel' : 'રદ કરો' },
+      { sel: '#modal-due-settle div[style*="font-weight: 800; font-size: 0.82rem"]', val: isEn ? '📜 Settlement History' : '📜 અગાઉની જમા/ચુકવણી વિગત (History)' },
+
+      // Staff Directory (F6)
+      { sel: '#emp-kpi-paid-title', val: isEn ? 'Salary Paid This Month' : 'આ માસે ચૂકવેલ પગાર' },
+      { sel: '.emp-kpi-card div[style*="font-size: 0.68rem"]', val: isEn ? '(Bank salary will only be displayed)' : '(બેંક પગાર માત્ર શો થશે)' },
+      { sel: '#emp-search-input', ph: isEn ? '🔍 Search staff / employees...' : '🔍 કર્મચારી શોધો...' },
+
+      // History Modal (F3)
+      { sel: 'label[for="hist-start-date"]', val: isEn ? '📅 From:' : '📅 શરૂ:' },
+      { sel: '#hist-table-range-bar span[style*="font-weight: 800; color: #64748b"]', val: isEn ? 'To' : 'થી' },
+      { sel: 'label[for="hist-end-date"]', val: isEn ? '📅 To:' : '📅 અંતિમ:' },
+      { sel: 'button[onclick*="printHistoryStatement"]', title: isEn ? 'Print statement for selected month/year' : 'આ પસંદ કરેલા મહિના/વર્ષનું પત્રક પ્રિન્ટ કરો' },
+
+      // Uchak Modal (Shift+F4 / F5)
+      { sel: '.uchak-summary-ribbon .uchak-kpi-title', val: isEn ? 'Total Pending:' : 'કુલ બાકી:' },
+      { sel: '#uchak-search-input', ph: isEn ? '🔍 Search...' : '🔍 શોધો...' },
+      { sel: 'button.btn-fast-uchak-add-modal', title: isEn ? 'Issue Advance Cash (F4)' : 'નવા ઉચક આપો (F4)' },
+
+      // Admin User Management
+      { sel: '#modal-admin h3 span:last-child', val: isEn ? 'User & Accountant Management' : 'વપરાશકર્તા સંચાલન (User & Accountant Management)' },
+      { sel: '#modal-admin p[style*="color: #64748b"]', val: isEn ? 'User accounts, role assignments, password resets and login activity' : 'યુઝર અને એકાઉન્ટન્ટ એકાઉન્ટ્સ, પાસવર્ડ રીસેટ અને તાજેતરના લૉગિન લૉગ્સ' },
+      { sel: 'button[onclick*="toggleAddUserForm(true)"] span:last-child', val: isEn ? 'Add New User' : 'નવો યુઝર ઉમેરો' },
+      { sel: '#user-form-title', val: isEn ? '➕ Add New User' : '➕ નવો વપરાશકર્તા ઉમેરો' },
+      { sel: 'label[for="user-form-name"]', val: isEn ? 'Full Name *:' : 'પૂરું નામ *:' },
+      { sel: 'label[for="user-form-username"]', val: isEn ? 'Username (Login ID) *:' : 'યુઝરનેમ (Login ID) *:' },
+      { sel: 'label[for="user-form-password"]', val: isEn ? 'Password *:' : 'પાસવર્ડ *:' },
+      { sel: 'label[for="user-form-role"]', val: isEn ? 'Role / Access Level *:' : 'રોલ (Access Level) *:' },
+      { sel: 'label[for="user-form-phone"]', val: isEn ? 'Mobile Number:' : 'મોબાઈલ નંબર:' },
+      { sel: 'label[for="user-form-email"]', val: isEn ? 'Email (For OTP):' : 'ઈમેલ (OTP મેળવવા માટે):' },
+      { sel: 'label[for="user-form-status"]', val: isEn ? 'Status:' : 'સ્ટેટસ:' },
+      { sel: '#admin-user-form-card button[type="submit"] span:last-child', val: isEn ? 'Save User' : 'સાચવો' },
+      { sel: '#admin-user-form-card button[onclick*="toggleAddUserForm(false)"]', val: isEn ? 'Cancel' : 'રદ કરો' },
+      { sel: 'div[style*="margin-bottom: 24px"] h4', val: isEn ? '📋 Authorized System Users List' : '📋 સિસ્ટમના અધિકૃત વપરાશકર્તાઓ (Users List)' },
+      { sel: '#modal-admin div[style*="max-height: 400px"] h4 span:last-child', val: isEn ? 'Recent Login Activity Logs' : 'તાજેતરની લૉગિન પ્રવૃત્તિ (Login History Logs)' }
     ];
 
     directMap.forEach(item => {
@@ -1950,6 +2233,25 @@ const i18n = {
       } catch (err) {
         // Continue safely if selector not present on active page
       }
+    });
+
+    // Update admin sidebar toggle buttons on language change
+    const isCollapsed = document.querySelector('.admin-dashboard-container.sidebar-collapsed') !== null;
+    document.querySelectorAll('.btn-toggle-admin-sidebar').forEach(btn => {
+      const icon = btn.querySelector('.sidebar-toggle-icon');
+      const text = btn.querySelector('.sidebar-toggle-text');
+      if (isCollapsed) {
+        if (icon) icon.textContent = '☰';
+        if (text) text.textContent = this.t('adminExpandMenu');
+        btn.title = isEn ? 'Show Sidebar Menu (Alt + M)' : 'મેનુ મોટું કરો (Alt + M)';
+      } else {
+        if (icon) icon.textContent = '◀';
+        if (text) text.textContent = this.t('adminCollapseMenu');
+        btn.title = isEn ? 'Collapse Sidebar Menu (Alt + M)' : 'મેનુ સંકોચો (Alt + M)';
+      }
+    });
+    document.querySelectorAll('.admin-sidebar-collapse-btn').forEach(btn => {
+      btn.title = isEn ? 'Hide Sidebar Menu (Alt + M)' : 'મેનુ સંકોચો (Alt + M)';
     });
   }
 };

@@ -4,11 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>લૉગિન | શ્રી ગાદીસ્થાન જેતપુર - દૈનિક હિસાબ</title>
+  <title>Login | Shree Gadisthan Jetpur - Daily Accounting</title>
   <link rel="icon" type="image/png" href="images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -57,6 +59,7 @@
         opacity: 0;
         transform: translateY(16px) scale(0.97);
       }
+
       to {
         opacity: 1;
         transform: translateY(0) scale(1);
@@ -141,8 +144,15 @@
     }
 
     @keyframes alertSlide {
-      from { opacity: 0; transform: translateY(-6px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .alert-error {
@@ -306,8 +316,35 @@
       display: none;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
+    .quick-user-btn {
+      flex: 1;
+      padding: 9px 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border: 1.5px solid #e2e8f0;
+      background: #f8fafc;
+      color: #475569;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .quick-user-btn:hover {
+      border-color: #d97706;
+      background: #fffbeb;
+      color: #92400e;
+    }
+
+    .quick-user-btn.active {
+      border-color: #d97706;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      color: #92400e;
+      box-shadow: 0 2px 6px rgba(217, 119, 6, 0.15);
     }
   </style>
 </head>
@@ -317,13 +354,13 @@
     <div class="login-card">
       <!-- Sacred Logo -->
       <div class="sacred-logo-box">
-        <img src="images/logo.png" alt="શ્રી ગાદીસ્થાન જેતપુર" class="sacred-logo">
+        <img src="images/logo.png" alt="Shree Gadisthan Jetpur" class="sacred-logo">
       </div>
 
-      <h1 class="org-title">શ્રી ગાદીસ્થાન જેતપુર</h1>
+      <h1 class="org-title">Shree Gadisthan Jetpur</h1>
       <div class="org-subtitle">
-        <span>દૈનિક હિસાબ સોફ્ટવેર</span>
-        <span class="badge">સુરક્ષિત પ્રવેશ</span>
+        <span>Daily Accounting Software</span>
+        <span class="badge" style="background: #2563eb; color: #ffffff;">🔒 Authorized Staff Login</span>
       </div>
 
       <!-- Alert Notification Banner -->
@@ -331,24 +368,25 @@
 
       <!-- Login Form -->
       <form id="login-form" onsubmit="handleLoginSubmit(event)" autocomplete="on">
-        <!-- Email / Username -->
+        <!-- Username or Mobile -->
         <div class="form-group">
-          <label class="form-label" for="login-email">ઇમેઇલ અથવા યુઝરનેમ</label>
+          <label class="form-label" for="login-username">Username or Mobile Number</label>
           <div class="input-wrapper">
             <span class="input-icon">👤</span>
-            <input type="text" id="login-email" class="form-control" placeholder="admin અથવા ઇમેઇલ લખો"
-              value="Teraiya.Kaushik24@gmail.com" required autocomplete="username">
+            <input type="text" id="login-username" class="form-control" placeholder="Enter username or mobile number" required
+              autocomplete="username" autofocus>
           </div>
         </div>
 
         <!-- Password -->
         <div class="form-group">
-          <label class="form-label" for="login-password">પાસવર્ડ / પિન</label>
+          <label class="form-label" for="login-password">Password</label>
           <div class="input-wrapper">
             <span class="input-icon">🔑</span>
-            <input type="password" id="login-password" class="form-control" placeholder="તમારો પાસવર્ડ દાખલ કરો"
-              required autocomplete="current-password">
-            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility()" title="પાસવર્ડ જુઓ/છુપાવો">
+            <input type="password" id="login-password" class="form-control" placeholder="Enter password" required
+              autocomplete="current-password">
+            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility()"
+              title="Show/Hide password">
               <span id="eye-icon">👁️</span>
             </button>
           </div>
@@ -358,24 +396,72 @@
         <div class="form-options">
           <label class="remember-label">
             <input type="checkbox" id="login-remember" checked>
-            <span>મને યાદ રાખો (Auto-Login)</span>
+            <span>Remember Me (Auto-Login)</span>
           </label>
         </div>
 
         <!-- Submit Button -->
         <button type="submit" id="btn-submit" class="btn-login">
           <span class="spinner" id="login-spinner"></span>
-          <span id="btn-text">🔒 સુરક્ષિત લૉગિન કરો</span>
+          <span id="btn-text">🔒 Secure Login</span>
         </button>
       </form>
 
+      <!-- 2-Step OTP Verification Form (Hidden by default) -->
+      <form id="otp-form" style="display: none;" onsubmit="handleOtpSubmit(event)">
+        <div
+          style="background: #fef3c7; border: 1.5px solid #fde68a; border-radius: 12px; padding: 12px; margin-bottom: 18px; text-align: left;">
+          <div
+            style="font-weight: 700; color: #92400e; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+            <span>🔐 2-Step Security Verification</span>
+          </div>
+          <div style="font-size: 0.8rem; color: #b45309; margin-top: 4px;" id="otp-info-text">
+            A 6-digit security code has been sent to your registered email.
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-otp">6-Digit Security OTP</label>
+          <div class="input-wrapper">
+            <span class="input-icon">🔢</span>
+            <input type="text" id="login-otp" class="form-control" placeholder="• • • • • •" maxlength="6"
+              style="letter-spacing: 6px; font-size: 1.25rem; font-weight: 800; text-align: center;"
+              autocomplete="one-time-code">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-otp-submit" class="btn-login" style="margin-bottom: 12px;">
+          <span class="spinner" id="otp-spinner"></span>
+          <span id="btn-otp-text">✅ Verify OTP & Login</span>
+        </button>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
+          <button type="button" onclick="cancelOtpMode()"
+            style="background:none; border:none; color:#64748b; cursor:pointer; font-weight:600; text-decoration:underline;">
+            ← Go Back
+          </button>
+          <button type="button" id="btn-resend-otp" onclick="resendOtp()"
+            style="background:none; border:none; color:#d97706; cursor:pointer; font-weight:700;">
+            🔄 Resend Code
+          </button>
+        </div>
+      </form>
+
       <div class="card-footer">
-        <span>🛡️ 256-Bit SSL Encrypted • અધિકૃત ટ્રસ્ટીઓ અને સંચાલકો માટે</span>
+        <span>🛡️ Secure Portal • Authorized Staff & Accountants Only</span>
+        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8f0;">
+          <a href="/admin" style="color: #94a3b8; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 700;" onmouseover="this.style.color='#b45309'" onmouseout="this.style.color='#94a3b8'">
+            <span>👑</span> <span>Admin / Management Portal →</span>
+          </a>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    let activeTempToken = null;
+    let activeRememberMe = true;
+
     // 1. Initial Check: If user already has a valid token, auto-redirect to dashboard
     (async function checkExistingAuth() {
       const token = localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
@@ -388,7 +474,9 @@
           });
           const data = await res.json();
           if (data && data.valid) {
-            // Already authenticated, redirect immediately
+            if (data.user) {
+              localStorage.setItem('hisab_user_info', JSON.stringify(data.user));
+            }
             window.location.replace('/');
             return;
           }
@@ -396,13 +484,33 @@
           // Network issue or offline, continue to show login
         }
       }
-      
-      // Auto-focus password
+
+      // Auto-prefill and focus
       setTimeout(() => {
-        const pass = document.getElementById('login-password');
-        if (pass) pass.focus();
-      }, 100);
+        selectQuickUser('user');
+      }, 50);
     })();
+
+    // Quick user selection helper
+    function selectQuickUser(type) {
+      const uInp = document.getElementById('login-username');
+      const pInp = document.getElementById('login-password');
+      const btnUser = document.getElementById('btn-quick-user');
+      const btnAcc = document.getElementById('btn-quick-account');
+
+      if (type === 'account' || type === 'accountant') {
+        if (uInp) uInp.value = 'account';
+        if (pInp) pInp.value = 'account123';
+        if (btnAcc) btnAcc.classList.add('active');
+        if (btnUser) btnUser.classList.remove('active');
+      } else {
+        if (uInp) uInp.value = 'user';
+        if (pInp) pInp.value = 'user123';
+        if (btnUser) btnUser.classList.add('active');
+        if (btnAcc) btnAcc.classList.remove('active');
+      }
+      hideAlert();
+    }
 
     // 2. Toggle password visibility
     function togglePasswordVisibility() {
@@ -435,35 +543,60 @@
       e.preventDefault();
       hideAlert();
 
-      const email = document.getElementById('login-email').value.trim();
+      const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value.trim();
       const rememberMe = document.getElementById('login-remember').checked;
+      activeRememberMe = rememberMe;
 
       const btn = document.getElementById('btn-submit');
       const spinner = document.getElementById('login-spinner');
       const btnText = document.getElementById('btn-text');
 
+      if (!username) {
+        showAlert('Please enter username!');
+        return;
+      }
       if (!password) {
-        showAlert('કૃપા કરીને પાસવર્ડ દાખલ કરો!');
+        showAlert('Please enter password!');
         return;
       }
 
       // Set loading state
       btn.disabled = true;
       spinner.style.display = 'inline-block';
-      btnText.textContent = 'ચકાસણી ચાલુ છે...';
+      btnText.textContent = 'Authenticating...';
 
       try {
         const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password, rememberMe })
+          body: JSON.stringify({ username, password, rememberMe, isStaffLogin: true })
         });
 
         const data = await res.json();
 
+        // Check if 2-Step OTP is required
+        if (res.ok && data.requireOtp && data.tempToken) {
+          activeTempToken = data.tempToken;
+          document.getElementById('login-form').style.display = 'none';
+          const quickSel = document.getElementById('btn-quick-user')?.parentElement;
+          if (quickSel) quickSel.style.display = 'none';
+
+          const otpForm = document.getElementById('otp-form');
+          otpForm.style.display = 'block';
+          if (data.maskedEmail) {
+            document.getElementById('otp-info-text').textContent = `A 6-digit security code has been sent to your registered email (${data.maskedEmail}).`;
+          }
+          showAlert('📧 Security OTP sent! Please enter the code.', 'success');
+          setTimeout(() => document.getElementById('login-otp').focus(), 150);
+          btn.disabled = false;
+          spinner.style.display = 'none';
+          btnText.textContent = '🔒 Secure Login';
+          return;
+        }
+
         if (res.ok && data.success && data.token) {
-          // Store token
+          // Store token and user info
           if (rememberMe) {
             localStorage.setItem('hisab_auth_token', data.token);
             sessionStorage.removeItem('hisab_auth_token');
@@ -472,25 +605,128 @@
             localStorage.removeItem('hisab_auth_token');
           }
 
-          showAlert('✅ લૉગિન સફળ થયું! સ્વાગત છે...', 'success');
-          btnText.textContent = 'પ્રવેશ કરી રહ્યા છીએ...';
+          if (data.user) {
+            localStorage.setItem('hisab_user_info', JSON.stringify(data.user));
+          }
+
+          showAlert('✅ Login successful! Welcome...', 'success');
+          btnText.textContent = 'Logging in...';
 
           setTimeout(() => {
             window.location.replace('/');
           }, 350);
         } else {
-          showAlert(data.error || 'અમાન્ય ઇમેઇલ અથવા પાસવર્ડ! કૃપા કરીને ફરી તપાસો.');
+          showAlert(data.error || 'Invalid username or password! Please check and try again.');
           btn.disabled = false;
           spinner.style.display = 'none';
-          btnText.textContent = '🔒 સુરક્ષિત લૉગિન કરો';
+          btnText.textContent = '🔒 Secure Login';
           document.getElementById('login-password').select();
         }
       } catch (err) {
-        showAlert('સર્વર સાથે સંપર્ક થઈ શક્યો નથી. કૃપા કરીને થોડીવાર પછી પ્રયત્ન કરો.');
+        showAlert('Unable to connect to server. Please try again in a moment.');
         btn.disabled = false;
         spinner.style.display = 'none';
-        btnText.textContent = '🔒 સુરક્ષિત લૉગિન કરો';
+        btnText.textContent = '🔒 Secure Login';
       }
+    }
+
+    // 5. Handle OTP Submit
+    async function handleOtpSubmit(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const otp = document.getElementById('login-otp').value.trim();
+      const btn = document.getElementById('btn-otp-submit');
+      const spinner = document.getElementById('otp-spinner');
+      const btnText = document.getElementById('btn-otp-text');
+
+      if (!otp || otp.length < 6) {
+        showAlert('Please enter full 6-digit OTP!');
+        return;
+      }
+
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      btnText.textContent = 'Verifying...';
+
+      try {
+        const res = await fetch('/api/auth/verify-login-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tempToken: activeTempToken, otp })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success && data.token) {
+          if (activeRememberMe) {
+            localStorage.setItem('hisab_auth_token', data.token);
+            sessionStorage.removeItem('hisab_auth_token');
+          } else {
+            sessionStorage.setItem('hisab_auth_token', data.token);
+            localStorage.removeItem('hisab_auth_token');
+          }
+
+          if (data.user) {
+            localStorage.setItem('hisab_user_info', JSON.stringify(data.user));
+          }
+
+          showAlert('✅ 2-Step verification successful! Welcome...', 'success');
+          btnText.textContent = 'Logging in...';
+
+          setTimeout(() => {
+            window.location.replace('/');
+          }, 350);
+        } else {
+          showAlert(data.error || 'Invalid OTP code!');
+          btn.disabled = false;
+          spinner.style.display = 'none';
+          btnText.textContent = '✅ Verify OTP & Login';
+          document.getElementById('login-otp').select();
+        }
+      } catch (err) {
+        showAlert('Unable to connect to server.');
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = '✅ Verify OTP & Login';
+      }
+    }
+
+    // 6. Resend OTP
+    async function resendOtp() {
+      const btnResend = document.getElementById('btn-resend-otp');
+      btnResend.disabled = true;
+      btnResend.textContent = '⏳ Sending...';
+
+      try {
+        const res = await fetch('/api/auth/resend-login-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tempToken: activeTempToken })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showAlert('✅ New OTP sent successfully!', 'success');
+        } else {
+          showAlert(data.error || 'Failed to send OTP.');
+        }
+      } catch (e) {
+        showAlert('Unable to connect to server.');
+      }
+
+      setTimeout(() => {
+        btnResend.disabled = false;
+        btnResend.textContent = '🔄 Resend Code';
+      }, 5000);
+    }
+
+    // 7. Cancel OTP Mode
+    function cancelOtpMode() {
+      activeTempToken = null;
+      document.getElementById('otp-form').style.display = 'none';
+      document.getElementById('login-form').style.display = 'block';
+      const quickSel = document.getElementById('btn-quick-user')?.parentElement;
+      if (quickSel) quickSel.style.display = 'flex';
+      hideAlert();
     }
   </script>
 </body>

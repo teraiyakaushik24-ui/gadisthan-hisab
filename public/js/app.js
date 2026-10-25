@@ -57,13 +57,42 @@ const App = {
     this.setupEventListeners();
 
     // Check App Authentication & Auto-Login Gatekeeper
+    const isAdminPortal = window.location.pathname.startsWith('/admin');
     const isAuthed = await this.checkAppAuth();
+
     if (!isAuthed) {
+      if (isAdminPortal) {
+        // Stay on admin portal so admin login overlay can be used
+        const overlay = document.getElementById('admin-login-screen');
+        if (overlay) overlay.style.display = 'flex';
+        return;
+      }
       window.location.replace('/login');
       return; // Stop initialization until authorized
     }
 
+    if (isAdminPortal) {
+      let u = null;
+      try {
+        u = JSON.parse(localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info') || '{}');
+      } catch (e) {}
+
+      if (!u || u.role !== 'admin') {
+        // Logged-in user is not admin (e.g. staff token). Show admin login screen
+        const overlay = document.getElementById('admin-login-screen');
+        if (overlay) overlay.style.display = 'flex';
+        return;
+      }
+
+      this.adminAuthenticated = true;
+      this.adminToken = this.authToken;
+    }
+
     await this.initAppData();
+
+    if (isAdminPortal) {
+      this.openAdminModal();
+    }
   },
 
   async initAppData() {
@@ -98,6 +127,8 @@ const App = {
     this.renderRecord();
     this.recalcTotals();
     this.checkCloudStatus();
+    this.initUserRoleUI();
+    this.initAdminSidebar();
   },
 
   async checkAppAuth() {
@@ -114,6 +145,9 @@ const App = {
       const data = await res.json();
       if (data && data.valid) {
         this.authToken = token;
+        if (data.user) {
+          localStorage.setItem('hisab_user_info', JSON.stringify(data.user));
+        }
         return true;
       }
     } catch (e) {
@@ -127,17 +161,11 @@ const App = {
   },
 
   showAuthLoginOverlay() {
-    const overlay = document.getElementById('auth-login-overlay');
-    if (overlay) {
-      overlay.style.display = 'flex';
-      const passInput = document.getElementById('auth-input-password');
-      if (passInput) passInput.focus();
-    }
+    window.location.replace('/login');
   },
 
   hideAuthLoginOverlay() {
-    const overlay = document.getElementById('auth-login-overlay');
-    if (overlay) overlay.style.display = 'none';
+    // No-op
   },
 
   toggleAuthPasswordVisibility() {
@@ -223,7 +251,8 @@ const App = {
     this.authToken = null;
     localStorage.removeItem('hisab_auth_token');
     sessionStorage.removeItem('hisab_auth_token');
-    window.location.replace('/login');
+    localStorage.removeItem('hisab_user_info');
+    window.location.replace('/login.html');
   },
 
   async checkCloudStatus(showToast = false) {
@@ -509,18 +538,7 @@ const App = {
       });
     }
 
-    // Admin Panel Button & Logo Click
-    document.getElementById('btn-admin-panel')?.addEventListener('click', () => this.openAdminModal());
-    const headerLogo = document.getElementById('header-brand-logo');
-    if (headerLogo) {
-      headerLogo.addEventListener('click', () => this.openAdminModal());
-      headerLogo.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this.openAdminModal();
-        }
-      });
-    }
+    // Header logo is display-only (Admin accessible only via secret /admin-login)
 
     // Expense Diary Button
     const btnExpense = document.getElementById('btn-expense-diary');
@@ -707,16 +725,27 @@ const App = {
 
     // Global keyboard shortcuts
     window.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      // Ctrl+S to save current record
+      if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
         this.saveCurrentRecord(true);
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+
+      // Ctrl+P to trigger print
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
         e.preventDefault();
         this.triggerPrint();
       }
-      // Alt+V to toggle Daily Expense Diary Modal (દૈનિક ખર્ચ ડાયરી)
-      if (e.altKey && (e.key === 'v' || e.key === 'V' || e.key === 'વ' || e.code === 'KeyV')) {
+
+      // Ctrl+T or Alt+T to select Today's Date
+      if (((e.ctrlKey || e.metaKey) && (e.key === 't' || e.key === 'T')) ||
+          (e.altKey && (e.key === 't' || e.key === 'T' || e.key === 'ત' || e.code === 'KeyT'))) {
+        e.preventDefault();
+        document.getElementById('btn-date-today')?.click();
+      }
+
+      // F1 (or Alt+V): Daily Expense Diary Modal (દૈનિક ખર્ચ ડાયરી)
+      if (e.key === 'F1' || (e.altKey && (e.key === 'v' || e.key === 'V' || e.key === 'વ' || e.code === 'KeyV'))) {
         e.preventDefault();
         const expModal = document.getElementById('modal-expense-diary');
         if (expModal && expModal.classList.contains('active')) {
@@ -726,25 +755,28 @@ const App = {
         }
       }
 
-      // Alt+H to toggle History Modal (પાછલો હિસાબ)
-      if (e.altKey && (e.key === 'h' || e.key === 'H' || e.code === 'KeyH')) {
+      // F2 (or Alt+B): Unbanked Cash Modal (એકઠી થયેલ રોકડ)
+      if (e.key === 'F2' || (e.altKey && (e.key === 'b' || e.key === 'B' || e.key === 'બ' || e.code === 'KeyB'))) {
+        e.preventDefault();
+        const accumModal = document.getElementById('modal-bank-accumulated-detail');
+        const depModal = document.getElementById('modal-bank-deposit');
+        if (depModal && depModal.classList.contains('active')) {
+          this.closeModal('modal-bank-deposit');
+        } else if (accumModal && accumModal.classList.contains('active')) {
+          this.closeModal('modal-bank-accumulated-detail');
+        } else {
+          this.openBankAccumulatedModal();
+        }
+      }
+
+      // F3 (or Alt+H): History Modal (પાછલો હિસાબ)
+      if (e.key === 'F3' || (e.altKey && (e.key === 'h' || e.key === 'H' || e.code === 'KeyH'))) {
         e.preventDefault();
         const histModal = document.getElementById('modal-history');
         if (histModal && histModal.classList.contains('active')) {
           this.closeModal('modal-history');
         } else {
           this.openHistoryModal();
-        }
-      }
-
-      // Alt+E to toggle Employees Modal (કર્મચારીઓ)
-      if (e.altKey && (e.key === 'e' || e.key === 'E' || e.code === 'KeyE')) {
-        e.preventDefault();
-        const empModal = document.getElementById('modal-employees');
-        if (empModal && empModal.classList.contains('active')) {
-          this.closeModal('modal-employees');
-        } else {
-          this.openEmployeesModal();
         }
       }
 
@@ -758,42 +790,21 @@ const App = {
         }
       }
 
-      // Alt+A to toggle Admin Panel
-      if (e.altKey && (e.key === 'a' || e.key === 'A' || e.key === 'આ' || e.code === 'KeyA')) {
-        e.preventDefault();
-        this.openAdminModal();
-      }
+      // Note: F5 is kept default for browser page refresh (user requested)
 
-      // Alt+R to toggle AI Report Assistant Modal
-      if (e.altKey && (e.key === 'r' || e.key === 'R' || e.key === 'ર' || e.code === 'KeyR')) {
+      // F6 (or Alt+E): Staff Directory & Salary Modal (કર્મચારીઓ)
+      if (e.key === 'F6' || (e.altKey && (e.key === 'e' || e.key === 'E' || e.code === 'KeyE'))) {
         e.preventDefault();
-        const aiModal = document.getElementById('modal-ai-report');
-        if (aiModal && aiModal.classList.contains('active')) {
-          this.closeAiReportModal();
+        const empModal = document.getElementById('modal-employees');
+        if (empModal && empModal.classList.contains('active')) {
+          this.closeModal('modal-employees');
         } else {
-          this.openAiReportModal();
+          this.openEmployeesModal();
         }
       }
 
-      // Alt+B to toggle Unbanked Cash Modal
-      if (e.altKey && (e.key === 'b' || e.key === 'B' || e.key === 'બ' || e.code === 'KeyB')) {
-        e.preventDefault();
-        const bModal = document.getElementById('modal-bank-deposit');
-        if (bModal && bModal.classList.contains('active')) {
-          this.closeModal('modal-bank-deposit');
-        } else {
-          this.openBankAccumulatedModal();
-        }
-      }
-
-      // Alt+C to toggle On-Screen Mini Calculator
-      if (e.altKey && (e.key === 'c' || e.key === 'C' || e.key === 'ક' || e.code === 'KeyC')) {
-        e.preventDefault();
-        this.toggleCalculator();
-      }
-
-      // Alt+D to toggle Dues Modal (લેણાં અને દેવાં / બાકી હિસાબ)
-      if (e.altKey && (e.key === 'd' || e.key === 'D' || e.key === 'દ' || e.code === 'KeyD')) {
+      // F7 (or Alt+D): Dues Modal (લેણાં અને દેવાં / બાકી હિસાબ)
+      if (e.key === 'F7' || (e.altKey && (e.key === 'd' || e.key === 'D' || e.key === 'દ' || e.code === 'KeyD'))) {
         e.preventDefault();
         const dModal = document.getElementById('modal-dues');
         if (dModal && dModal.classList.contains('active')) {
@@ -803,16 +814,27 @@ const App = {
         }
       }
 
-      // Alt+M to toggle Header Menu
-      if (e.altKey && (e.key === 'm' || e.key === 'M' || e.key === 'મ' || e.code === 'KeyM')) {
+      // F8 (or Alt+C): On-Screen Mini Calculator
+      if (e.key === 'F8' || (e.altKey && (e.key === 'c' || e.key === 'C' || e.key === 'ક' || e.code === 'KeyC'))) {
         e.preventDefault();
-        this.toggleHeaderMenu(e);
+        this.toggleCalculator();
       }
 
-      // Alt+T to select Today's Date
-      if (e.altKey && (e.key === 't' || e.key === 'T' || e.key === 'ત' || e.code === 'KeyT')) {
+      // F12: Shortcuts Help Modal (શોર્ટકટ હેલ્પ)
+      if (e.key === 'F12') {
         e.preventDefault();
-        document.getElementById('btn-date-today')?.click();
+        this.openShortcutsHelpModal();
+      }
+
+      // Alt+M to toggle Header Menu (or Admin Sidebar if in Admin View)
+      if (e.altKey && (e.key === 'm' || e.key === 'M' || e.key === 'મ' || e.code === 'KeyM')) {
+        e.preventDefault();
+        const viewAdmin = document.getElementById('view-admin-dashboard');
+        if (viewAdmin && viewAdmin.style.display !== 'none') {
+          this.toggleAdminSidebar();
+        } else {
+          this.toggleHeaderMenu(e);
+        }
       }
 
       // Alt+Left to go to Previous Day
@@ -908,34 +930,32 @@ const App = {
   },
 
   applyShortcutTooltips() {
+    const isEn = (window.i18n && window.i18n.currentLang === 'en');
     const shortcutMap = [
-      { sel: '#header-brand-logo', shortcut: 'Alt+A', pos: 'bottom', title: 'એડમિન પેનલ (Alt+A)' },
-      { sel: '#btn-expense-diary', shortcut: 'Alt+V', pos: 'bottom', title: 'ખર્ચ ડાયરી (Alt+V)' },
-      { sel: '#btn-header-bank-accumulated', shortcut: 'Alt+B', pos: 'bottom', title: 'એકઠી થયેલ રોકડ (Alt+B)' },
-      { sel: '#btn-header-more-menu', shortcut: 'Alt+M', pos: 'bottom', title: 'મેનુ (Alt+M)' },
-      { sel: '#btn-employees-menu', shortcut: 'Alt+E', pos: 'left', title: 'કર્મચારીઓ (Alt+E)' },
-      { sel: '#btn-history', shortcut: 'Alt+H', pos: 'left', title: 'પાછલો હિસાબ (Alt+H)' },
-      { sel: '#btn-uchak-menu', shortcut: 'F4', pos: 'left', title: 'ઉચક હિસાબ (F4)' },
-      { sel: '#btn-ai-report-menu', shortcut: 'Alt+R', pos: 'left', title: 'AI રિપોર્ટ સહાયક (Alt+R)' },
-      { sel: '#btn-prev-day', shortcut: 'Alt+←', pos: 'bottom', title: 'અગાઉનો દિવસ (Alt+←)' },
-      { sel: '#btn-next-day', shortcut: 'Alt+→', pos: 'bottom', title: 'આગળનો દિવસ (Alt+→)' },
-      { sel: '#btn-date-today', shortcut: 'Alt+T', pos: 'bottom', title: 'આજનો હિસાબ (Alt+T)' },
-      { sel: '#btn-print', shortcut: 'Ctrl+P', pos: 'top', title: 'પ્રિન્ટ કરો (Ctrl+P)' },
-      { sel: '#btn-open-remarks-modal', shortcut: 'Ctrl+S', pos: 'top', title: 'વિશેષ નોંધ અને સેવ (Ctrl+S)' },
-      { sel: '.quick-drawer-close', shortcut: 'Esc', pos: 'left', title: 'બંધ કરો (Esc)' },
-      { sel: '.btn-fast-uchak-add-modal', shortcut: 'F4', pos: 'top', title: 'નવા ઉચક આપો (F4)' },
-      { sel: '.btn-uchak-banner-quick', shortcut: 'F4', pos: 'bottom', title: 'ઉચક પેનલ (F4)' },
-      { sel: '#btn-ai-fullscreen', shortcut: 'F11', pos: 'bottom', title: 'પૂર્ણ સ્ક્રીન (F11)' },
-      { sel: '#btn-ai-send', shortcut: 'Enter', pos: 'top', title: 'પ્રશ્ન પૂછો (Enter)' }
+      { sel: '#btn-expense-diary', shortcut: 'F1', pos: 'bottom', title: isEn ? 'Daily Expense Diary (F1)' : 'ખર્ચ ડાયરી (F1)' },
+      { sel: '#btn-header-bank-accumulated', shortcut: 'F2', pos: 'bottom', title: isEn ? 'Unbanked Cash (F2)' : 'એકઠી થયેલ રોકડ (F2)' },
+      { sel: '#btn-history', shortcut: 'F3', pos: 'left', title: isEn ? 'Past History (F3)' : 'પાછલો હિસાબ (F3)' },
+      { sel: '#btn-uchak-menu', shortcut: 'F4', pos: 'left', title: isEn ? 'Quick Uchak (F4)' : 'ઉચક હિસાબ (F4)' },
+      { sel: '#btn-employees-menu', shortcut: 'F6', pos: 'left', title: isEn ? 'Staff Directory & Salary (F6)' : 'કર્મચારીઓ (F6)' },
+      { sel: '#btn-dues-menu', shortcut: 'F7', pos: 'left', title: isEn ? 'Dues (F7)' : 'લેણાં - દેવાં (F7)' },
+      { sel: '#btn-calc-menu', shortcut: 'F8', pos: 'left', title: isEn ? 'Calculator (F8)' : 'કેલ્ક્યુલેટર (F8)' },
+      { sel: '#btn-shortcuts-help-menu', shortcut: 'F12', pos: 'left', title: isEn ? 'Shortcuts Guide (F12)' : 'શોર્ટકટ હેલ્પ (F12)' },
+      { sel: '#btn-header-more-menu', shortcut: 'Alt+M', pos: 'bottom', title: isEn ? 'Menu (Alt+M)' : 'મેનુ (Alt+M)' },
+      { sel: '#btn-prev-day', shortcut: 'Alt+←', pos: 'bottom', title: isEn ? 'Previous Day (Alt+←)' : 'અગાઉનો દિવસ (Alt+←)' },
+      { sel: '#btn-next-day', shortcut: 'Alt+→', pos: 'bottom', title: isEn ? 'Next Day (Alt+→)' : 'આગળનો દિવસ (Alt+→)' },
+      { sel: '#btn-date-today', shortcut: 'Ctrl+T', pos: 'bottom', title: isEn ? "Today's Record (Ctrl+T)" : 'આજનો હિસાબ (Ctrl+T)' },
+      { sel: '#btn-print', shortcut: 'Ctrl+P', pos: 'top', title: isEn ? 'Print (Ctrl+P)' : 'પ્રિન્ટ કરો (Ctrl+P)' },
+      { sel: '#btn-open-remarks-modal', shortcut: 'Ctrl+S', pos: 'top', title: isEn ? 'Save & Special Remarks (Ctrl+S)' : 'વિશેષ નોંધ અને સેવ (Ctrl+S)' },
+      { sel: '.quick-drawer-close', shortcut: 'Esc', pos: 'left', title: isEn ? 'Close (Esc)' : 'બંધ કરો (Esc)' },
+      { sel: '.btn-fast-uchak-add-modal', shortcut: 'F4', pos: 'top', title: isEn ? 'New Uchak (F4)' : 'નવા ઉચક આપો (F4)' },
+      { sel: '.btn-uchak-banner-quick', shortcut: 'F4', pos: 'bottom', title: isEn ? 'Uchak Panel (F4)' : 'ઉચક પેનલ (F4)' }
     ];
 
     shortcutMap.forEach(item => {
       document.querySelectorAll(item.sel).forEach(el => {
         el.setAttribute('data-shortcut', item.shortcut);
         if (item.pos) el.setAttribute('data-shortcut-pos', item.pos);
-        if (item.title && (!el.getAttribute('title') || !el.getAttribute('title').includes('('))) {
-          el.setAttribute('title', item.title);
-        }
+        el.setAttribute('title', item.title);
       });
     });
 
@@ -945,11 +965,83 @@ const App = {
         btn.setAttribute('data-shortcut', 'Esc');
         btn.setAttribute('data-shortcut-pos', 'left');
       }
-      const curTitle = btn.getAttribute('title');
-      if (!curTitle || !curTitle.includes('Esc')) {
-        btn.setAttribute('title', 'બંધ કરો (Esc)');
-      }
+      btn.setAttribute('title', isEn ? 'Close (Esc)' : 'બંધ કરો (Esc)');
     });
+  },
+
+  createShortcutsHelpModal() {
+    let modal = document.getElementById('modal-shortcuts-help');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'modal-shortcuts-help';
+      modal.className = 'modal-overlay';
+      modal.onclick = (e) => {
+        if (e.target === modal) this.closeModal('modal-shortcuts-help');
+      };
+      document.body.appendChild(modal);
+    }
+
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+
+    const items = [
+      { key: 'F1', descGu: 'રોજમેળ / મુખ્ય સ્ક્રીન પર જાઓ', descEn: 'Go to Rojmel / Main Screen' },
+      { key: 'F2', descGu: 'બેંક ખાતા વિગત / જમા-ઉપાડ મોડલ', descEn: 'Bank Accounts / Deposit-Withdrawal Modal' },
+      { key: 'F3', descGu: 'તારીખવાર ઇતિહાસ / હિસાબ ઇતિહાસ', descEn: 'Date-wise Accounting History' },
+      { key: 'F4', descGu: 'ઝડપી ઉચક ડ્રોઅર ખોલો / બંધ કરો (Quick Drawer)', descEn: 'Toggle Quick Uchak Drawer' },
+      { key: 'F5', descGu: 'ઉચક ખાતાવહી / ઉચક મોડલ', descEn: 'Uchak Register / Ledger Modal' },
+      { key: 'F6', descGu: 'કર્મચારી પગાર / સ્ટાફ મોડલ', descEn: 'Staff Salary & Directory Modal' },
+      { key: 'F7', descGu: 'બાકી રકમ વિગત મોડલ', descEn: 'Dues (Receivables & Payables) Modal' },
+      { key: 'F8', descGu: 'કેલ્ક્યુલેટર ખોલો / બંધ કરો', descEn: 'Toggle On-Screen Calculator' },
+      { key: 'F12', descGu: 'આ શોર્ટકટ સહાય બારી ખોલો', descEn: 'Open Keyboard Shortcuts Guide' },
+      { key: 'Ctrl + S', descGu: 'આજનો હિસાબ સેવ કરો', descEn: "Save Today's Accounting Record" },
+      { key: 'Ctrl + P', descGu: 'રોજમેળ પ્રિન્ટ કરો', descEn: 'Print Daily Rojmel' },
+      { key: 'Ctrl + T', descGu: 'આજની તારીખ પર જાઓ', descEn: 'Jump to Today' },
+      { key: 'Alt + ← / →', descGu: 'પાછલી / આગળની તારીખ પર જાઓ', descEn: 'Previous / Next Day' },
+      { key: 'Alt + M', descGu: 'શ્રી / વિગત નોંધ પર ફોકસ કરો', descEn: 'Focus Remarks Line' },
+      { key: 'Enter', descGu: 'સંખ્યા/રકમ નાખ્યા પછી આગળના ખાનામાં જાઓ', descEn: 'Navigate to Next Field' },
+      { key: 'Esc', descGu: 'કોઈપણ ખુલ્લું મોડલ કે કેલ્ક્યુલેટર બંધ કરો', descEn: 'Close Active Modal / Calculator' }
+    ];
+
+    modal.innerHTML = `
+      <div class="modal-box modal-lg" style="max-width: 720px;">
+        <div class="modal-header">
+          <h3>⌨️ ${isEn ? 'Keyboard Shortcuts' : 'કીબોર્ડ શોર્ટકટ્સ (Keyboard Shortcuts)'}</h3>
+          <button class="modal-close-btn" onclick="App.closeModal('modal-shortcuts-help')">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 0 20px 16px; max-height: 70vh; overflow-y: auto;">
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
+            <thead>
+              <tr>
+                <th style="position: sticky; top: 0; background: #ffffff; z-index: 10; padding: 12px 10px; text-align: left; width: 150px; font-weight: 800; color: var(--text-main); border-bottom: 2px solid var(--border-color); box-shadow: 0 1px 0 var(--border-color);">${isEn ? 'Shortcut Key' : 'શોર્ટકટ કી'}</th>
+                <th style="position: sticky; top: 0; background: #ffffff; z-index: 10; padding: 12px 10px; text-align: left; font-weight: 800; color: var(--text-main); border-bottom: 2px solid var(--border-color); box-shadow: 0 1px 0 var(--border-color);">${isEn ? 'Action (Description)' : 'કાર્ય (Description)'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map((item, i) => `
+                <tr style="${i === 9 ? 'border-top: 1px dashed var(--border-color);' : ''}">
+                  <td style="padding: 10px; border-bottom: 1px solid var(--border-color);"><kbd style="background: #1e293b; color: #fff; padding: 3px 8px; border-radius: 4px; font-weight: 700;">${item.key}</kbd></td>
+                  <td style="padding: 10px; border-bottom: 1px solid var(--border-color);">${isEn ? item.descEn : item.descGu}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer" style="justify-content: space-between;">
+          <small style="color: var(--text-muted);">${isEn ? '💡 Tip: Press F12 anytime to view this list.' : '💡 ટીપ: F12 દબાવીને ગમે ત્યારે આ યાદી જોઈ શકો છો.'}</small>
+          <button class="btn-primary" onclick="App.closeModal('modal-shortcuts-help')">${isEn ? 'Got it (OK)' : 'સમજાયું (OK)'}</button>
+        </div>
+      </div>
+    `;
+  },
+
+  openShortcutsHelpModal() {
+    this.createShortcutsHelpModal();
+    const modal = document.getElementById('modal-shortcuts-help');
+    if (modal) {
+      const body = modal.querySelector('.modal-body');
+      if (body) body.scrollTop = 0;
+    }
+    this.openModal('modal-shortcuts-help');
   },
 
   // =========================================================================
@@ -2158,7 +2250,18 @@ const App = {
   },
 
   async openAdminModal(initialTab = null, focusEmpId = null) {
-    // 1. Session Token & PIN Security Check
+    // 1. Session Token & PIN Security Check (RBAC: Only 'admin' role bypasses PIN, others require Admin PIN)
+    let currentUser = null;
+    try {
+      currentUser = JSON.parse(localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info') || '{}');
+    } catch (e) {}
+
+    const appToken = this.authToken || localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
+    if (currentUser && currentUser.role === 'admin' && appToken && !this.adminToken) {
+      this.adminAuthenticated = true;
+      this.adminToken = appToken;
+    }
+
     if (!this.adminAuthenticated || !this.adminToken) {
       this.adminPendingOpenTab = initialTab || 'master-hisab';
       this.adminPendingEmpId = focusEmpId;
@@ -2411,6 +2514,52 @@ const App = {
     }
   },
 
+  toggleAdminSidebar(forceState = null) {
+    const containers = document.querySelectorAll('.admin-dashboard-container');
+    if (!containers.length) return;
+
+    const isCollapsed = document.querySelector('.admin-dashboard-container.sidebar-collapsed') !== null;
+    const shouldCollapse = (forceState !== null) ? Boolean(forceState) : !isCollapsed;
+
+    containers.forEach(container => {
+      if (shouldCollapse) {
+        container.classList.add('sidebar-collapsed');
+      } else {
+        container.classList.remove('sidebar-collapsed');
+      }
+    });
+
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    document.querySelectorAll('.btn-toggle-admin-sidebar').forEach(btn => {
+      const icon = btn.querySelector('.sidebar-toggle-icon');
+      const text = btn.querySelector('.sidebar-toggle-text');
+      if (shouldCollapse) {
+        if (icon) icon.textContent = '☰';
+        if (text) text.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('adminExpandMenu') : (isEn ? 'Show Menu' : 'મેનુ બતાવો');
+        btn.title = isEn ? 'Show Sidebar Menu (Alt + M)' : 'મેનુ મોટું કરો (Alt + M)';
+        btn.classList.add('collapsed');
+      } else {
+        if (icon) icon.textContent = '◀';
+        if (text) text.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('adminCollapseMenu') : (isEn ? 'Hide Menu' : 'મેનુ સંકોચો');
+        btn.title = isEn ? 'Collapse Sidebar Menu (Alt + M)' : 'મેનુ સંકોચો (Alt + M)';
+        btn.classList.remove('collapsed');
+      }
+    });
+
+    try {
+      localStorage.setItem('hisab_admin_sidebar_collapsed', shouldCollapse ? 'true' : 'false');
+    } catch (e) {}
+  },
+
+  initAdminSidebar() {
+    try {
+      const saved = localStorage.getItem('hisab_admin_sidebar_collapsed');
+      if (saved === 'true') {
+        this.toggleAdminSidebar(true);
+      }
+    } catch (e) {}
+  },
+
   switchAdminTab(tabName, btnElement = null) {
     document.querySelectorAll('.admin-tab-btn, .admin-sidebar-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.admin-tab-content').forEach(tab => tab.classList.remove('active'));
@@ -2423,7 +2572,7 @@ const App = {
     // Contextual footer button handling to prevent user confusion:
     const globalSaveBtn = document.getElementById('admin-btn-global-save');
     if (globalSaveBtn) {
-      if (tabName === 'master-hisab' || tabName === 'employees' || tabName === 'bhakts' || tabName === 'history') {
+      if (tabName === 'master-hisab' || tabName === 'employees' || tabName === 'bhakts' || tabName === 'history' || tabName === 'users') {
         globalSaveBtn.style.display = 'none'; // Each of these tabs has its own distinct, dedicated save action
       } else {
         const isEn = window.i18n && window.i18n.currentLang === 'en';
@@ -2457,6 +2606,9 @@ const App = {
       setTimeout(() => this.renderAdminPrintPreview(), 50);
     } else if (tabName === 'history') {
       this.loadAdminHistory();
+    } else if (tabName === 'users') {
+      this.loadUsersList();
+      this.loadLoginHistory();
     }
   },
 
@@ -2846,6 +2998,28 @@ const App = {
     this.renderAdminEmployeesList();
   },
 
+  adminEmpPaymentFilter: 'all',
+
+  setAdminEmpPaymentFilter(filter) {
+    this.adminEmpPaymentFilter = filter;
+    ['cycle-all', 'monthly', '15days'].forEach(f => {
+      const btn = document.getElementById(`admin-emp-filter-${f}`);
+      if (btn) {
+        const isMatch = (f === 'cycle-all' && filter === 'all') || (f === filter);
+        if (isMatch) {
+          btn.classList.add('active');
+          btn.style.background = '#0f172a';
+          btn.style.color = '#ffffff';
+        } else {
+          btn.classList.remove('active');
+          btn.style.background = '#ffffff';
+          btn.style.color = '#334155';
+        }
+      }
+    });
+    this.renderAdminEmployeesList();
+  },
+
   setAdminEmpStatusFilter(filter) {
     this.adminEmpStatusFilter = filter;
     ['all', 'active', 'inactive'].forEach(f => {
@@ -2900,19 +3074,43 @@ const App = {
     const countAll = allEmps.length;
     const countActive = allEmps.filter(e => e.status !== 'inactive').length;
     const countInactive = allEmps.filter(e => e.status === 'inactive').length;
+    const countMonthly = allEmps.filter(e => (e.paymentType || 'monthly') === 'monthly').length;
+    const count15Days = allEmps.filter(e => e.paymentType === '15days').length;
+    const countCash = allEmps.filter(e => (e.paymentMode || 'cash') !== 'bank').length;
+    const countBank = allEmps.filter(e => e.paymentMode === 'bank').length;
 
     const cAllEl = document.getElementById('admin-emp-count-all');
     const cActEl = document.getElementById('admin-emp-count-active');
     const cInEl = document.getElementById('admin-emp-count-inactive');
+    const cMonthlyEl = document.getElementById('admin-emp-count-monthly');
+    const c15DaysEl = document.getElementById('admin-emp-count-15days');
+    const cCashEl = document.getElementById('admin-emp-count-cash');
+    const cBankEl = document.getElementById('admin-emp-count-bank');
     if (cAllEl) cAllEl.textContent = `(${countAll})`;
     if (cActEl) cActEl.textContent = `(${countActive})`;
     if (cInEl) cInEl.textContent = `(${countInactive})`;
+    if (cMonthlyEl) cMonthlyEl.textContent = `(${countMonthly})`;
+    if (c15DaysEl) c15DaysEl.textContent = `(${count15Days})`;
+    if (cCashEl) cCashEl.textContent = `(${countCash})`;
+    if (cBankEl) cBankEl.textContent = `(${countBank})`;
 
     let list = allEmps;
     if (this.adminEmpStatusFilter === 'active') {
       list = list.filter(e => e.status !== 'inactive');
     } else if (this.adminEmpStatusFilter === 'inactive') {
       list = list.filter(e => e.status === 'inactive');
+    }
+
+    if (this.adminEmpPaymentFilter === 'monthly') {
+      list = list.filter(e => (e.paymentType || 'monthly') === 'monthly');
+    } else if (this.adminEmpPaymentFilter === '15days') {
+      list = list.filter(e => e.paymentType === '15days');
+    }
+
+    if (this.adminEmpModeFilter === 'cash') {
+      list = list.filter(e => (e.paymentMode || 'cash') !== 'bank');
+    } else if (this.adminEmpModeFilter === 'bank') {
+      list = list.filter(e => e.paymentMode === 'bank');
     }
 
     if (list.length === 0) {
@@ -2928,6 +3126,15 @@ const App = {
     list.forEach(emp => {
       const initials = (emp.name || 'E').split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase();
       const isInactive = emp.status === 'inactive';
+      const is15Days = emp.paymentType === '15days';
+      const isBank = (emp.paymentMode === 'bank');
+      const paymentBadge = is15Days
+        ? `<span style="font-size: 0.74rem; background: #fef3c7; color: #92400e; font-weight: 800; padding: 2px 7px; border-radius: 6px; border: 1px solid #fde68a;">${isEn ? '⏳ 15 Days' : '⏳ ૧૫ દિવસ'}</span>`
+        : `<span style="font-size: 0.74rem; background: #e0e7ff; color: #3730a3; font-weight: 800; padding: 2px 7px; border-radius: 6px; border: 1px solid #c7d2fe;">${isEn ? '📅 Monthly' : '📅 માસિક'}</span>`;
+      const modeBadge = isBank
+        ? `<span style="font-size: 0.74rem; background: #e0f2fe; color: #0369a1; font-weight: 800; padding: 2px 7px; border-radius: 6px; border: 1px solid #bae6fd;">${isEn ? '🏦 Bank' : '🏦 બેંક'}</span>`
+        : `<span style="font-size: 0.74rem; background: #dcfce7; color: #15803d; font-weight: 800; padding: 2px 7px; border-radius: 6px; border: 1px solid #bbf7d0;">${isEn ? '💵 Cash' : '💵 રોકડ'}</span>`;
+
       const row = document.createElement('div');
       row.className = 'admin-item-row';
       row.style.padding = '10px 14px';
@@ -2955,15 +3162,17 @@ const App = {
         <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;">
           <span class="emp-row-avatar" style="${isInactive ? 'background: #94a3b8;' : ''}">${initials}</span>
           <div style="min-width: 0;">
-            <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+            <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
               <span>${emp.name}</span>
               <span class="emp-role-badge">${emp.role || (isEn ? 'Staff' : 'સ્ટાફ')}</span>
+              ${modeBadge}
+              ${paymentBadge}
               ${isInactive
           ? `<span style="font-size: 0.72rem; background: #fee2e2; color: #b91c1c; font-weight: 800; padding: 1px 6px; border-radius: 4px;">${isEn ? 'Inactive' : 'છૂટા કરેલ'}</span>`
           : ''}
             </div>
             <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">
-              ${emp.phone ? `📞 ${emp.phone} | ` : ''}${isEn ? 'Monthly Fixed Salary:' : 'માસિક નક્કી પગાર:'} <strong style="color: #059669;">₹ ${(Number(emp.salary) || 0).toLocaleString('en-IN')}</strong>
+              ${emp.phone ? `📞 ${emp.phone} | ` : ''}${is15Days ? (isEn ? '15-Day Fixed Salary:' : '૧૫ દિવસીય નક્કી પગાર:') : (isEn ? 'Monthly Fixed Salary:' : 'માસિક નક્કી પગાર:')} <strong style="color: #059669;">₹ ${(Number(emp.salary) || 0).toLocaleString('en-IN')}</strong>
             </div>
           </div>
         </div>
@@ -2971,6 +3180,26 @@ const App = {
       `;
       container.appendChild(row);
     });
+  },
+
+  adminEmpModeFilter: 'all',
+  setAdminEmpModeFilter(mode) {
+    this.adminEmpModeFilter = mode;
+    ['all', 'cash', 'bank'].forEach(m => {
+      const btn = document.getElementById(`admin-emp-filter-mode-${m}`);
+      if (btn) {
+        if (m === mode) {
+          btn.classList.add('active');
+          btn.style.background = '#0f172a';
+          btn.style.color = '#ffffff';
+        } else {
+          btn.classList.remove('active');
+          btn.style.background = '#ffffff';
+          btn.style.color = '#334155';
+        }
+      }
+    });
+    this.renderAdminEmployeesList();
   },
 
   async adminToggleEmployeeStatus(empId) {
@@ -3698,6 +3927,341 @@ const App = {
     this.openAdminHistoryClearModal();
   },
 
+  // =========================================================================
+  // USER MANAGEMENT & LOGIN LOGS (RBAC)
+  // =========================================================================
+  usersList: [],
+  loginHistoryList: [],
+
+  initUserRoleUI() {
+    try {
+      const rawUser = localStorage.getItem('hisab_user_info');
+      if (rawUser) {
+        const u = JSON.parse(rawUser);
+
+        // Show admin button ONLY for admin role; hide for staff/accountant
+        const adminMenuBtn = document.getElementById('btn-admin-panel-menu');
+        if (adminMenuBtn) {
+          if (u.role === 'admin') {
+            adminMenuBtn.style.display = 'flex';
+            adminMenuBtn.onclick = () => {
+              window.location.href = '/admin';
+            };
+          } else {
+            adminMenuBtn.style.display = 'none';
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error initializing user role UI:', e);
+    }
+  },
+
+  logoutUser() {
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    const confirmMsg = isEn ? 'Are you sure you want to log out?' : 'શું તમે ખરેખર લૉગઆઉટ કરવા માંગો છો?';
+    if (confirm(confirmMsg)) {
+      const token = localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
+      if (token) {
+        fetch('/api/auth/logout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+        }).catch(() => {});
+      }
+      localStorage.removeItem('hisab_auth_token');
+      sessionStorage.removeItem('hisab_auth_token');
+      localStorage.removeItem('hisab_user_info');
+      window.location.replace('/login.html');
+    }
+  },
+
+  toggleAddUserForm(show) {
+    const card = document.getElementById('admin-user-form-card');
+    if (!card) return;
+    if (show) {
+      card.style.display = 'block';
+      const idInput = document.getElementById('user-form-id');
+      if (idInput && !idInput.value) {
+        document.getElementById('user-form-title').textContent = '➕ નવો વપરાશકર્તા ઉમેરો';
+        document.getElementById('user-form-username').disabled = false;
+        document.getElementById('user-form-password').required = true;
+        document.getElementById('user-form-password').placeholder = 'પાસવર્ડ દાખલ કરો';
+      }
+      const nameInput = document.getElementById('user-form-name');
+      if (nameInput) nameInput.focus();
+    } else {
+      card.style.display = 'none';
+      document.getElementById('user-form-id').value = '';
+      document.getElementById('user-form-name').value = '';
+      document.getElementById('user-form-username').value = '';
+      document.getElementById('user-form-password').value = '';
+      document.getElementById('user-form-phone').value = '';
+      document.getElementById('user-form-role').value = 'user';
+      document.getElementById('user-form-status').value = 'active';
+    }
+  },
+
+  async loadUsersList() {
+    const tbody = document.getElementById('admin-users-table-body');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 20px; color: #64748b;">⏳ યુઝર્સ લોડ થઈ રહ્યા છે...</td></tr>';
+    }
+    try {
+      const res = await fetch('/api/users');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        this.usersList = data.users || [];
+        this.renderUsersList(this.usersList);
+      } else {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 20px; color:#ef4444;">${data.error || 'યુઝર્સ લોડ કરવામાં ભૂલ થઈ.'}</td></tr>`;
+      }
+    } catch (err) {
+      console.error('Error loading users:', err);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 20px; color:#ef4444;">સર્વર કનેક્શન એરર</td></tr>';
+    }
+  },
+
+  renderUsersList(users) {
+    const tbody = document.getElementById('admin-users-table-body');
+    const badge = document.getElementById('admin-users-count-badge');
+    const isEn = (window.i18n && window.i18n.currentLang === 'en');
+    if (badge) badge.textContent = isEn ? `Total: ${users.length}` : `કુલ: ${users.length}`;
+    if (!tbody) return;
+
+    if (!users || users.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 30px; color: #94a3b8;">${isEn ? 'No users found. Click "Add New User".' : 'કોઈ યુઝર મળ્યા નથી. "નવો યુઝર ઉમેરો" પર ક્લિક કરો.'}</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = users.map((u, idx) => {
+      const roleBadge = (u.role === 'accountant')
+        ? `<span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.78rem;">${isEn ? '💼 Accountant' : '💼 એકાઉન્ટન્ટ'}</span>`
+        : `<span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.78rem;">${isEn ? '👤 Counter Staff' : '👤 કાઉન્ટર સ્ટાફ'}</span>`;
+      
+      const statusBadge = (u.status === 'inactive')
+        ? `<span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.76rem;">${isEn ? '🔴 Inactive' : '🔴 નિષ્ક્રિય'}</span>`
+        : `<span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.76rem;">${isEn ? '🟢 Active' : '🟢 સક્રિય'}</span>`;
+
+      let lastLoginText = '-';
+      if (u.lastLogin) {
+        try {
+          const d = new Date(u.lastLogin);
+          lastLoginText = isEn
+            ? d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+            : d.toLocaleDateString('gu-IN') + ' ' + d.toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+          lastLoginText = u.lastLogin;
+        }
+      }
+
+      return `
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+          <td style="padding: 10px 14px; color: #64748b; font-weight: 700;">${idx + 1}</td>
+          <td style="padding: 10px 14px; font-weight: 800; color: #0f172a;">${this.escapeHtml(u.name)}</td>
+          <td style="padding: 10px 14px; font-family: monospace; font-weight: 700; color: #2563eb;">${this.escapeHtml(u.username)}</td>
+          <td style="padding: 10px 14px;">${roleBadge}</td>
+          <td style="padding: 10px 14px; color: #475569;">
+            ${this.escapeHtml(u.phone || '-')}
+            ${u.email ? `<div style="font-size: 0.74rem; color: #2563eb; margin-top: 2px;">✉️ ${this.escapeHtml(u.email)}</div>` : ''}
+          </td>
+          <td style="padding: 10px 14px; font-size: 0.8rem; color: #64748b;">${lastLoginText}</td>
+          <td style="padding: 10px 14px; text-align: center;">${statusBadge}</td>
+          <td style="padding: 10px 14px; text-align: center;">
+            <div style="display: flex; gap: 6px; justify-content: center;">
+              <button type="button" class="btn-icon" onclick="App.editUser('${u.id}')"
+                style="padding: 4px 8px; font-size: 0.78rem; font-weight: 700; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px;"
+                title="${isEn ? 'Edit user or change password' : 'સુધારો અથવા પાસવર્ડ બદલો'}">${isEn ? '✏️ Edit' : '✏️ સુધારો'}</button>
+              <button type="button" class="btn-icon" onclick="App.deleteUser('${u.id}')"
+                style="padding: 4px 8px; font-size: 0.78rem; font-weight: 700; background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; border-radius: 6px;"
+                title="${isEn ? 'Delete User' : 'યુઝર ડિલીટ કરો'}">🗑️</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  editUser(userId) {
+    const u = (this.usersList || []).find(item => item.id === userId);
+    if (!u) return;
+
+    this.toggleAddUserForm(true);
+    document.getElementById('user-form-id').value = u.id;
+    document.getElementById('user-form-name').value = u.name || '';
+    document.getElementById('user-form-username').value = u.username || '';
+    document.getElementById('user-form-username').disabled = true; // Username immutable once created
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    document.getElementById('user-form-password').value = '';
+    document.getElementById('user-form-password').required = false;
+    document.getElementById('user-form-password').placeholder = isEn ? 'Leave blank to keep current password' : 'પાસવર્ડ બદલવો હોય તો જ લખો';
+    document.getElementById('user-form-role').value = u.role || 'user';
+    document.getElementById('user-form-phone').value = u.phone || '';
+    const emailInp = document.getElementById('user-form-email');
+    if (emailInp) emailInp.value = u.email || '';
+    document.getElementById('user-form-status').value = u.status || 'active';
+    document.getElementById('user-form-title').innerHTML = isEn ? `✏️ Edit details for <strong>${u.name}</strong>` : `✏️ <strong>${u.name}</strong> ની વિગતો સુધારો`;
+
+    const card = document.getElementById('admin-user-form-card');
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+
+  async deleteUser(userId) {
+    const u = (this.usersList || []).find(item => item.id === userId);
+    if (!u) return;
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    const confirmPrompt = isEn ? `Are you sure you want to delete user "${u.name} (${u.username})"?` : `શું તમે ખરેખર યુઝર "${u.name} (${u.username})" ને ડિલીટ કરવા માંગો છો?`;
+    if (!confirm(confirmPrompt)) return;
+
+    try {
+      const res = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        this.showToast(data.message || 'યુઝર ડિલીટ કર્યો!', 'success');
+        await this.loadUsersList();
+      } else {
+        this.showToast(data.error || 'યુઝર ડિલીટ કરવામાં નિષ્ફળતા!', 'error');
+      }
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      this.showToast('સર્વર કનેક્શન એરર', 'error');
+    }
+  },
+
+  async submitUserForm(e) {
+    if (e) e.preventDefault();
+
+    const id = document.getElementById('user-form-id').value.trim();
+    const name = document.getElementById('user-form-name').value.trim();
+    const username = document.getElementById('user-form-username').value.trim();
+    const password = document.getElementById('user-form-password').value.trim();
+    const role = document.getElementById('user-form-role').value;
+    const phone = document.getElementById('user-form-phone').value.trim();
+    const email = (document.getElementById('user-form-email')?.value || '').trim();
+    const status = document.getElementById('user-form-status').value;
+
+    if (!name) {
+      this.showToast('કૃપા કરીને પૂરું નામ લખો!', 'error');
+      return;
+    }
+
+    try {
+      let res, data;
+      if (id) {
+        // Edit existing user
+        res = await fetch(`/api/users/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, password, role, phone, email, status })
+        });
+        data = await res.json();
+      } else {
+        // Add new user
+        if (!username || !password) {
+          this.showToast('યુઝરનેમ અને પાસવર્ડ ફરજિયાત છે!', 'error');
+          return;
+        }
+        res = await fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, username, password, role, phone, email })
+        });
+        data = await res.json();
+      }
+
+      if (res.ok && data.success) {
+        this.showToast(data.message || 'યુઝર વિગતો સાચવી!', 'success');
+        this.toggleAddUserForm(false);
+        await this.loadUsersList();
+      } else {
+        this.showToast(data.error || 'સાચવવામાં નિષ્ફળતા!', 'error');
+      }
+    } catch (err) {
+      console.error('Error saving user:', err);
+      this.showToast('સર્વર કનેક્શન એરર', 'error');
+    }
+  },
+
+  async loadLoginHistory() {
+    const tbody = document.getElementById('admin-login-history-table-body');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #64748b;">⏳ લૉગ્સ લોડ થઈ રહ્યા છે...</td></tr>';
+    }
+    try {
+      const res = await fetch('/api/login-history');
+      const data = await res.json();
+      if (res.ok && data.success) {
+        this.loginHistoryList = data.history || [];
+        this.renderLoginHistory(this.loginHistoryList);
+      } else {
+        if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color:#ef4444;">લૉગ્સ લોડ કરવામાં ભૂલ થઈ.</td></tr>';
+      }
+    } catch (err) {
+      console.error('Error loading login history:', err);
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px; color:#ef4444;">સર્વર કનેક્શન એરર</td></tr>';
+    }
+  },
+
+  renderLoginHistory(list) {
+    const tbody = document.getElementById('admin-login-history-table-body');
+    if (!tbody) return;
+    const isEn = (window.i18n && window.i18n.currentLang === 'en');
+
+    if (!list || list.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 25px; color: #94a3b8;">${isEn ? 'No login history available.' : 'કોઈ લૉગિન ઇતિહાસ ઉપલબ્ધ નથી.'}</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = list.map(item => {
+      let dtStr = '-';
+      try {
+        const d = new Date(item.timestamp);
+        dtStr = isEn
+          ? d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          : d.toLocaleDateString('gu-IN') + ' ' + d.toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      } catch (e) {
+        dtStr = item.timestamp;
+      }
+
+      const statusBadge = (item.status === 'success')
+        ? `<span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.76rem;">${isEn ? '🟢 Success' : '🟢 સફળ'}</span>`
+        : `<span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.76rem;">${isEn ? '🔴 Failed' : '🔴 નિષ્ફળ'}</span>`;
+
+      const roleBadge = (item.role === 'accountant')
+        ? `<span style="background: #fef3c7; color: #92400e; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.74rem;">${isEn ? 'Accountant' : 'એકાઉન્ટન્ટ'}</span>`
+        : (item.role === 'admin')
+        ? `<span style="background: #fee2e2; color: #991b1b; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.74rem;">${isEn ? 'Admin' : 'એડમિન'}</span>`
+        : `<span style="background: #e0e7ff; color: #3730a3; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.74rem;">${isEn ? 'Counter Staff' : 'કાઉન્ટર સ્ટાફ'}</span>`;
+
+      return `
+        <tr style="border-bottom: 1px solid #f1f5f9;">
+          <td style="padding: 9px 14px; font-size: 0.82rem; color: #64748b; font-weight: 600;">${dtStr}</td>
+          <td style="padding: 9px 14px; font-family: monospace; font-weight: 700; color: #1e293b;">${this.escapeHtml(item.username || '-')}</td>
+          <td style="padding: 9px 14px; font-weight: 700; color: #334155;">${this.escapeHtml(item.name || '-')}</td>
+          <td style="padding: 9px 14px;">${roleBadge}</td>
+          <td style="padding: 9px 14px; text-align: center;">${statusBadge}</td>
+          <td style="padding: 9px 14px; font-size: 0.8rem; color: #64748b;">${this.escapeHtml(item.ip || 'Local')}</td>
+        </tr>
+      `;
+    }).join('');
+  },
+
+  onAdminEmpPaymentTypeChange(type) {
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    const is15Days = type === '15days';
+    const lbl = document.getElementById('admin-emp-salary-lbl');
+    const inp = document.getElementById('admin-emp-salary');
+    if (lbl) {
+      if (is15Days) {
+        lbl.textContent = isEn ? '15 Days Fixed Salary (₹) *:' : '૧૫ દિવસીય નક્કી પગાર (₹) *:';
+      } else {
+        lbl.textContent = isEn ? 'Monthly Fixed Salary (₹) *:' : 'માસિક નક્કી પગાર (₹) *:';
+      }
+    }
+    if (inp) {
+      inp.placeholder = is15Days ? (isEn ? 'e.g. 5000' : 'દા.ત. 5000') : (isEn ? 'e.g. 15000' : 'દા.ત. 15000');
+    }
+  },
+
   adminEditEmployee(empId) {
     const isEn = window.i18n && window.i18n.currentLang === 'en';
     const emp = (this.employeesList || []).find(e => e.id === empId);
@@ -3708,6 +4272,17 @@ const App = {
     document.getElementById('admin-emp-role').value = emp.role || '';
     document.getElementById('admin-emp-phone').value = emp.phone || '';
     document.getElementById('admin-emp-salary').value = emp.salary || '';
+
+    const payTypeEl = document.getElementById('admin-emp-payment-type');
+    if (payTypeEl) {
+      payTypeEl.value = emp.paymentType || 'monthly';
+      this.onAdminEmpPaymentTypeChange(payTypeEl.value);
+    }
+
+    const payModeEl = document.getElementById('admin-emp-payment-mode');
+    if (payModeEl) {
+      payModeEl.value = emp.paymentMode || 'cash';
+    }
 
     document.getElementById('admin-emp-form-title').innerHTML = isEn
       ? `✏️ Edit details of <strong>${emp.name}</strong>`
@@ -3734,6 +4309,17 @@ const App = {
     document.getElementById('admin-emp-phone').value = '';
     document.getElementById('admin-emp-salary').value = '';
 
+    const payTypeEl = document.getElementById('admin-emp-payment-type');
+    if (payTypeEl) {
+      payTypeEl.value = 'monthly';
+      this.onAdminEmpPaymentTypeChange('monthly');
+    }
+
+    const payModeEl = document.getElementById('admin-emp-payment-mode');
+    if (payModeEl) {
+      payModeEl.value = 'cash';
+    }
+
     document.getElementById('admin-emp-form-title').textContent = isEn ? '➕ Add Employee / Edit Details' : '➕ કર્મચારી ઉમેરો / વિગતો સુધારો ';
     const saveBtn = document.getElementById('admin-btn-save-emp');
     saveBtn.innerHTML = isEn ? `<span>➕</span> <span>Add Employee</span>` : `<span>➕</span> <span>કર્મચારી ઉમેરો</span>`;
@@ -3749,6 +4335,8 @@ const App = {
     const role = document.getElementById('admin-emp-role').value.trim();
     const phone = document.getElementById('admin-emp-phone').value.trim();
     const salary = Number(document.getElementById('admin-emp-salary').value);
+    const paymentType = document.getElementById('admin-emp-payment-type')?.value || 'monthly';
+    const paymentMode = document.getElementById('admin-emp-payment-mode')?.value || 'cash';
 
     if (!name) {
       this.showToast(isEn ? 'Please enter employee name' : 'કૃપા કરીને કર્મચારીનું નામ લખો', 'error');
@@ -3756,7 +4344,7 @@ const App = {
       return;
     }
     if (isNaN(salary) || salary < 0) {
-      this.showToast(isEn ? 'Please enter valid monthly salary' : 'કૃપા કરીને સાચો માસિક પગાર લખો', 'error');
+      this.showToast(isEn ? 'Please enter valid salary' : 'કૃપા કરીને સાચો પગાર લખો', 'error');
       document.getElementById('admin-emp-salary').focus();
       return;
     }
@@ -3767,7 +4355,7 @@ const App = {
         const res = await fetch(`/api/employees/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, role, phone, salary })
+          body: JSON.stringify({ name, role, phone, salary, paymentType, paymentMode })
         });
         const data = await res.json();
         if (data && data.success) {
@@ -3778,7 +4366,7 @@ const App = {
         const res = await fetch('/api/employees', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, role, phone, salary })
+          body: JSON.stringify({ name, role, phone, salary, paymentType, paymentMode })
         });
         const data = await res.json();
         if (data && data.success) {
@@ -4645,6 +5233,8 @@ const App = {
     const grandTotal = cashTotal + bankTotal + voucherTotal;
     const isToday = this.adminMasterDate === this.getTodayDateStr();
 
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+
     container.innerHTML = `
       <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);">
         
@@ -4652,25 +5242,25 @@ const App = {
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 16px;">
           <!-- Card 1: Grand Total -->
           <div style="background: linear-gradient(135deg, #2563eb 0%, #3b82f6 60%, #60a5fa 100%); color: #ffffff; padding: 14px 18px; border-radius: 12px; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.22); display: flex; flex-direction: column; justify-content: space-between;">
-            <span style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.95;">🌟 ગ્રાન્ડ ટોટલ</span>
+            <span style="font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.95;">🌟 ${isEn ? 'Grand Total' : 'ગ્રાન્ડ ટોટલ'}</span>
             <div style="font-size: 1.65rem; font-weight: 900; margin-top: 6px; font-family: var(--font-heading);" id="admin-master-disp-grand">₹ ${grandTotal.toLocaleString('en-IN')}</div>
           </div>
 
           <!-- Card 2: Cash Total -->
           <div style="background: #fffbeb; border: 1.5px solid #fde68a; padding: 14px 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.08);">
-            <span style="font-size: 0.85rem; font-weight: 800; color: #78350f;">💵 રોકડ નોટો</span>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #78350f;">💵 ${isEn ? 'Cash Notes' : 'રોકડ નોટો'}</span>
             <div style="font-size: 1.5rem; font-weight: 900; color: #b45309; margin-top: 6px; font-family: var(--font-heading);" id="admin-master-disp-cash">₹ ${cashTotal.toLocaleString('en-IN')}</div>
           </div>
 
           <!-- Card 3: Bank Total -->
           <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; padding: 14px 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.08);">
-            <span style="font-size: 0.85rem; font-weight: 800; color: #14532d;">🏦 બેંક ખાતાઓ</span>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #14532d;">🏦 ${isEn ? 'Bank Accounts' : 'બેંક ખાતાઓ'}</span>
             <div style="font-size: 1.5rem; font-weight: 900; color: #15803d; margin-top: 6px; font-family: var(--font-heading);" id="admin-master-disp-bank">₹ ${bankTotal.toLocaleString('en-IN')}</div>
           </div>
 
           <!-- Card 4: Voucher Total -->
           <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; padding: 14px 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);">
-            <span style="font-size: 0.85rem; font-weight: 800; color: #2563eb;">🧾 વાઉચર ખર્ચ</span>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #2563eb;">🧾 ${isEn ? 'Voucher Expenses' : 'વાઉચર ખર્ચ'}</span>
             <div style="font-size: 1.5rem; font-weight: 900; color: #2563eb; margin-top: 6px; font-family: var(--font-heading);" id="admin-master-disp-voucher">₹ ${voucherTotal.toLocaleString('en-IN')}</div>
           </div>
         </div>
@@ -4678,10 +5268,10 @@ const App = {
         <!-- Date Context & Action Toolbar -->
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 10px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 16px;">
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-            <span style="font-size: 1.15rem; font-weight: 900; color: #0f172a;">📅 તારીખ: ${this.adminMasterDate}</span>
+            <span style="font-size: 1.15rem; font-weight: 900; color: #0f172a;">📅 ${isEn ? 'Date' : 'તારીખ'}: ${this.adminMasterDate}</span>
             ${this.adminMasterEditMode ? `
               <span style="font-size: 0.78rem; font-weight: 800; padding: 3px 10px; border-radius: 12px; background: #fef3c7; color: #92400e; border: 1px solid #fcd34d;">
-                ✏️ એડિટ મોડ ચાલુ છે
+                ✏️ ${isEn ? 'Edit Mode Active' : 'એડિટ મોડ ચાલુ છે'}
               </span>
             ` : ''}
           </div>
@@ -4689,14 +5279,14 @@ const App = {
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
             ${!this.adminMasterEditMode ? `
               <button type="button" class="btn-primary" onclick="App.adminEnableMasterEdit()" style="background: linear-gradient(135deg, #2563eb, #1d4ed8); font-weight: 800; font-size: 0.92rem; padding: 8px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(37,99,235,0.25);">
-                <span>✏️</span> <span>એડિટ કરો</span>
+                <span>✏️</span> <span>${isEn ? 'Edit' : 'એડિટ કરો'}</span>
               </button>
             ` : `
               <button type="button" class="btn-success" onclick="App.adminSaveMasterHisab()" style="font-weight: 800; font-size: 0.92rem; padding: 8px 22px; border-radius: 8px; background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 2px 8px rgba(16,185,129,0.25);">
-                <span>💾</span> <span>સાચવો</span>
+                <span>💾</span> <span>${isEn ? 'Save' : 'સાચવો'}</span>
               </button>
               <button type="button" class="btn-icon" onclick="App.adminCancelMasterEdit()" style="background: #ffffff; border: 1.5px solid #cbd5e1; font-weight: 800; font-size: 0.88rem; padding: 7px 14px; border-radius: 8px;">
-                <span>✕</span> <span>રદ કરો</span>
+                <span>✕</span> <span>${isEn ? 'Cancel' : 'રદ કરો'}</span>
               </button>
             `}
           </div>
@@ -4708,8 +5298,8 @@ const App = {
           <!-- Column 1: Cash Notes -->
           <div style="background: #fafaf9; border: 1.5px solid #e7e5e4; border-radius: 10px; padding: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e7e5e4;">
-              <h5 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #78350f;">💵 રોકડ નોટોની સંખ્યા</h5>
-              <span style="font-weight: 900; color: #b45309; font-size: 0.95rem;">કુલ: ₹ ${cashTotal.toLocaleString('en-IN')}</span>
+              <h5 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #78350f;">💵 ${isEn ? 'Cash Notes' : 'રોકડ નોટોની સંખ્યા'}</h5>
+              <span style="font-weight: 900; color: #b45309; font-size: 0.95rem;">${isEn ? 'Total:' : 'કુલ:'} ₹ ${cashTotal.toLocaleString('en-IN')}</span>
             </div>
             <div style="display: grid; grid-template-columns: 1fr; gap: 8px; max-height: 290px; overflow-y: auto; padding-right: 4px;">
               ${(this.activeNotes || [500, 200, 100, 50, 20, 10, 5]).map(val => {
@@ -4733,8 +5323,8 @@ const App = {
           <!-- Column 2: Banks -->
           <div style="background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 10px; padding: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #bbf7d0;">
-              <h5 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #14532d;">🏦 બેંક ખાતાઓ</h5>
-              <span style="font-weight: 900; color: #15803d; font-size: 0.95rem;">કુલ: ₹ ${bankTotal.toLocaleString('en-IN')}</span>
+              <h5 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #14532d;">🏦 ${isEn ? 'Bank Accounts' : 'બેંક ખાતાઓ'}</h5>
+              <span style="font-weight: 900; color: #15803d; font-size: 0.95rem;">${isEn ? 'Total:' : 'કુલ:'} ₹ ${bankTotal.toLocaleString('en-IN')}</span>
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px; max-height: 290px; overflow-y: auto; padding-right: 4px;">
               ${(this.fixedBanks || ['IOB', 'BOB', 'SBI']).map(bName => {
@@ -4759,8 +5349,8 @@ const App = {
           <!-- Column 3: Vouchers -->
           <div style="background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 10px; padding: 14px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #bfdbfe;">
-              <h5 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #1e3a8a;">🧾 મુખ્ય વાઉચરો</h5>
-              <span style="font-weight: 900; color: #1d4ed8; font-size: 0.95rem;">કુલ: ₹ ${voucherTotal.toLocaleString('en-IN')}</span>
+              <h5 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #1e3a8a;">🧾 ${isEn ? 'Main Vouchers' : 'મુખ્ય વાઉચરો'}</h5>
+              <span style="font-weight: 900; color: #1d4ed8; font-size: 0.95rem;">${isEn ? 'Total:' : 'કુલ:'} ₹ ${voucherTotal.toLocaleString('en-IN')}</span>
             </div>
             <div style="display: flex; flex-direction: column; gap: 8px; max-height: 290px; overflow-y: auto; padding-right: 4px;">
               ${(this.fixedVouchers || ['Mandir kharch', 'Rasoda kharch', 'Pagar']).map(vName => {
@@ -4838,8 +5428,8 @@ const App = {
 
         <!-- Remarks -->
         <div style="margin-bottom: 10px;">
-          <label style="font-weight: 800; font-size: 0.88rem; color: #334155; display: block; margin-bottom: 6px;">📝 દૈનિક નોંધ / રીમાર્ક્સ:</label>
-          <input type="text" id="admin-master-remarks-input" class="input-text auto-gujarati" value="${rec.remarks || ''}" ${!this.adminMasterEditMode ? 'disabled' : ''} style="${!this.adminMasterEditMode ? 'background: #f8fafc; color: #64748b; cursor: not-allowed; border-color: #e2e8f0;' : 'background: #ffffff; border-color: #3b82f6;'}" placeholder="આ તારીખ માટે કોઈ નોંધ લખો...">
+          <label style="font-weight: 800; font-size: 0.88rem; color: #334155; display: block; margin-bottom: 6px;">📝 ${isEn ? 'Daily Remarks / Notes:' : 'દૈનિક નોંધ / રીમાર્ક્સ:'}</label>
+          <input type="text" id="admin-master-remarks-input" class="input-text auto-gujarati" value="${rec.remarks || ''}" ${!this.adminMasterEditMode ? 'disabled' : ''} style="${!this.adminMasterEditMode ? 'background: #f8fafc; color: #64748b; cursor: not-allowed; border-color: #e2e8f0;' : 'background: #ffffff; border-color: #3b82f6;'}" placeholder="${isEn ? 'Enter any remarks for this date...' : 'આ તારીખ માટે કોઈ નોંધ લખો...'}">
         </div>
       </div>
       </div>
@@ -7605,7 +8195,10 @@ const App = {
       }
     }
 
-    const fyTitle = this.historySelectedFY === 'all' ? 'તમામ વર્ષો' : `FY ${this.historySelectedFY.split('-')[0]}-${this.historySelectedFY.split('-')[1].slice(2)}`;
+    const isEn = (window.i18n && window.i18n.currentLang === 'en');
+    const fyTitle = this.historySelectedFY === 'all'
+      ? (isEn ? 'All Years' : 'તમામ વર્ષો')
+      : `FY ${this.historySelectedFY.split('-')[0]}-${this.historySelectedFY.split('-')[1].slice(2)}`;
     const monthTitle = this.getGujaratiMonthName(this.historySelectedMonth);
 
     if (countEl) {
@@ -7613,13 +8206,15 @@ const App = {
       const rangeLabel = isFY
         ? fyTitle
         : ((this.historyStartDate && this.historyEndDate)
-          ? `${this.historyStartDate} થી ${this.historyEndDate}`
+          ? `${this.historyStartDate} ${isEn ? 'to' : 'થી'} ${this.historyEndDate}`
           : (this.historyFilterMode === 'all_months' ? fyTitle : `${monthTitle} (${fyTitle})`));
-      countEl.textContent = `કુલ: ${list.length} દિવસો | ${rangeLabel}`;
+      countEl.textContent = isEn
+        ? `Total: ${list.length} ${list.length === 1 ? 'day' : 'days'} | ${rangeLabel}`
+        : `કુલ: ${list.length} દિવસો | ${rangeLabel}`;
     }
 
     if (!list || list.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 25px; color: #94a3b8;">આ સમયગાળા માટે કોઈ હિસાબ મળ્યો નથી</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 25px; color: #94a3b8;">${isEn ? 'No accounts found for this period' : 'આ સમયગાળા માટે કોઈ હિસાબ મળ્યો નથી'}</td></tr>`;
       if (tfoot) tfoot.innerHTML = '';
       return;
     }
@@ -7661,8 +8256,6 @@ const App = {
         </div>
       `).join('');
     };
-
-    const isEn = (window.i18n && window.i18n.currentLang === 'en');
 
     if (this.historyMode === 'cash') {
       if (thead) {
@@ -8596,25 +9189,41 @@ const App = {
     if (updEl) updEl.textContent = '₹ ' + (summary.totalMonthUpad || 0).toLocaleString('en-IN');
     if (balEl) balEl.textContent = '₹ ' + (summary.totalNetPayable || 0).toLocaleString('en-IN');
 
+    // Update payroll breakdown & mode badge counts
+    const payrollBreakdownEl = document.getElementById('emp-summary-payroll-breakdown');
+    if (payrollBreakdownEl) {
+      const cashPay = summary.totalCashPayroll || 0;
+      const bankPay = summary.totalBankPayroll || 0;
+      payrollBreakdownEl.textContent = isEn
+        ? `Cash: ₹ ${cashPay.toLocaleString('en-IN')} | Bank: ₹ ${bankPay.toLocaleString('en-IN')}`
+        : `રોકડ: ₹ ${cashPay.toLocaleString('en-IN')} | બેંક: ₹ ${bankPay.toLocaleString('en-IN')}`;
+    }
+    const cAll = document.getElementById('emp-count-badge-all');
+    const cCash = document.getElementById('emp-count-badge-cash');
+    const cBank = document.getElementById('emp-count-badge-bank');
+    if (cAll) cAll.textContent = summary.totalEmployees || 0;
+    if (cCash) cCash.textContent = summary.totalCashEmployees || 0;
+    if (cBank) cBank.textContent = summary.totalBankEmployees || 0;
+
     // Dynamic month badges & table headers
     const badge = document.getElementById('emp-month-name-badge');
     if (badge) badge.textContent = monthLabel;
     const upadTitle = document.getElementById('emp-kpi-upad-title');
-    if (upadTitle) upadTitle.textContent = isEn ? `${monthLabel} Total Advance` : `${monthLabel} નો કુલ ઉપાડ`;
+    if (upadTitle) upadTitle.textContent = isEn ? 'Total Advance' : 'કુલ ઉપાડ';
     const paidTitle = document.getElementById('emp-kpi-paid-title');
-    if (paidTitle) paidTitle.textContent = isEn ? `${monthLabel} Paid Salary` : `${monthLabel} નો ચૂકવેલ પગાર`;
+    if (paidTitle) paidTitle.textContent = isEn ? 'Paid Salary' : 'ચૂકવેલ પગાર';
     const paidVal = document.getElementById('emp-summary-paid');
     if (paidVal) paidVal.textContent = '₹ ' + (summary.totalMonthPagarPaid || 0).toLocaleString('en-IN');
     const balTitle = document.getElementById('emp-kpi-balance-title');
-    if (balTitle) balTitle.textContent = isEn ? `${monthLabel} Net Balance` : `${monthLabel} ની કુલ બાકી રકમ`;
+    if (balTitle) balTitle.textContent = isEn ? 'Total Balance Due (Cash)' : 'કુલ બાકી પગાર (રોકડ)';
     const thOpening = document.getElementById('th-emp-opening-col');
     if (thOpening) thOpening.textContent = isEn ? 'Previous Due' : 'અગાઉની બાકી';
     const thUpad = document.getElementById('th-emp-upad-col');
-    if (thUpad) thUpad.textContent = isEn ? `${monthLabel} Advance` : `${monthLabel} ઉપાડ`;
+    if (thUpad) thUpad.textContent = isEn ? 'Advance' : 'ઉપાડ';
     const thPaid = document.getElementById('th-emp-paid-col');
-    if (thPaid) thPaid.textContent = isEn ? `${monthLabel} Paid` : `${monthLabel} ચૂકવેલ`;
+    if (thPaid) thPaid.textContent = isEn ? 'Paid' : 'ચૂકવેલ';
     const thBal = document.getElementById('th-emp-balance-col');
-    if (thBal) thBal.textContent = isEn ? `${monthLabel} Payable Salary` : `${monthLabel} ચોખ્ખો બાકી પગાર`;
+    if (thBal) thBal.textContent = isEn ? 'Payable Salary' : 'બાકી પગાર';
 
     // Table Footer Totals (કુલ સરવાળો)
     const footSalary = document.getElementById('emp-foot-total-salary');
@@ -8637,18 +9246,74 @@ const App = {
     }
   },
 
+  employeeCycleFilter: 'all',
+
+  setEmployeeCycleFilter(cycle) {
+    this.employeeCycleFilter = cycle;
+    ['all', 'monthly', '15days'].forEach(c => {
+      const btn = document.getElementById(`emp-filter-cycle-${c}`);
+      if (btn) {
+        if (c === cycle) {
+          btn.classList.add('active');
+          btn.style.background = '#0f172a';
+          btn.style.color = '#ffffff';
+        } else {
+          btn.classList.remove('active');
+          btn.style.background = '#ffffff';
+          btn.style.color = '#334155';
+        }
+      }
+    });
+    const searchInp = document.getElementById('emp-search-input');
+    this.renderEmployeesList(searchInp ? searchInp.value : '');
+  },
+
+  employeePaymentModeFilter: 'all',
+
+  setEmployeePaymentModeFilter(mode) {
+    this.employeePaymentModeFilter = mode;
+    ['all', 'cash', 'bank'].forEach(m => {
+      const btn = document.getElementById(`emp-mode-tab-${m}`);
+      if (btn) {
+        if (m === mode) {
+          btn.classList.add('active');
+          btn.style.background = '#0f172a';
+          btn.style.color = '#ffffff';
+        } else {
+          btn.classList.remove('active');
+          btn.style.background = 'transparent';
+          btn.style.color = '#334155';
+        }
+      }
+    });
+    const searchInp = document.getElementById('emp-search-input');
+    this.renderEmployeesList(searchInp ? searchInp.value : '');
+  },
+
   renderEmployeesList(filterQuery = '') {
     const tbody = document.getElementById('tbody-employees-list');
     if (!tbody) return;
     tbody.innerHTML = '';
 
     const q = (filterQuery || '').toLowerCase().trim();
-    const list = (this.employeesList || []).filter(e => {
+    let list = (this.employeesList || []).filter(e => {
       if (!q) return true;
       return (e.name || '').toLowerCase().includes(q) ||
         (e.role || '').toLowerCase().includes(q) ||
         (e.phone || '').toLowerCase().includes(q);
     });
+
+    if (this.employeeCycleFilter === 'monthly') {
+      list = list.filter(e => (e.paymentType || 'monthly') === 'monthly');
+    } else if (this.employeeCycleFilter === '15days') {
+      list = list.filter(e => e.paymentType === '15days');
+    }
+
+    if (this.employeePaymentModeFilter === 'cash') {
+      list = list.filter(e => (e.paymentMode || 'cash') !== 'bank');
+    } else if (this.employeePaymentModeFilter === 'bank') {
+      list = list.filter(e => e.paymentMode === 'bank');
+    }
 
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
 
@@ -8674,72 +9339,119 @@ const App = {
       const balance = Number(emp.netBalance) || 0;
       const isSelected = this.selectedStaffIds && this.selectedStaffIds.has(emp.id);
 
+      const is15Days = emp.paymentType === '15days';
+      const isBank = (emp.paymentMode === 'bank');
+
+      const cycleBadge = is15Days
+        ? `<span style="font-size: 0.68rem; background: #fef3c7; color: #92400e; font-weight: 800; padding: 1px 6px; border-radius: 4px; border: 1px solid #fde68a;">⏳ ૧૫ દિવસ</span>`
+        : `<span style="font-size: 0.68rem; background: #e0e7ff; color: #3730a3; font-weight: 800; padding: 1px 6px; border-radius: 4px; border: 1px solid #c7d2fe;">📅 માસિક</span>`;
+
+      const modeBadge = isBank
+        ? `<span style="font-size: 0.68rem; background: #e0f2fe; color: #0369a1; font-weight: 800; padding: 1px 6px; border-radius: 4px; border: 1px solid #bae6fd;">🏦 બેંક</span>`
+        : `<span style="font-size: 0.68rem; background: #dcfce7; color: #15803d; font-weight: 800; padding: 1px 6px; border-radius: 4px; border: 1px solid #bbf7d0;">💵 રોકડ</span>`;
+
       // Opening balance badge
-      let openingBadge = '<span style="color: var(--text-muted); font-size: 0.90rem;">-</span>';
+      let openingBadge = '<span style="color: #94a3b8; font-weight: 500;">-</span>';
       if (opening > 0) {
-        openingBadge = `<span style="color: #4338ca; font-weight: 700; font-size: 0.92rem;">+₹ ${opening.toLocaleString('en-IN')}</span><div style="font-size: 0.68rem; color: #6366f1; font-weight: 600;">(જૂનો બાકી)</div>`;
+        openingBadge = `<div style="color: #4338ca; font-weight: 700; font-size: 0.90rem;">+₹ ${opening.toLocaleString('en-IN')}</div><div style="font-size: 0.68rem; color: #6366f1; font-weight: 500;">(જૂનો બાકી)</div>`;
       } else if (opening < 0) {
-        openingBadge = `<span style="color: #ea580c; font-weight: 700; font-size: 0.92rem;">-₹ ${Math.abs(opening).toLocaleString('en-IN')}</span><div style="font-size: 0.68rem; color: #f97316; font-weight: 600;">(જૂનો ઉપાડ)</div>`;
+        openingBadge = `<div style="color: #ea580c; font-weight: 700; font-size: 0.90rem;">-₹ ${Math.abs(opening).toLocaleString('en-IN')}</div><div style="font-size: 0.68rem; color: #f97316; font-weight: 500;">(જૂનો ઉપાડ)</div>`;
+      }
+
+      // Upad display (Advance)
+      const upadDisplay = upad > 0
+        ? `<div style="font-weight: 700; color: #b91c1c; font-size: 0.92rem;">₹ ${upad.toLocaleString('en-IN')}</div>${emp.monthUpadsCount > 0 ? `<div style="font-size: 0.68rem; color: var(--text-muted); font-weight: 500;">(${emp.monthUpadsCount} ${isEn ? 'advances' : 'વાર ઉપાડ'})</div>` : ''}`
+        : `<span style="color: #94a3b8; font-weight: 500;">-</span>`;
+
+      // Paid display
+      let paidDisplay = '';
+      if (isBank) {
+        // User rule: bank mathi pagar thayo nathi thayo te jovani jarur nathi
+        paidDisplay = `<div style="font-weight: 700; color: #0284c7; font-size: 0.85rem;">🏦 બેંક ટ્રાન્સફર</div><div style="font-size: 0.68rem; color: #64748b; font-weight: 500;">(વાઉચરમાં નહીં)</div>`;
+      } else {
+        paidDisplay = pagarPaid > 0
+          ? `<div style="font-weight: 700; color: #2563eb; font-size: 0.92rem;">₹ ${pagarPaid.toLocaleString('en-IN')}</div><div style="font-size: 0.68rem; color: #16a34a; font-weight: 600;">${isEn ? '✓ Paid' : '✓ ચૂકવેલ'}</div>`
+          : `<span style="color: #94a3b8; font-weight: 500;">-</span>`;
       }
 
       // Balance badge
       let balanceBadge = '';
-      if (balance > 0) {
-        balanceBadge = `<span style="color: #059669; font-weight: 800; font-size: 1.05rem;">₹ ${balance.toLocaleString('en-IN')}</span>`;
-      } else if (balance < 0) {
-        balanceBadge = `<span style="color: #b91c1c; font-weight: 800; font-size: 1.05rem;">-₹ ${Math.abs(balance).toLocaleString('en-IN')}</span><div style="font-size: 0.70rem; color: #b91c1c; font-weight: 700;">(વધારાનો ઉપાડ)</div>`;
+      if (isBank) {
+        // Bank salary only shown, not added to vouchers
+        balanceBadge = `<div style="font-weight: 800; color: #0369a1; font-size: 0.95rem;">₹ ${salary.toLocaleString('en-IN')}</div><div style="font-size: 0.68rem; color: #0284c7; font-weight: 600;">(માત્ર જાણ ખાતર શો)</div>`;
       } else {
-        balanceBadge = `<span style="color: #16a34a; font-weight: 800; font-size: 0.95rem;">₹ 0</span><div style="font-size: 0.70rem; color: #16a34a; font-weight: 700;">(✓ ચૂકતે)</div>`;
+        if (balance > 0) {
+          balanceBadge = `<span style="color: #059669; font-weight: 800; font-size: 0.98rem;">₹ ${balance.toLocaleString('en-IN')}</span>`;
+        } else if (balance < 0) {
+          balanceBadge = `<div style="color: #b91c1c; font-weight: 800; font-size: 0.98rem;">-₹ ${Math.abs(balance).toLocaleString('en-IN')}</div><div style="font-size: 0.68rem; color: #b91c1c; font-weight: 500;">(વધારાનો ઉપાડ)</div>`;
+        } else {
+          balanceBadge = `<span style="color: #059669; font-weight: 600; font-size: 0.88rem;">₹ 0</span> <span style="font-size: 0.70rem; color: #16a34a; font-weight: 600;">(✓ ચૂકતે)</span>`;
+        }
       }
+
+      // Checkbox logic: Bank employees cannot be selected for daily cash voucher payout
+      const checkboxHtml = isBank
+        ? `<input type="checkbox" class="emp-row-check" data-id="${emp.id}" disabled
+            title="${isEn ? 'Bank staff salary is display only (not added to voucher)' : 'બેંક સ્ટાફનો પગાર માત્ર શો થાય છે (વાઉચરમાં એડ થતો નથી)'}" 
+            style="width: 16px; height: 16px; cursor: not-allowed; opacity: 0.35;">`
+        : `<input type="checkbox" class="emp-row-check" data-id="${emp.id}" 
+            ${isSelected ? 'checked' : ''} 
+            ${balance <= 0 ? (isEn ? 'disabled title="No salary pending"' : 'disabled title="પગાર બાકી નથી"') : (isEn ? 'title="Select for salary payout"' : 'title="પગાર ચૂકવણી માટે પસંદ કરો"')}
+            onchange="App.toggleEmployeeSelection('${emp.id}', this.checked)" 
+            style="width: 16px; height: 16px; cursor: ${balance <= 0 ? 'not-allowed' : 'pointer'};">`;
+
+      // Action buttons: Bank staff ONLY have Upad (which adds to UPAD voucher) & Ledger; NO Pagar button
+      const actionButtons = isBank ? `
+        <button class="emp-btn-upad-mini" onclick="App.openQuickUpadModal('${emp.id}')" title="${isEn ? 'Give Cash Advance (adds to Upad voucher)' : 'રોકડ ઉપાડ આપો (ઉપાડ વાઉચરમાં એડ થશે)'}">
+          <span>💸</span> <span>${isEn ? 'Advance' : 'ઉપાડ'}</span>
+        </button>
+        <button class="emp-btn-ledger-mini" onclick="App.openEmployeeLedger('${emp.id}')" title="${isEn ? 'View Ledger' : 'ખાતાવહી જુઓ'}">
+          <span>📋</span> <span>${isEn ? 'Ledger' : 'ખાતાવહી'}</span>
+        </button>
+      ` : `
+        <button class="emp-btn-pagar-mini" onclick="App.openQuickPagarModal('${emp.id}')" title="${isEn ? 'Pay Salary & add to expense' : 'પગાર ચૂકવો અને ખર્ચમાં ચડાવો'}">
+          <span>💵</span> <span>${isEn ? 'Salary' : 'પગાર'}</span>
+        </button>
+        <button class="emp-btn-upad-mini" onclick="App.openQuickUpadModal('${emp.id}')" title="${isEn ? 'Give Advance' : 'ઉપાડ આપો'}">
+          <span>💸</span> <span>${isEn ? 'Advance' : 'ઉપાડ'}</span>
+        </button>
+        <button class="emp-btn-ledger-mini" onclick="App.openEmployeeLedger('${emp.id}')" title="${isEn ? 'View Ledger' : 'ખાતાવહી જુઓ'}">
+          <span>📋</span> <span>${isEn ? 'Ledger' : 'ખાતાવહી'}</span>
+        </button>
+      `;
 
       const tr = document.createElement('tr');
       tr.className = 'emp-compact-row';
       tr.innerHTML = `
         <td style="text-align: center;">
-          <input type="checkbox" class="emp-row-check" data-id="${emp.id}" 
-            ${isSelected ? 'checked' : ''} 
-            ${balance <= 0 ? (isEn ? 'disabled title="No salary pending"' : 'disabled title="પગાર બાકી નથી"') : (isEn ? 'title="Select for salary payout"' : 'title="પગાર ચૂકવણી માટે પસંદ કરો"')}
-            onchange="App.toggleEmployeeSelection('${emp.id}', this.checked)" 
-            style="width: 17px; height: 17px; cursor: ${balance <= 0 ? 'not-allowed' : 'pointer'};">
+          ${checkboxHtml}
         </td>
-        <td style="text-align: center; font-weight: 700; color: var(--text-muted);">${idx + 1}</td>
+        <td style="text-align: center; font-weight: 600; color: var(--text-muted); font-size: 0.82rem;">${idx + 1}</td>
         <td>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="emp-row-avatar">${initials}</span>
-            <div>
-              <div style="font-weight: 700; color: var(--text-main); font-size: 0.92rem;">${emp.name}</div>
-              <span class="emp-role-badge" style="font-size: 0.72rem; padding: 1px 6px;">${emp.role || (isEn ? 'Staff' : 'સ્ટાફ')}</span>
-            </div>
+          <div style="font-weight: 700; color: var(--text-main); font-size: 0.90rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span>${emp.name}</span>
+            ${modeBadge}
           </div>
         </td>
-        <td style="text-align: right; font-family: var(--font-heading); font-weight: 700; font-size: 0.95rem; color: var(--text-main);">
+        <td style="text-align: right; font-family: var(--font-heading); font-weight: 700; font-size: 0.92rem; color: var(--text-main);">
           ₹ ${salary.toLocaleString('en-IN')}
+          <div style="font-size: 0.66rem; color: var(--text-muted); font-weight: 500;">${is15Days ? (isEn ? '/ 15 days' : '/ ૧૫ દિવસ') : (isEn ? '/ month' : '/ માસ')}</div>
         </td>
         <td style="text-align: right; font-family: var(--font-heading);">
           ${openingBadge}
         </td>
-        <td style="text-align: right; font-family: var(--font-heading); font-weight: 800; font-size: 0.98rem; color: #b91c1c;">
-          ₹ ${upad.toLocaleString('en-IN')}
-          ${emp.monthUpadsCount > 0 ? `<div style="font-size: 0.70rem; color: var(--text-muted); font-weight: 600;">(${emp.monthUpadsCount} ${isEn ? 'advances' : 'વાર ઉપાડ'})</div>` : ''}
+        <td style="text-align: right; font-family: var(--font-heading);">
+          ${upadDisplay}
         </td>
-        <td style="text-align: right; font-family: var(--font-heading); font-weight: 800; font-size: 0.98rem; color: #2563eb;">
-          ₹ ${pagarPaid.toLocaleString('en-IN')}
-          ${pagarPaid > 0 ? `<div style="font-size: 0.70rem; color: #16a34a; font-weight: 700;">${isEn ? '✓ Paid' : '✓ ચૂકવેલ'}</div>` : ''}
+        <td style="text-align: right; font-family: var(--font-heading);">
+          ${paidDisplay}
         </td>
         <td style="text-align: right; font-family: var(--font-heading);">
           ${balanceBadge}
         </td>
         <td style="text-align: center; white-space: nowrap;">
           <div style="display: inline-flex; gap: 4px; align-items: center; justify-content: center;">
-            <button class="emp-btn-pagar-mini" onclick="App.openQuickPagarModal('${emp.id}')" title="${isEn ? 'Pay Salary & add to expense' : 'પગાર ચૂકવો અને ખર્ચમાં ચડાવો'}">
-              <span>💵</span> <span>${isEn ? 'Salary' : 'પગાર'}</span>
-            </button>
-            <button class="emp-btn-upad-mini" onclick="App.openQuickUpadModal('${emp.id}')" title="${isEn ? 'Give Advance' : 'ઉપાડ આપો'}">
-              <span>💸</span> <span>${isEn ? 'Advance' : 'ઉપાડ'}</span>
-            </button>
-            <button class="emp-btn-ledger-mini" onclick="App.openEmployeeLedger('${emp.id}')" title="${isEn ? 'View Ledger' : 'ખાતાવહી જુઓ'}">
-              <span>📋</span> <span>${isEn ? 'Ledger' : 'ખાતાવહી'}</span>
-            </button>
+            ${actionButtons}
           </div>
         </td>
       `;
@@ -8755,7 +9467,9 @@ const App = {
 
     if (checked) {
       (this.employeesList || []).forEach(emp => {
-        if (Number(emp.netBalance) > 0) {
+        // Bank staff cannot be selected for daily cash salary voucher
+        const isBank = (emp.paymentMode === 'bank');
+        if (!isBank && Number(emp.netBalance) > 0) {
           this.selectedStaffIds.add(emp.id);
         }
       });
@@ -8792,8 +9506,9 @@ const App = {
       }
     });
 
-    const totalNetPayable = (this.employeesList || []).reduce((s, e) => s + (Number(e.netBalance) || 0), 0);
-    const eligibleCount = (this.employeesList || []).filter(e => Number(e.netBalance) > 0).length;
+    // Only cash staff are eligible for daily cash salary voucher
+    const eligibleStaff = (this.employeesList || []).filter(e => (e.paymentMode !== 'bank') && Number(e.netBalance) > 0);
+    const eligibleCount = eligibleStaff.length;
 
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
 
@@ -8804,19 +9519,15 @@ const App = {
     }
     if (lbl) {
       if (selectedCount > 0) {
-        lbl.textContent = isEn
-          ? `Post Selected Salaries (${selectedCount} Staff - ₹ ${selectedTotal.toLocaleString('en-IN')})`
-          : `પસંદ કરેલાનો પગાર ખર્ચમાં ચડાવો (${selectedCount} સ્ટાફ - ₹ ${selectedTotal.toLocaleString('en-IN')})`;
+        lbl.textContent = `Selected Salary Paid (${selectedCount})`;
       } else {
-        lbl.textContent = isEn ? `Post Selected Salaries (0)` : `પસંદ કરેલાનો પગાર ખર્ચમાં ચડાવો (0)`;
+        lbl.textContent = `Selected Salary Paid`;
       }
     }
 
     const allBtnLbl = document.getElementById('lbl-pay-all-staff');
     if (allBtnLbl) {
-      allBtnLbl.textContent = isEn
-        ? `Post All Salaries to Expenses (${eligibleCount} Staff - Total ₹ ${totalNetPayable.toLocaleString('en-IN')})`
-        : `બધાનો પગાર એકસાથે ખર્ચમાં ચડાવો (${eligibleCount} સ્ટાફ - કુલ ₹ ${totalNetPayable.toLocaleString('en-IN')})`;
+      allBtnLbl.textContent = 'All Salary Paid';
     }
 
     const footInfo = document.getElementById('emp-foot-selected-info');
@@ -8830,8 +9541,7 @@ const App = {
 
     const allCb = document.getElementById('emp-select-all');
     if (allCb) {
-      const eligibleStaff = (this.employeesList || []).filter(e => Number(e.netBalance) > 0);
-      if (eligibleStaff.length > 0 && selectedCount === eligibleStaff.length) {
+      if (eligibleCount > 0 && selectedCount === eligibleCount) {
         allCb.checked = true;
         allCb.indeterminate = false;
       } else if (selectedCount > 0) {
@@ -8851,9 +9561,10 @@ const App = {
     let targets = [];
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
     if (payAll) {
-      targets = (this.employeesList || []).filter(e => Number(e.netBalance) > 0);
+      // Exclude bank staff from cash voucher payout
+      targets = (this.employeesList || []).filter(e => (e.paymentMode !== 'bank') && Number(e.netBalance) > 0);
       if (targets.length === 0) {
-        this.showToast(isEn ? `All employees' salary for ${monthLabel} has been paid (no balance remaining).` : `${monthLabel} માસનો બધા કર્મચારીઓનો પગાર ચૂકવાઈ ગયેલ છે (કોઈ બાકી નથી).`, 'info');
+        this.showToast(isEn ? `All eligible cash employees' salary for ${monthLabel} has been paid (no balance remaining).` : `${monthLabel} માસનો બધા રોકડ કર્મચારીઓનો પગાર ચૂકવાઈ ગયેલ છે (કોઈ બાકી નથી).`, 'info');
         return;
       }
     } else {
@@ -8861,7 +9572,7 @@ const App = {
         this.showToast(isEn ? 'Please select staff to pay salary first.' : 'કૃપા કરીને પહેલા પગાર ચૂકવવા માટે સ્ટાફ પસંદ કરો.', 'warning');
         return;
       }
-      targets = (this.employeesList || []).filter(e => this.selectedStaffIds.has(e.id) && Number(e.netBalance) > 0);
+      targets = (this.employeesList || []).filter(e => (e.paymentMode !== 'bank') && this.selectedStaffIds.has(e.id) && Number(e.netBalance) > 0);
       if (targets.length === 0) {
         return;
       }
@@ -8946,12 +9657,19 @@ const App = {
       confirmBtn.innerHTML = `<span>⏳</span> <span>${isEn ? `Posting salary of ${monthLabel} into expenses...` : `${monthLabel} માસનો પગાર ખર્ચમાં ચડાવી રહ્યા છીએ...`}</span>`;
     }
 
-    const items = this.pendingBulkStaff.map(emp => ({
-      id: emp.id,
-      amount: Number(emp.netBalance),
-      title: isEn ? `${emp.name} - ${monthLabel} Salary` : `${emp.name} - ${monthLabel} માસનો પગાર`,
-      remarks: isEn ? `Monthly Salary: ₹${emp.salary}, ${monthLabel} Advance Deduction: ₹${emp.currentMonthUpad || 0}` : `માસિક પગાર: ₹${emp.salary}, ${monthLabel} ઉપાડ કપાત: ₹${emp.currentMonthUpad || 0}`
-    }));
+    const items = this.pendingBulkStaff.map(emp => {
+      const is15 = emp.paymentType === '15days';
+      return {
+        id: emp.id,
+        amount: Number(emp.netBalance),
+        title: is15
+          ? (isEn ? `${emp.name} - 15-Day Salary` : `${emp.name} - ૧૫ દિવસનો પગાર`)
+          : (isEn ? `${emp.name} - ${monthLabel} Salary` : `${emp.name} - ${monthLabel} માસનો પગાર`),
+        remarks: is15
+          ? (isEn ? `15-Day Salary: ₹${emp.salary}, Advance Deduction: ₹${emp.currentMonthUpad || 0}` : `૧૫ દિવસીય પગાર: ₹${emp.salary}, ઉપાડ કપાત: ₹${emp.currentMonthUpad || 0}`)
+          : (isEn ? `Monthly Salary: ₹${emp.salary}, ${monthLabel} Advance Deduction: ₹${emp.currentMonthUpad || 0}` : `માસિક પગાર: ₹${emp.salary}, ${monthLabel} ઉપાડ કપાત: ₹${emp.currentMonthUpad || 0}`)
+      };
+    });
 
     try {
       const res = await fetch('/api/employees/bulk-pagar', {
@@ -9099,9 +9817,11 @@ const App = {
     this.selectedEmployeeForLedger = emp;
 
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
+    const isBank = (emp.paymentMode === 'bank');
     document.getElementById('ledger-emp-name-title').textContent = isEn ? `📋 ${emp.name} - Ledger` : `📋 ${emp.name} - ખાતાવહી`;
     const joinedLabel = isEn ? 'Joined:' : 'જોડાયા:';
-    document.getElementById('ledger-emp-sub-title').textContent = `${emp.role} | 📞 ${emp.phone || '-'} | ${joinedLabel} ${emp.joiningDate || '-'}`;
+    const modeBadgeText = isBank ? (isEn ? ' [🏦 Bank Mode]' : ' [🏦 બેંક મોડ]') : (isEn ? ' [💵 Cash Mode]' : ' [💵 રોકડ મોડ]');
+    document.getElementById('ledger-emp-sub-title').textContent = `${emp.role}${modeBadgeText} | 📞 ${emp.phone || '-'} | ${joinedLabel} ${emp.joiningDate || '-'}`;
 
     const banner = document.getElementById('ledger-summary-banner');
     const salary = Number(emp.salary) || 0;
@@ -9111,16 +9831,24 @@ const App = {
     const balance = Number(emp.netBalance) || 0;
     const totalUpadAllTime = Number(emp.totalUpadAllTime) || 0;
 
-    let balHtml = `<span class="ledger-banner-val" style="color: #059669;">₹ ${balance.toLocaleString('en-IN')}</span>`;
-    if (balance < 0) {
+    let balHtml = '';
+    if (isBank) {
+      balHtml = `<span class="ledger-banner-val" style="color: #0369a1;">₹ ${salary.toLocaleString('en-IN')}</span><div style="font-size: 0.70rem; color: #0284c7; font-weight: 700;">(બેંકમાં જમા - માત્ર શો)</div>`;
+    } else if (balance < 0) {
       balHtml = `<span class="ledger-banner-val" style="color: #b91c1c;">-₹ ${Math.abs(balance).toLocaleString('en-IN')}</span><div style="font-size: 0.70rem; color: #b91c1c; font-weight: 700;">(વધારાનો ઉપાડ)</div>`;
     } else if (balance === 0) {
       balHtml = `<span class="ledger-banner-val" style="color: #16a34a;">₹ 0</span><div style="font-size: 0.70rem; color: #16a34a; font-weight: 700;">(✓ ચૂકતે)</div>`;
+    } else {
+      balHtml = `<span class="ledger-banner-val" style="color: #059669;">₹ ${balance.toLocaleString('en-IN')}</span>`;
     }
+
+    const paidHtml = isBank
+      ? `<span class="ledger-banner-val" style="color: #0284c7; font-size: 0.95rem;">🏦 બેંક દ્વારા</span><div style="font-size: 0.68rem; color: #64748b; font-weight: 600;">(વાઉચરમાં નહિ)</div>`
+      : `<span class="ledger-banner-val" style="color: #2563eb;">₹ ${pagarPaid.toLocaleString('en-IN')}</span>`;
 
     banner.innerHTML = `
       <div class="ledger-banner-item">
-        <span class="ledger-banner-lbl">${isEn ? 'Monthly Salary:' : 'માસિક પગાર:'}</span>
+        <span class="ledger-banner-lbl">${emp.paymentType === '15days' ? (isEn ? '15-Day Salary:' : '૧૫ દિવસનો પગાર:') : (isEn ? 'Monthly Salary:' : 'માસિક પગાર:')}</span>
         <span class="ledger-banner-val" style="color: var(--text-main);">₹ ${salary.toLocaleString('en-IN')}</span>
       </div>
       <div class="ledger-banner-item">
@@ -9128,15 +9856,15 @@ const App = {
         <span class="ledger-banner-val" style="color: ${opening >= 0 ? '#4338ca' : '#ea580c'};">${opening >= 0 ? '+₹ ' : '-₹ '}${Math.abs(opening).toLocaleString('en-IN')}</span>
       </div>
       <div class="ledger-banner-item">
-        <span class="ledger-banner-lbl">${isEn ? 'This Month Advance:' : 'આ મહિને ઉપાડ:'}</span>
+        <span class="ledger-banner-lbl">${emp.paymentType === '15days' ? (isEn ? 'Advance:' : 'ઉપાડ:') : (isEn ? 'This Month Advance:' : 'આ મહિને ઉપાડ:')}</span>
         <span class="ledger-banner-val" style="color: #b91c1c;">₹ ${upad.toLocaleString('en-IN')}</span>
       </div>
       <div class="ledger-banner-item">
         <span class="ledger-banner-lbl">${isEn ? 'Paid Salary:' : 'ચૂકવેલ પગાર:'}</span>
-        <span class="ledger-banner-val" style="color: #2563eb;">₹ ${pagarPaid.toLocaleString('en-IN')}</span>
+        ${paidHtml}
       </div>
       <div class="ledger-banner-item">
-        <span class="ledger-banner-lbl">${isEn ? 'Net Balance:' : 'ચોખ્ખો બાકી પગાર:'}</span>
+        <span class="ledger-banner-lbl">${isBank ? (isEn ? 'Bank Salary (Show):' : 'બેંક પગાર (માત્ર શો):') : (isEn ? 'Net Balance:' : 'ચોખ્ખો બાકી પગાર:')}</span>
         ${balHtml}
       </div>
       <div class="ledger-banner-item">
@@ -9188,6 +9916,11 @@ const App = {
         `;
         tbody.appendChild(tr);
       });
+    }
+
+    const btnPagar = document.getElementById('btn-ledger-add-pagar');
+    if (btnPagar) {
+      btnPagar.style.display = isBank ? 'none' : 'inline-flex';
     }
 
     if (window.i18n) window.i18n.updateDOM();
@@ -9261,14 +9994,17 @@ const App = {
   onQuickUpadMonthChange(val) {
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
     const monthLabel = this.getGujaratiMonthName(val);
-    const textEl = document.getElementById('quick-upad-month-text');
-    if (textEl) {
-      textEl.textContent = isEn
-        ? `This advance will be deducted against ${monthLabel} salary`
-        : `${monthLabel} માસના પગાર સામે આ ઉપાડ કપાશે`;
-    }
     const empId = document.getElementById('quick-upad-emp-id').value;
     const emp = (this.employeesList || []).find(e => e.id === empId);
+    const is15Days = emp && emp.paymentType === '15days';
+
+    const textEl = document.getElementById('quick-upad-month-text');
+    if (textEl) {
+      textEl.textContent = is15Days
+        ? (isEn ? 'This advance will be deducted against 15-day salary' : '૧૫ દિવસના પગાર સામે આ ઉપાડ કપાશે')
+        : (isEn ? `This advance will be deducted against ${monthLabel} salary` : `${monthLabel} માસના પગાર સામે આ ઉપાડ કપાશે`);
+    }
+
     if (emp) {
       const monthUpads = (emp.upads || []).filter(u => {
         const m = u.forMonth || (u.date ? u.date.slice(0, 7) : '');
@@ -9287,12 +10023,23 @@ const App = {
 
       const infoBox = document.getElementById('quick-upad-emp-info');
       if (infoBox) {
+        const salaryLabel = isEn ? 'Salary:' : 'પગાર:';
+        const advanceLabel = isEn ? 'Advance:' : 'ઉપાડ:';
+        const roleBadge = (emp.role && emp.role.trim() && emp.role !== 'undefined') ? `<span style="font-size: 0.75rem; background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 9999px; font-weight: 700;">${emp.role}</span>` : '';
+        const badgeType = is15Days
+          ? `<span style="background: #fef3c7; color: #92400e; font-size: 0.75rem; padding: 2px 8px; border-radius: 9999px; font-weight: 800;">૧૫ દિવસીય</span>`
+          : `<span style="background: #e0e7ff; color: #3730a3; font-size: 0.75rem; padding: 2px 8px; border-radius: 9999px; font-weight: 800;">માસિક</span>`;
+
         infoBox.innerHTML = `
-          <div style="font-weight: 800; font-size: 1.05rem; color: #9f1239;">👤 ${emp.name} <span class="emp-role-badge">${emp.role}</span></div>
+          <div style="font-weight: 800; font-size: 1.05rem; color: #9f1239; display: flex; align-items: center; gap: 8px;">
+            <span>👤 ${emp.name}</span>
+            ${roleBadge}
+            ${badgeType}
+          </div>
           <div style="display: flex; gap: 14px; margin-top: 6px; font-size: 0.88rem; flex-wrap: wrap;">
-            <span>💼 ${isEn ? 'Monthly Salary:' : 'માસિક પગાર:'} <strong>₹${salary.toLocaleString('en-IN')}</strong></span>
-            <span>🔻 ${monthLabel} ${isEn ? 'Advance:' : 'ઉપાડ:'} <strong style="color: #b91c1c;">₹${monthUpad.toLocaleString('en-IN')}</strong></span>
-            <span>🟢 ${isEn ? 'Balance Amount:' : 'બાકી રકમ:'} <strong style="color: #059669;">₹${monthBalance.toLocaleString('en-IN')}</strong></span>
+            <span>💼 ${salaryLabel} <strong>₹${salary.toLocaleString('en-IN')}</strong></span>
+            <span>🔻 ${advanceLabel} <strong style="color: #b91c1c;">₹${monthUpad.toLocaleString('en-IN')}</strong></span>
+            <span>🟢 ${isEn ? 'Balance:' : 'બાકી રકમ:'} <strong style="color: #059669;">₹${monthBalance.toLocaleString('en-IN')}</strong></span>
           </div>
         `;
       }
@@ -9356,6 +10103,12 @@ const App = {
     if (!emp) return;
 
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
+    if (emp.paymentMode === 'bank') {
+      this.showToast(isEn ? 'Bank staff salary is display only (not added to expense vouchers).' : 'બેંક સ્ટાફનો પગાર માત્ર શો થાય છે (વાઉચરમાં એડ થતો નથી).', 'info');
+      return;
+    }
+
+    const is15Days = emp.paymentType === '15days';
     const today = this.getTodayDateStr();
     document.getElementById('quick-pagar-emp-id').value = emp.id;
     const pagarDateInp = document.getElementById('quick-pagar-date');
@@ -9371,14 +10124,174 @@ const App = {
     if (mInput) {
       mInput.value = defaultMonth;
     }
-    this.onQuickPagarMonthChange(defaultMonth);
 
     if (window.i18n) window.i18n.updateDOM();
+
+    // Configure 15-day / monthly dynamic modal header and containers
+    const titleEl = document.getElementById('quick-pagar-title');
+    if (titleEl) {
+      titleEl.textContent = is15Days
+        ? (isEn ? '💵 Pay 15-Day Salary (Pagar)' : '💵 ૧૫ દિવસનો પગાર ચૂકવણી')
+        : (isEn ? '💵 Pay Staff Salary (Pagar)' : '💵 પગાર ચૂકવણી');
+    }
+
+    const monthBox = document.getElementById('quick-pagar-month-container');
+    const box15Days = document.getElementById('quick-pagar-15days-container');
+    if (monthBox && box15Days) {
+      if (is15Days) {
+        monthBox.style.display = 'none';
+        box15Days.style.display = 'block';
+      } else {
+        monthBox.style.display = 'block';
+        box15Days.style.display = 'none';
+      }
+    }
+
+    const totalDaysLbl = document.getElementById('quick-pagar-total-days-lbl');
+    const totInput = document.getElementById('quick-pagar-total-days');
+    if (totalDaysLbl) {
+      totalDaysLbl.textContent = is15Days
+        ? (isEn ? '15 Days (Locked):' : '૧૫ દિવસ (ફિક્સ):')
+        : (isEn ? 'Month Days:' : 'મહિનાના દિવસો:');
+    }
+    if (totInput) {
+      if (is15Days) {
+        totInput.readOnly = true;
+        totInput.style.backgroundColor = '#e2e8f0';
+        totInput.style.color = '#065f46';
+        totInput.style.cursor = 'not-allowed';
+      } else {
+        totInput.readOnly = false;
+        totInput.style.backgroundColor = '#ffffff';
+        totInput.style.color = 'inherit';
+        totInput.style.cursor = 'text';
+      }
+    }
+
+    if (is15Days) {
+      const autoPreset = this.autoPick15DaysCycle(emp, today);
+      this.set15DaysCyclePreset(autoPreset);
+    } else {
+      this.onQuickPagarMonthChange(defaultMonth);
+    }
+
     this.openModal('modal-employee-quick-pagar', { isChild: true });
     setTimeout(() => {
       const amtInput = document.getElementById('quick-pagar-amount');
       if (amtInput) amtInput.focus();
     }, 150);
+  },
+
+  autoPick15DaysCycle(emp, pagarDate) {
+    const ym = (pagarDate || this.getTodayDateStr()).slice(0, 7);
+    const cycle1From = `${ym}-01`;
+    const cycle1To = `${ym}-15`;
+
+    const pagars = emp && Array.isArray(emp.pagars) ? emp.pagars : [];
+    const cycle1Paid = pagars.some(p => {
+      const fromMatch = p.fromDate === cycle1From && p.toDate === cycle1To;
+      const titleMatch = p.title && p.title.includes(this.formatDateDisplay(cycle1From)) && p.title.includes(this.formatDateDisplay(cycle1To));
+      return (p.forMonth === ym && (fromMatch || titleMatch)) || fromMatch;
+    });
+
+    return cycle1Paid ? 2 : 1;
+  },
+
+  set15DaysCyclePreset(halfNum) {
+    const pagarDate = document.getElementById('quick-pagar-date')?.value || this.getTodayDateStr();
+    const ym = pagarDate.slice(0, 7); // YYYY-MM
+    const [yearStr, monthStr] = ym.split('-');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+
+    let fromStr = '';
+    let toStr = '';
+
+    if (halfNum === 1) {
+      // 1 to 15
+      fromStr = `${ym}-01`;
+      toStr = `${ym}-15`;
+    } else {
+      // 16 to end of month
+      fromStr = `${ym}-16`;
+      const lastDay = new Date(year, month, 0).getDate(); // last day of month
+      toStr = `${ym}-${String(lastDay).padStart(2, '0')}`;
+    }
+
+    const fromEl = document.getElementById('quick-pagar-from-date');
+    const toEl = document.getElementById('quick-pagar-to-date');
+    if (fromEl) fromEl.value = fromStr;
+    if (toEl) toEl.value = toStr;
+
+    // Highlight active preset button
+    const b1 = document.getElementById('btn-15days-preset-1');
+    const b2 = document.getElementById('btn-15days-preset-2');
+    if (b1 && b2) {
+      if (halfNum === 1) {
+        b1.style.background = '#059669';
+        b1.style.borderColor = '#059669';
+        b1.style.color = '#ffffff';
+        b2.style.background = '#ffffff';
+        b2.style.borderColor = '#10b981';
+        b2.style.color = '#065f46';
+      } else {
+        b2.style.background = '#059669';
+        b2.style.borderColor = '#059669';
+        b2.style.color = '#ffffff';
+        b1.style.background = '#ffffff';
+        b1.style.borderColor = '#10b981';
+        b1.style.color = '#065f46';
+      }
+    }
+
+    this.on15DaysRangeChange();
+  },
+
+  on15DaysRangeChange() {
+    const isEn = (window.i18n && window.i18n.currentLang === 'en');
+    const fromEl = document.getElementById('quick-pagar-from-date');
+    const toEl = document.getElementById('quick-pagar-to-date');
+    if (!fromEl || !toEl) return;
+
+    let fromVal = fromEl.value;
+    let toVal = toEl.value;
+    if (!fromVal || !toVal) return;
+
+    if (fromVal > toVal) {
+      toVal = fromVal;
+      toEl.value = toVal;
+    }
+
+    const fromObj = new Date(fromVal + 'T00:00:00');
+    const toObj = new Date(toVal + 'T00:00:00');
+    const diffTime = toObj - fromObj;
+    const diffDays = Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1);
+
+    const fromFmt = this.formatDateDisplay(fromVal);
+    const toFmt = this.formatDateDisplay(toVal);
+
+    const badgeEl = document.getElementById('quick-pagar-15days-calc-badge');
+    if (badgeEl) badgeEl.textContent = `${diffDays} ${isEn ? 'Days' : 'દિવસ'}`;
+
+    const summaryEl = document.getElementById('quick-pagar-15days-summary-text');
+    if (summaryEl) {
+      summaryEl.textContent = isEn
+        ? `From ${fromFmt} to ${toFmt} (${diffDays} Days Salary)`
+        : `તા. ${fromFmt} થી ${toFmt} સુધી (${diffDays} દિવસનો પગાર)`;
+    }
+
+    const totInput = document.getElementById('quick-pagar-total-days');
+    if (totInput) totInput.value = String(diffDays);
+
+    const empId = document.getElementById('quick-pagar-emp-id').value;
+    const emp = (this.employeesList || []).find(e => e.id === empId);
+    if (emp) {
+      document.getElementById('quick-pagar-title-input').value = isEn
+        ? `${emp.name} - ${fromFmt} to ${toFmt} (${diffDays} Days Salary)`
+        : `${emp.name} - તા. ${fromFmt} થી ${toFmt} (${diffDays} દિવસનો પગાર)`;
+    }
+
+    this.onQuickPagarAttendanceChange();
   },
 
   async onQuickPagarDateChange(newDate) {
@@ -9396,28 +10309,60 @@ const App = {
         newDate = today;
       }
     }
-    const suggestedMonth = this.getDefaultSalaryMonth(newDate);
-    const mInput = document.getElementById('quick-pagar-month');
-    if (mInput) {
-      mInput.value = suggestedMonth;
-      this.onQuickPagarMonthChange(suggestedMonth);
+
+    const empId = document.getElementById('quick-pagar-emp-id')?.value;
+    const emp = (this.employeesList || []).find(e => e.id === empId);
+    if (emp && emp.paymentType === '15days') {
+      const autoPreset = this.autoPick15DaysCycle(emp, newDate);
+      this.set15DaysCyclePreset(autoPreset);
+    } else {
+      const suggestedMonth = this.getDefaultSalaryMonth(newDate);
+      const mInput = document.getElementById('quick-pagar-month');
+      if (mInput) {
+        mInput.value = suggestedMonth;
+        this.onQuickPagarMonthChange(suggestedMonth);
+      }
     }
   },
 
   onQuickPagarMonthChange(val) {
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
     const monthLabel = this.getGujaratiMonthName(val);
-    const textEl = document.getElementById('quick-pagar-month-text');
-    if (textEl) {
-      textEl.textContent = isEn
-        ? `${monthLabel} salary will be paid and recorded in today's expenses`
-        : `${monthLabel} માસનો પગાર ચૂકવાશે અને આજના ખર્ચમાં ચડશે`;
-    }
     const empId = document.getElementById('quick-pagar-emp-id').value;
     const emp = (this.employeesList || []).find(e => e.id === empId);
-    if (emp) {
-      const salaryWord = isEn ? 'Salary' : 'પગાર';
-      document.getElementById('quick-pagar-title-input').value = `${emp.name} - ${monthLabel} ${salaryWord}`;
+    const is15Days = emp && emp.paymentType === '15days';
+
+    const lblEl = document.getElementById('quick-pagar-month-lbl');
+    if (lblEl) {
+      lblEl.innerHTML = is15Days
+        ? (isEn ? '⏳ Payment Cycle *:' : '⏳ ચૂકવણી સમયગાળો *:')
+        : (isEn ? '📅 Which month salary are you paying? *:' : '📅 કયા માસનો પગાર ચૂકવો છો? *:');
+    }
+
+    const textEl = document.getElementById('quick-pagar-month-text');
+    if (textEl) {
+      if (is15Days) {
+        textEl.textContent = isEn
+          ? `15-day salary will be recorded in expenses`
+          : `૧૫ દિવસનો પગાર આજના ખર્ચમાં ચડશે`;
+      } else {
+        textEl.textContent = isEn
+          ? `${monthLabel} salary will be paid and recorded in today's expenses`
+          : `${monthLabel} માસનો પગાર ચૂકવાશે અને આજના ખર્ચમાં ચડશે`;
+      }
+    }
+
+    const totalDaysLbl = document.getElementById('quick-pagar-total-days-lbl');
+    if (totalDaysLbl) {
+      totalDaysLbl.textContent = is15Days
+        ? (isEn ? '15 Days:' : '૧૫ દિવસ:')
+        : (isEn ? 'Month Days:' : 'મહિનાના દિવસો:');
+    }
+
+    if (emp && !is15Days) {
+      document.getElementById('quick-pagar-title-input').value = isEn
+        ? `${emp.name} - ${monthLabel} Salary`
+        : `${emp.name} - ${monthLabel} પગાર`;
 
       // Reset absent days to 0 on month change
       const absInput = document.getElementById('quick-pagar-absent-days');
@@ -9435,11 +10380,12 @@ const App = {
     const emp = (this.employeesList || []).find(e => e.id === empId);
     if (!emp) return;
 
+    const is15Days = emp.paymentType === '15days';
     const val = document.getElementById('quick-pagar-month').value;
     const monthLabel = this.getGujaratiMonthName(val);
     const salary = Number(emp.salary) || 0;
 
-    const totalDays = Math.max(1, Number(document.getElementById('quick-pagar-total-days')?.value) || 30);
+    const totalDays = Math.max(1, Number(document.getElementById('quick-pagar-total-days')?.value) || (is15Days ? 15 : 30));
     const absentDays = Math.max(0, Number(document.getElementById('quick-pagar-absent-days')?.value) || 0);
 
     const dailyRate = Math.round(salary / totalDays);
@@ -9448,7 +10394,7 @@ const App = {
 
     // Update attendance display
     const rateEl = document.getElementById('quick-pagar-daily-rate');
-    if (rateEl) rateEl.textContent = `દરરોજ: ₹${dailyRate.toLocaleString('en-IN')}`;
+    if (rateEl) rateEl.textContent = isEn ? `Per day: ₹${dailyRate.toLocaleString('en-IN')}` : `દરરોજ: ₹${dailyRate.toLocaleString('en-IN')}`;
 
     const earnedEl = document.getElementById('quick-pagar-earned-display');
     if (earnedEl) earnedEl.textContent = `₹ ${earnedSalary.toLocaleString('en-IN')}`;
@@ -9457,7 +10403,11 @@ const App = {
     if (noticeEl) {
       if (absentDays > 0) {
         noticeEl.style.display = 'block';
-        noticeEl.textContent = `⚠️ ગેરહાજર ${absentDays} દિવસની કપાત: -₹${absentDeduction.toLocaleString('en-IN')} (${totalDays} દિવસ માસ)`;
+        noticeEl.textContent = isEn
+          ? `⚠️ Absent ${absentDays} days deduction: -₹${absentDeduction.toLocaleString('en-IN')} (${totalDays} days cycle)`
+          : (is15Days
+            ? `⚠️ ગેરહાજર ${absentDays} દિવસની કપાત: -₹${absentDeduction.toLocaleString('en-IN')} (${totalDays} દિવસ ચક્ર)`
+            : `⚠️ ગેરહાજર ${absentDays} દિવસની કપાત: -₹${absentDeduction.toLocaleString('en-IN')} (${totalDays} દિવસ માસ)`);
       } else {
         noticeEl.style.display = 'none';
       }
@@ -9517,12 +10467,23 @@ const App = {
         opBadge = `<span>🔄 જૂનો ઉપાડ: <strong style="color: #ea580c;">-₹${Math.abs(openingBalance).toLocaleString('en-IN')}</strong></span>`;
       }
 
+      const salaryLabel = isEn ? 'Salary:' : 'પગાર:';
+      const advanceLabel = isEn ? 'Advance:' : 'ઉપાડ:';
+      const roleBadge = (emp.role && emp.role.trim() && emp.role !== 'undefined') ? `<span style="font-size: 0.75rem; background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 9999px; font-weight: 700;">${emp.role}</span>` : '';
+      const badgeType = is15Days
+        ? `<span style="background: #fef3c7; color: #92400e; font-size: 0.75rem; padding: 2px 8px; border-radius: 9999px; font-weight: 800;">૧૫ દિવસીય</span>`
+        : `<span style="background: #e0e7ff; color: #3730a3; font-size: 0.75rem; padding: 2px 8px; border-radius: 9999px; font-weight: 800;">માસિક</span>`;
+
       infoBox.innerHTML = `
-        <div style="font-weight: 800; font-size: 1.05rem; color: #065f46;">👤 ${emp.name} <span class="emp-role-badge">${emp.role}</span></div>
+        <div style="font-weight: 800; font-size: 1.05rem; color: #065f46; display: flex; align-items: center; gap: 8px;">
+          <span>👤 ${emp.name}</span>
+          ${roleBadge}
+          ${badgeType}
+        </div>
         <div style="display: flex; gap: 12px; margin-top: 6px; font-size: 0.86rem; flex-wrap: wrap;">
-          <span>💼 ${isEn ? 'Monthly Salary:' : 'મૂળ પગાર:'} <strong>₹${salary.toLocaleString('en-IN')}</strong></span>
+          <span>💼 ${salaryLabel} <strong>₹${salary.toLocaleString('en-IN')}</strong></span>
           ${opBadge}
-          <span>🔻 ${monthLabel} ${isEn ? 'Advance:' : 'ઉપાડ:'} <strong style="color: #b91c1c;">₹${monthUpad.toLocaleString('en-IN')}</strong></span>
+          <span>🔻 ${advanceLabel} <strong style="color: #b91c1c;">₹${monthUpad.toLocaleString('en-IN')}</strong></span>
           ${monthPagarPaid > 0 ? `<span>💵 ${isEn ? 'Paid Salary:' : 'ચૂકવેલ પગાર:'} <strong style="color: #2563eb;">₹${monthPagarPaid.toLocaleString('en-IN')}</strong></span>` : ''}
           <span>🟢 ${isEn ? 'Net Payable:' : 'ચોખ્ખો બાકી પગાર:'} <strong style="color: ${netBalance >= 0 ? '#059669' : '#b91c1c'}; font-size: 1rem;">${netBalance >= 0 ? '₹' : '-₹'}${Math.abs(netBalance).toLocaleString('en-IN')}</strong></span>
         </div>
@@ -9566,6 +10527,9 @@ const App = {
     const monthUpads = emp ? (emp.upads || []).filter(u => (u.forMonth || (u.date ? u.date.slice(0, 7) : '')) === forMonth) : [];
     const upadDeduction = monthUpads.reduce((s, u) => s + (Number(u.amount) || 0), 0);
 
+    const fromDate = document.getElementById('quick-pagar-from-date')?.value || null;
+    const toDate = document.getElementById('quick-pagar-to-date')?.value || null;
+
     try {
       const res = await fetch(`/api/employees/${id}/pagar`, {
         method: 'POST',
@@ -9575,6 +10539,8 @@ const App = {
           title,
           date,
           forMonth,
+          fromDate,
+          toDate,
           remarks,
           addToHisab,
           totalMonthDays,
@@ -9588,10 +10554,21 @@ const App = {
       const data = await res.json();
       if (data && data.success) {
         this.closeModal('modal-employee-quick-pagar');
+        const is15Days = emp && emp.paymentType === '15days';
         const monthLabel = this.getGujaratiMonthName(forMonth);
-        const successMsg = isEn
-          ? `₹${amount.toLocaleString('en-IN')} salary of ${monthLabel} paid and added to expenses under 'PAGAR' voucher!`
-          : `₹${amount.toLocaleString('en-IN')} નો ${monthLabel} માસનો પગાર ચૂકવાયો અને ખર્ચમાં 'PAGAR' વાઉચરમાં ચડી ગયો!`;
+        let successMsg = '';
+        if (is15Days) {
+          const fromFmt = fromDate ? this.formatDateDisplay(fromDate) : '';
+          const toFmt = toDate ? this.formatDateDisplay(toDate) : '';
+          const rangeInfo = (fromFmt && toFmt) ? ` (તા. ${fromFmt} થી ${toFmt})` : '';
+          successMsg = isEn
+            ? `₹${amount.toLocaleString('en-IN')} 15-day salary${rangeInfo} paid and added to expenses under 'PAGAR' voucher!`
+            : `₹${amount.toLocaleString('en-IN')} નો ૧૫ દિવસનો પગાર${rangeInfo} ચૂકવાયો અને ખર્ચમાં 'PAGAR' વાઉચરમાં ચડી ગયો!`;
+        } else {
+          successMsg = isEn
+            ? `₹${amount.toLocaleString('en-IN')} salary of ${monthLabel} paid and added to expenses under 'PAGAR' voucher!`
+            : `₹${amount.toLocaleString('en-IN')} નો ${monthLabel} માસનો પગાર ચૂકવાયો અને ખર્ચમાં 'PAGAR' વાઉચરમાં ચડી ગયો!`;
+        }
         this.showToast(successMsg, 'success');
         await this.loadEmployees(this.employeeMonthFilter);
 
@@ -9705,18 +10682,19 @@ const App = {
     const emp = this.selectedEmployeeForLedger;
     if (!emp) return;
 
-    let msg = `*👥 Gadisthan Jetpur - કર્મચારી પગાર અને ઉપાડ સ્ટેટમેન્ટ*\n`;
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    let msg = isEn ? `*👥 Gadisthan Jetpur - Staff Salary & Advance Statement*\n` : `*👥 Gadisthan Jetpur - કર્મચારી પગાર અને ઉપાડ સ્ટેટમેન્ટ*\n`;
     msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    msg += `👤 *કર્મચારી:* ${emp.name} (${emp.role})\n`;
-    if (emp.phone) msg += `📞 *મોબાઇલ:* ${emp.phone}\n`;
-    msg += `💼 *માસિક પગાર:* ₹${(emp.salary || 0).toLocaleString('en-IN')}\n`;
-    msg += `🔻 *આ મહિનાનો ઉપાડ:* ₹${(emp.currentMonthUpad || 0).toLocaleString('en-IN')}\n`;
+    msg += isEn ? `👤 *Employee:* ${emp.name} (${emp.role})\n` : `👤 *કર્મચારી:* ${emp.name} (${emp.role})\n`;
+    if (emp.phone) msg += isEn ? `📞 *Mobile:* ${emp.phone}\n` : `📞 *મોબાઇલ:* ${emp.phone}\n`;
+    msg += isEn ? `💼 *Monthly Salary:* ₹${(emp.salary || 0).toLocaleString('en-IN')}\n` : `💼 *માસિક પગાર:* ₹${(emp.salary || 0).toLocaleString('en-IN')}\n`;
+    msg += isEn ? `🔻 *This Month Advances:* ₹${(emp.currentMonthUpad || 0).toLocaleString('en-IN')}\n` : `🔻 *આ મહિનાનો ઉપાડ:* ₹${(emp.currentMonthUpad || 0).toLocaleString('en-IN')}\n`;
     if ((emp.currentMonthPagarPaid || 0) > 0) {
-      msg += `💵 *આ મહિને ચૂકવેલ પગાર:* ₹${(emp.currentMonthPagarPaid || 0).toLocaleString('en-IN')}\n`;
+      msg += isEn ? `💵 *Salary Paid This Month:* ₹${(emp.currentMonthPagarPaid || 0).toLocaleString('en-IN')}\n` : `💵 *આ મહિને ચૂકવેલ પગાર:* ₹${(emp.currentMonthPagarPaid || 0).toLocaleString('en-IN')}\n`;
     }
-    msg += `🟢 *બાકી ચૂકવવાપાત્ર રકમ:* ₹${(emp.netBalance || 0).toLocaleString('en-IN')}\n`;
+    msg += isEn ? `🟢 *Net Payable Balance:* ₹${(emp.netBalance || 0).toLocaleString('en-IN')}\n` : `🟢 *બાકી ચૂકવવાપાત્ર રકમ:* ₹${(emp.netBalance || 0).toLocaleString('en-IN')}\n`;
     msg += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    msg += `📜 *વિગતવાર ખાતાવહી હિસાબ:*\n`;
+    msg += isEn ? `📜 *Detailed Ledger Entries:*\n` : `📜 *વિગતવાર ખાતાવહી હિસાબ:*\n`;
 
     const entries = [
       ...(emp.upads || []).map(u => ({ ...u, entryType: 'upad' })),
@@ -9725,11 +10703,11 @@ const App = {
     entries.sort((a, b) => (b.date + (b.time || '')).localeCompare(a.date + (a.time || '')));
 
     if (entries.length === 0) {
-      msg += `• કોઈ એન્ટ્રી નથી.\n`;
+      msg += isEn ? `• No entries found.\n` : `• કોઈ એન્ટ્રી નથી.\n`;
     } else {
       entries.forEach((item, i) => {
         const isUpad = item.entryType === 'upad';
-        const typeStr = isUpad ? '[ઉપાડ]' : '[પગાર ચૂકવણી]';
+        const typeStr = isEn ? (isUpad ? '[Advance/Upad]' : '[Salary Payment]') : (isUpad ? '[ઉપાડ]' : '[પગાર ચૂકવણી]');
         msg += `${i + 1}. ${item.date}: ${typeStr} ₹${(item.amount || 0).toLocaleString('en-IN')} - ${item.title || ''}${item.remarks ? ` (${item.remarks})` : ''}\n`;
       });
     }
@@ -13077,10 +14055,6 @@ const App = {
   // =========================================================================
   // AI REPORT ASSISTANT (STRICT READ-ONLY Q&A, ANALYTICS & PDF EXPORT)
   // =========================================================================
-  aiReportsCache: {},
-  aiSpeechRecognition: null,
-  isAiListening: false,
-
   escapeHtml(str) {
     if (str === null || str === undefined) return '';
     return String(str)
@@ -13089,575 +14063,6 @@ const App = {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
-  },
-
-  openAiReportModal() {
-    this.openModal('modal-ai-report');
-    const input = document.getElementById('ai-report-input');
-    if (input) {
-      setTimeout(() => input.focus(), 150);
-    }
-    this.checkAiEngineStatus();
-  },
-
-  closeAiReportModal() {
-    this.closeModal('modal-ai-report');
-    if (this.isAiListening && this.aiSpeechRecognition) {
-      try { this.aiSpeechRecognition.stop(); } catch (e) { }
-      this.isAiListening = false;
-      const micBtn = document.getElementById('btn-ai-voice-mic');
-      if (micBtn) micBtn.classList.remove('listening');
-    }
-  },
-
-  async checkAiEngineStatus() {
-    try {
-      const res = await fetch('/api/ai/status');
-      const data = await res.json();
-      const pill = document.getElementById('ai-key-status-pill');
-      if (pill) {
-        if (data.geminiEnabled) {
-          pill.style.background = '#dcfce7';
-          pill.style.color = '#15803d';
-          pill.textContent = '🟢 Google Gemini Active';
-        } else {
-          pill.style.background = '#eef2ff';
-          pill.style.color = '#4338ca';
-          pill.textContent = '⚡ Smart Engine Ready';
-        }
-      }
-    } catch (e) { }
-  },
-
-  toggleAiKeySettings() {
-    const drawer = document.getElementById('ai-key-drawer');
-    if (!drawer) return;
-    drawer.style.display = (drawer.style.display === 'none' || !drawer.style.display) ? 'block' : 'none';
-  },
-
-  async saveGeminiApiKey() {
-    const input = document.getElementById('input-gemini-api-key');
-    const key = (input?.value || '').trim();
-    if (!key) {
-      this.showToast('કૃપા કરીને Google Gemini API Key દાખલ કરો.', 'warning');
-      return;
-    }
-    try {
-      const res = await fetch('/api/ai/save-key', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey: key })
-      });
-      const data = await res.json();
-      if (data.success) {
-        this.showToast('Google Gemini API Key સફળતાપૂર્વક સેવ થઈ ગઈ!', 'success');
-        this.checkAiEngineStatus();
-        this.toggleAiKeySettings();
-      } else {
-        this.showToast('ભૂલ: ' + data.error, 'error');
-      }
-    } catch (e) {
-      this.showToast('સેવ કરવામાં ક્ષતિ: ' + e.message, 'error');
-    }
-  },
-
-  askQuickPrompt(text) {
-    const input = document.getElementById('ai-report-input');
-    if (input) {
-      input.value = text;
-      this.sendAiQuery();
-    }
-  },
-
-  aiSpeechSilenceTimer: null,
-
-  toggleSpeechRecognition() {
-    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRec) {
-      this.showToast('તમારા બ્રાઉઝરમાં સ્પીચ રેકગ્નિશન સપોર્ટ નથી. કૃપા કરીને પ્રશ્ન ટાઈપ કરો.', 'warning');
-      return;
-    }
-
-    const micBtn = document.getElementById('btn-ai-voice-mic');
-    const input = document.getElementById('ai-report-input');
-
-    if (this.isAiListening) {
-      if (this.aiSpeechSilenceTimer) {
-        clearTimeout(this.aiSpeechSilenceTimer);
-        this.aiSpeechSilenceTimer = null;
-      }
-      if (this.aiSpeechRecognition) {
-        try { this.aiSpeechRecognition.stop(); } catch (e) { }
-      }
-      this.isAiListening = false;
-      if (micBtn) micBtn.classList.remove('listening');
-      // If user stopped mic and full question is ready, send it!
-      if (input && input.value.trim().length > 2) {
-        this.sendAiQuery();
-      }
-      return;
-    }
-
-    try {
-      const recognition = new SpeechRec();
-      this.aiSpeechRecognition = recognition;
-      recognition.continuous = true; // Don't shut off after 1-2 seconds
-      recognition.interimResults = true; // Show words live as you speak Gujarati
-      recognition.lang = 'gu-IN'; // Pure Gujarati voice model
-      recognition.maxAlternatives = 1;
-
-      let finalTranscript = '';
-      if (input) input.value = '';
-
-      recognition.onstart = () => {
-        this.isAiListening = true;
-        if (micBtn) micBtn.classList.add('listening');
-        this.showToast('🎙️ બોલો... (ગુજરાતીમાં સાંભળી રહ્યું છે, પૂરું બોલાય ત્યાં સુધી ચાલુ રહેશે)', 'info');
-      };
-
-      recognition.onresult = (event) => {
-        let interimTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const res = event.results[i];
-          if (res.isFinal) {
-            finalTranscript += res[0].transcript + ' ';
-          } else {
-            interimTranscript += res[0].transcript;
-          }
-        }
-
-        const currentText = (finalTranscript + interimTranscript).trim();
-        if (input && currentText) {
-          input.value = currentText;
-        }
-
-        // Reset silence timer on every recognized word
-        if (this.aiSpeechSilenceTimer) {
-          clearTimeout(this.aiSpeechSilenceTimer);
-        }
-
-        // Give a generous 3-second silence timer before auto-sending
-        this.aiSpeechSilenceTimer = setTimeout(() => {
-          if (this.isAiListening && input && input.value.trim().length > 3) {
-            try { recognition.stop(); } catch (e) { }
-            this.isAiListening = false;
-            if (micBtn) micBtn.classList.remove('listening');
-            this.sendAiQuery();
-          }
-        }, 3000);
-      };
-
-      recognition.onerror = (event) => {
-        if (event.error !== 'no-speech') {
-          console.warn('Speech recognition error:', event.error);
-        }
-      };
-
-      recognition.onend = () => {
-        this.isAiListening = false;
-        if (micBtn) micBtn.classList.remove('listening');
-      };
-
-      recognition.start();
-    } catch (err) {
-      this.isAiListening = false;
-      if (micBtn) micBtn.classList.remove('listening');
-      this.showToast('માઇક્રોફોન શરૂ કરવામાં ક્ષતિ: ' + err.message, 'error');
-    }
-  },
-
-  toggleAiFullscreen() {
-    const modalBox = document.querySelector('.ai-report-modal-box');
-    const lbl = document.getElementById('lbl-ai-fullscreen');
-    if (!modalBox) return;
-    const isFull = modalBox.classList.toggle('fullscreen');
-    if (lbl) {
-      lbl.textContent = isFull ? 'નાનું કરો' : 'મોટું કરો';
-    }
-  },
-
-  clearAiChat() {
-    const thread = document.getElementById('ai-chat-thread');
-    if (!thread) return;
-    const isEn = (window.i18n && window.i18n.currentLang === 'en');
-    thread.innerHTML = `
-      <div class="ai-welcome-card">
-        <div class="ai-welcome-icon">✨</div>
-        <h4 style="margin: 0 0 6px 0; color: #1e1b4b; font-size: 1.05rem; font-weight: 800;">
-          ${isEn ? 'AI Hisab Assistant Ready' : 'જય સ્વામિનારાયણ! હું તમારો AI હિસાબ સહાયક છું.'}
-        </h4>
-        <p style="margin: 0 0 12px 0; font-size: 0.88rem; color: #475569; line-height: 1.5;">
-          ${isEn ? 'Ask any question about temple accounts, kitchen expenses, cash breakdown, or advance registers.' : 'તમે હિસાબને લગતો કોઈપણ પ્રશ્ન લખીને કે માઇકથી બોલીને પૂછી શકો છો. Google Gemini ડેટાબેઝમાંથી ગણતરી કરીને સચોટ રિપોર્ટ તૈયાર કરી આપશે.'}
-        </p>
-      </div>
-    `;
-    this.showToast(isEn ? 'Chat cleared.' : 'ચેટ સાફ કરવામાં આવી છે.', 'info');
-  },
-
-  formatAiMarkdown(text) {
-    if (!text) return '';
-    let html = this.escapeHtml(text);
-    // Convert bold **text**
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    // Convert bullet lists
-    const lines = html.split('\n');
-    let inList = false;
-    let result = [];
-    for (let line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
-        if (!inList) {
-          result.push('<ul style="margin: 6px 0 10px 20px; padding: 0;">');
-          inList = true;
-        }
-        result.push(`<li style="margin-bottom: 5px;">${trimmed.substring(2)}</li>`);
-      } else {
-        if (inList) {
-          result.push('</ul>');
-          inList = false;
-        }
-        if (trimmed.length > 0) {
-          result.push(`<p style="margin: 0 0 8px 0;">${line}</p>`);
-        }
-      }
-    }
-    if (inList) result.push('</ul>');
-    return result.join('');
-  },
-
-  async sendAiQuery() {
-    const input = document.getElementById('ai-report-input');
-    const query = (input?.value || '').trim();
-    if (!query) return;
-
-    input.value = '';
-    const thread = document.getElementById('ai-chat-thread');
-    if (!thread) return;
-
-    // Remove initial welcome card so the report card gets prime view
-    const welcomeCard = thread.querySelector('.ai-welcome-card');
-    if (welcomeCard) {
-      welcomeCard.remove();
-    }
-
-    // 1. Append User Message Bubble
-    const userRow = document.createElement('div');
-    userRow.className = 'ai-msg-user-row';
-    userRow.innerHTML = `<div class="ai-msg-user-bubble">${this.escapeHtml(query)}</div>`;
-    thread.appendChild(userRow);
-
-    // 2. Append Thinking Loader Bubble
-    const isEn = (window.i18n && window.i18n.currentLang === 'en');
-    const loadingId = 'ai-loading-' + Date.now();
-    const loadingRow = document.createElement('div');
-    loadingRow.id = loadingId;
-    loadingRow.style.display = 'flex';
-    loadingRow.style.alignItems = 'center';
-    loadingRow.style.gap = '8px';
-    loadingRow.style.padding = '12px 18px';
-    loadingRow.style.background = '#ffffff';
-    loadingRow.style.border = '1px solid #cbd5e1';
-    loadingRow.style.borderRadius = '14px';
-    loadingRow.style.width = 'fit-content';
-    loadingRow.style.color = '#4338ca';
-    loadingRow.style.fontWeight = '700';
-    loadingRow.style.fontSize = '0.9rem';
-    loadingRow.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
-    loadingRow.innerHTML = `<span>✨</span> <span>${isEn ? 'Google Gemini analyzing verified temple database...' : 'Google Gemini ડેટાબેઝમાંથી સચોટ હિસાબ વિશ્લેષણ કરી રહ્યું છે...'}</span>`;
-    thread.appendChild(loadingRow);
-    thread.scrollTo({ top: thread.scrollHeight, behavior: 'smooth' });
-
-    // 3. Send API Request
-    try {
-      const res = await fetch('/api/ai/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: query, language: window.i18n?.currentLang || 'gu' })
-      });
-      const data = await res.json();
-
-      // Remove loading indicator
-      const loader = document.getElementById(loadingId);
-      if (loader) loader.remove();
-
-      if (!data.success) {
-        const errorCard = document.createElement('div');
-        errorCard.style.padding = '14px 18px';
-        errorCard.style.background = '#fef2f2';
-        errorCard.style.color = '#b91c1c';
-        errorCard.style.border = '1.5px solid #fecaca';
-        errorCard.style.borderRadius = '12px';
-        errorCard.style.fontWeight = '700';
-        errorCard.textContent = data.error || (isEn ? 'Could not generate report.' : 'રિપોર્ટ બનાવી શકાયો નથી.');
-        thread.appendChild(errorCard);
-        thread.scrollTo({ top: thread.scrollHeight, behavior: 'smooth' });
-        return;
-      }
-
-      // Cache report for PDF / Print
-      const reportId = 'rep_' + Date.now();
-      this.aiReportsCache[reportId] = data;
-
-      // Render Rich Report Card
-      const reportCard = document.createElement('div');
-      reportCard.className = 'ai-report-card';
-      reportCard.id = reportId;
-
-      // KPIs HTML
-      let kpisHtml = '';
-      if (data.kpis && Array.isArray(data.kpis) && data.kpis.length > 0) {
-        kpisHtml = `
-          <div class="ai-card-kpi-grid">
-            ${data.kpis.map(k => `
-              <div class="ai-kpi-tile">
-                <div class="ai-kpi-label">${this.escapeHtml(k.label)}</div>
-                <div class="ai-kpi-val" style="color: ${k.color || '#0f172a'};">${this.escapeHtml(k.value)}</div>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }
-
-      // Table HTML
-      let tableHtml = '';
-      if (data.table && data.table.rows && data.table.rows.length > 0) {
-        tableHtml = `
-          <div class="ai-table-wrap">
-            <table class="ai-report-table">
-              <thead>
-                <tr>
-                  ${data.table.headers.map(h => `<th>${this.escapeHtml(h)}</th>`).join('')}
-                </tr>
-              </thead>
-              <tbody>
-                ${data.table.rows.map(r => `
-                  <tr>
-                    ${r.map((cell, ci) => `<td style="${ci === r.length - 1 ? 'font-weight: 800; text-align: right;' : ''}">${this.escapeHtml(String(cell))}</td>`).join('')}
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </div>
-          <div class="ai-table-footer-total">
-            <span>${isEn ? 'Total Sum / Count:' : 'કુલ સરવાળો / ગણતરી:'}</span>
-            <span style="color: #b91c1c; font-size: 1.15rem; font-family: var(--font-heading);">${this.escapeHtml(data.table.totalAmount || '')}</span>
-          </div>
-        `;
-      }
-
-      // Format narrative with markdown helper
-      const narrativeFormatted = this.formatAiMarkdown(data.narrative || '');
-
-      reportCard.innerHTML = `
-        <div class="ai-card-top-bar">
-          <div class="ai-card-top-title-wrap">
-            <h4 class="ai-card-title">
-              <span>📊</span> <span>${this.escapeHtml(data.reportTitle || 'હિસાબ રિપોર્ટ')}</span>
-            </h4>
-            <span class="ai-card-period">📅 ${this.escapeHtml(data.period || '')}</span>
-          </div>
-          <div class="ai-card-top-actions" style="display: flex; align-items: center; gap: 8px;">
-            <button type="button" class="btn-ai-print" onclick="App.printAiReport('${reportId}')" title="${isEn ? 'Print report' : 'પ્રિન્ટ કાઢો'}">
-              🖨️ <span>${isEn ? 'Print' : 'પ્રિન્ટ'}</span>
-            </button>
-            <button type="button" class="btn-ai-copy" onclick="App.copyAiReportText('${reportId}')" title="${isEn ? 'Copy summary' : 'કોપી કરો'}">
-              📋 <span>${isEn ? 'Copy' : 'કોપી'}</span>
-            </button>
-          </div>
-        </div>
-        <div class="ai-card-narrative-box">
-          ${narrativeFormatted}
-        </div>
-        ${kpisHtml}
-        ${tableHtml}
-      `;
-
-      thread.appendChild(reportCard);
-      setTimeout(() => {
-        thread.scrollTo({ top: reportCard.offsetTop - 12, behavior: 'smooth' });
-      }, 80);
-    } catch (err) {
-      const loader = document.getElementById(loadingId);
-      if (loader) loader.remove();
-      this.showToast('સર્વર કનેક્શનમાં ક્ષતિ: ' + err.message, 'error');
-    }
-  },
-
-  copyAiReportText(reportId) {
-    const data = this.aiReportsCache[reportId];
-    if (!data) return;
-    const text = `*${data.reportTitle}*\nમુદત: ${data.period}\n\n${data.narrative}\n\nકુલ રકમ: ${data.table?.totalAmount || '-'}\n(ગાદીસ્થાન જેતપુર - AI હિસાબ રિપોર્ટ)`;
-    navigator.clipboard.writeText(text).then(() => {
-      this.showToast('રિપોર્ટ સફળતાપૂર્વક કોપી થઈ ગયો!', 'success');
-    }).catch(() => {
-      this.showToast('કોપી થઈ શક્યું નહીં.', 'warning');
-    });
-  },
-
-  printAiReport(reportId) {
-    const data = this.aiReportsCache[reportId];
-    if (!data) return;
-    const isEn = (window.i18n && window.i18n.currentLang === 'en');
-    const orgName = this.settings?.orgName || 'Gadisthan Jetpur';
-
-    const printWin = window.open('', '_blank', 'width=900,height=750');
-    if (!printWin) {
-      alert('કૃપા કરીને પોપ-અપ બ્લૉકર અનબ્લૉક કરો.');
-      return;
-    }
-
-    const narrativeFormatted = (data.narrative || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    let rowsHtml = '';
-    if (data.table && data.table.rows && data.table.rows.length > 0) {
-      rowsHtml = data.table.rows.map(r => `
-        <tr>
-          ${r.map((cell, ci) => `<td style="padding: 6px 10px; border: 1px solid #cbd5e1; ${ci === r.length - 1 ? 'text-align: right; font-weight: bold;' : ''}">${cell}</td>`).join('')}
-        </tr>
-      `).join('');
-    }
-
-    printWin.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${data.reportTitle}</title>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 25px; margin: 0; color: #0f172a; }
-            .letterhead { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 16px; }
-            .org-title { font-size: 1.6rem; font-weight: 900; margin: 0; color: #1e3a8a; }
-            .rep-title { font-size: 1.15rem; font-weight: 800; margin: 6px 0 0 0; }
-            .period-tag { font-size: 0.85rem; color: #475569; margin-top: 4px; font-weight: 600; }
-            .narrative-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 12px; margin-bottom: 16px; font-size: 0.95rem; line-height: 1.5; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.88rem; }
-            th { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; font-weight: 800; }
-            .total-row { background: #f8fafc; font-weight: 900; font-size: 1rem; }
-            .sign-row { margin-top: 50px; display: flex; justify-content: space-between; padding: 0 30px; font-weight: bold; }
-            @media print {
-              body { padding: 0; }
-              @page { margin: 15mm; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="letterhead">
-            <h1 class="org-title">${orgName}</h1>
-            <h2 class="rep-title">${data.reportTitle}</h2>
-            <div class="period-tag">${isEn ? 'Period' : 'સમયગાળો'}: ${data.period} | ${new Date().toLocaleDateString('gu-IN')}</div>
-          </div>
-          <div class="narrative-box">${narrativeFormatted}</div>
-          ${data.table && data.table.rows && data.table.rows.length > 0 ? `
-            <table>
-              <thead>
-                <tr>${data.table.headers.map(h => `<th>${h}</th>`).join('')}</tr>
-              </thead>
-              <tbody>
-                ${rowsHtml}
-                <tr class="total-row">
-                  <td colspan="${data.table.headers.length - 1}" style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: right;">${isEn ? 'Grand Total:' : 'કુલ સરવાળો:'}</td>
-                  <td style="padding: 8px 10px; border: 1px solid #cbd5e1; text-align: right; color: #b91c1c;">${data.table.totalAmount || ''}</td>
-                </tr>
-              </tbody>
-            </table>
-          ` : ''}
-          <div class="sign-row">
-            <div>તૈયાર કરનાર: ______________</div>
-            <div>મંજૂર કરનાર (એડમિન): ______________</div>
-          </div>
-          <script>
-            window.onload = function() { window.print(); }
-          </script>
-        </body>
-      </html>
-    `);
-    printWin.document.close();
-  },
-
-  async downloadAiReportPdf(reportId) {
-    const data = this.aiReportsCache[reportId];
-    if (!data) return;
-
-    this.showToast('📄 PDF તૈયાર થઈ રહી છે, રાહ જુઓ...', 'info');
-
-    const orgName = this.settings?.orgName || 'Gadisthan Jetpur';
-    const isEn = (window.i18n && window.i18n.currentLang === 'en');
-    const narrativeFormatted = (data.narrative || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-
-    let rowsHtml = '';
-    if (data.table && data.table.rows && data.table.rows.length > 0) {
-      rowsHtml = data.table.rows.map(r => `
-        <tr>
-          ${r.map((cell, ci) => `<td style="padding: 6px 8px; border: 1px solid #cbd5e1; font-size: 11px; ${ci === r.length - 1 ? 'text-align: right; font-weight: bold;' : ''}">${cell}</td>`).join('')}
-        </tr>
-      `).join('');
-    }
-
-    const container = document.getElementById('ai-pdf-export-template');
-    if (!container) return;
-
-    container.style.display = 'block';
-    container.innerHTML = `
-      <div id="ai-pdf-content" style="padding: 20px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #ffffff; color: #0f172a; width: 100%; box-sizing: border-box;">
-        <div style="text-align: center; border-bottom: 2.5px solid #1e3a8a; padding-bottom: 10px; margin-bottom: 14px;">
-          <h1 style="font-size: 22px; font-weight: 900; margin: 0; color: #1e3a8a; letter-spacing: 0.5px;">${orgName}</h1>
-          <h2 style="font-size: 15px; font-weight: 800; margin: 4px 0 0 0; color: #0f172a;">${data.reportTitle}</h2>
-          <div style="font-size: 12px; color: #475569; margin-top: 3px; font-weight: 600;">
-            ${isEn ? 'Period' : 'સમયગાળો'}: ${data.period} | ${isEn ? 'Generated on' : 'પ્રિન્ટ તારીખ'}: ${new Date().toLocaleDateString('gu-IN')} ${new Date().toLocaleTimeString('gu-IN', { hour: '2-digit', minute: '2-digit' })}
-          </div>
-        </div>
-
-        <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; margin-bottom: 14px; font-size: 12px; line-height: 1.5;">
-          ${narrativeFormatted}
-        </div>
-
-        ${data.table && data.table.rows && data.table.rows.length > 0 ? `
-          <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
-            <thead>
-              <tr style="background: #f1f5f9;">
-                ${data.table.headers.map(h => `<th style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: left; font-size: 11px; font-weight: 800;">${h}</th>`).join('')}
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-              <tr style="background: #f8fafc; font-weight: 900;">
-                <td colspan="${data.table.headers.length - 1}" style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: right; font-size: 12px;">${isEn ? 'Grand Total:' : 'કુલ સરવાળો:'}</td>
-                <td style="padding: 7px 8px; border: 1px solid #cbd5e1; text-align: right; color: #b91c1c; font-size: 12px;">${data.table.totalAmount || ''}</td>
-              </tr>
-            </tbody>
-          </table>
-        ` : ''}
-
-        <div style="margin-top: 40px; display: flex; justify-content: space-between; padding: 0 20px; font-size: 12px; font-weight: bold; color: #334155;">
-          <div>તૈયાર કરનાર: ______________</div>
-          <div>મંજૂર કરનાર (એડમિન): ______________</div>
-        </div>
-      </div>
-    `;
-
-    // Check if html2pdf is available
-    if (typeof html2pdf !== 'undefined') {
-      const opt = {
-        margin: [8, 8, 8, 8],
-        filename: `${(data.reportTitle || 'Report').replace(/[^a-zA-Z0-9\u0A80-\u0AFF]/g, '_')}_${Date.now()}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      try {
-        await html2pdf().from(container.querySelector('#ai-pdf-content')).set(opt).save();
-        container.style.display = 'none';
-        container.innerHTML = '';
-        this.showToast('✅ PDF સફળતાપૂર્વક ડાઉનલોડ થઈ ગઈ!', 'success');
-        return;
-      } catch (e) {
-        console.warn('html2pdf error, fallback to print:', e);
-      }
-    }
-
-    // Fallback: If html2pdf is not loaded, use print window
-    container.style.display = 'none';
-    container.innerHTML = '';
-    this.printAiReport(reportId);
   },
 
   // =========================================================================
@@ -13742,6 +14147,7 @@ const App = {
     const lblRec = document.getElementById('due-type-lbl-receivable');
     const lblPay = document.getElementById('due-type-lbl-payable');
     const lblName = document.getElementById('lbl-due-name');
+    const isEn = (window.i18n && window.i18n.currentLang === 'en');
 
     if (isPayable) {
       if (lblPay) {
@@ -13757,10 +14163,10 @@ const App = {
       if (submitBtn) {
         submitBtn.style.background = 'linear-gradient(135deg, #dc2626, #ef4444)';
       }
-      if (btnText) btnText.textContent = 'આપવાના ઉમેરો';
-      if (lblName) lblName.textContent = 'વેપારી કે વ્યક્તિનું નામ *:';
-      if (nameInput) nameInput.placeholder = 'વેપારી કે વ્યક્તિનું નામ લખો...';
-      if (descInput) descInput.placeholder = 'વિગત (દા.ત. કરિયાણું, કલર કામ...)';
+      if (btnText) btnText.textContent = isEn ? 'Add Payable' : 'આપવાના ઉમેરો';
+      if (lblName) lblName.textContent = isEn ? 'Vendor / Person Name *:' : 'વેપારી કે વ્યક્તિનું નામ *:';
+      if (nameInput) nameInput.placeholder = isEn ? 'Enter vendor or person name...' : 'વેપારી કે વ્યક્તિનું નામ લખો...';
+      if (descInput) descInput.placeholder = isEn ? 'Details (e.g. Grocery, Painting work...)' : 'વિગત (દા.ત. કરિયાણું, કલર કામ...)';
       if (amountInput) amountInput.style.color = '#dc2626';
     } else {
       if (lblRec) {
@@ -13776,10 +14182,10 @@ const App = {
       if (submitBtn) {
         submitBtn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
       }
-      if (btnText) btnText.textContent = 'લેવાના ઉમેરો';
-      if (lblName) lblName.textContent = 'વ્યક્તિ કે ભક્તનું નામ *:';
-      if (nameInput) nameInput.placeholder = 'વ્યક્તિ કે ભક્તનું નામ લખો...';
-      if (descInput) descInput.placeholder = 'વિગત (દા.ત. મંદિર કામ, ઉછીના આપ્યા...)';
+      if (btnText) btnText.textContent = isEn ? 'Add Receivable' : 'લેવાના ઉમેરો';
+      if (lblName) lblName.textContent = isEn ? 'Person / Devotee Name *:' : 'વ્યક્તિ કે ભક્તનું નામ *:';
+      if (nameInput) nameInput.placeholder = isEn ? 'Enter person or devotee name...' : 'વ્યક્તિ કે ભક્તનું નામ લખો...';
+      if (descInput) descInput.placeholder = isEn ? 'Details (e.g. Temple work, Lent money...)' : 'વિગત (દા.ત. મંદિર કામ, ઉછીના આપ્યા...)';
       if (amountInput) amountInput.style.color = '#059669';
     }
   },
@@ -13830,11 +14236,12 @@ const App = {
     const badgePayTab = document.getElementById('badge-tab-payable');
     const headerBadge = document.getElementById('header-dues-badge');
 
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
     if (elRecAmt) elRecAmt.textContent = '₹ ' + recAmt.toLocaleString('en-IN');
-    if (elRecCnt) elRecCnt.textContent = `${s.countReceivablePending || 0} બાકી`;
+    if (elRecCnt) elRecCnt.textContent = isEn ? `${s.countReceivablePending || 0} Pending` : `${s.countReceivablePending || 0} બાકી`;
 
     if (elPayAmt) elPayAmt.textContent = '₹ ' + payAmt.toLocaleString('en-IN');
-    if (elPayCnt) elPayCnt.textContent = `${s.countPayablePending || 0} બાકી`;
+    if (elPayCnt) elPayCnt.textContent = isEn ? `${s.countPayablePending || 0} Pending` : `${s.countPayablePending || 0} બાકી`;
 
     if (elNetAmt) {
       elNetAmt.textContent = (net >= 0 ? '₹ ' : '-₹ ') + Math.abs(net).toLocaleString('en-IN');
@@ -13842,10 +14249,12 @@ const App = {
     }
     if (elNetDesc) {
       if (net === 0) {
-        elNetDesc.textContent = 'સરભર';
+        elNetDesc.textContent = isEn ? 'Balanced' : 'સરભર';
         elNetDesc.style.color = '#2563eb';
       } else {
-        elNetDesc.textContent = (net > 0 ? 'લેણાં વધુ' : 'દેવાં વધુ');
+        elNetDesc.textContent = isEn
+          ? (net > 0 ? 'Receivables Higher' : 'Payables Higher')
+          : (net > 0 ? 'લેણાં વધુ' : 'દેવાં વધુ');
         elNetDesc.style.color = (net > 0 ? '#16a34a' : '#dc2626');
       }
     }
@@ -13913,20 +14322,21 @@ const App = {
     const tbody = document.getElementById('dues-table-tbody');
     const tfoot = document.getElementById('dues-table-tfoot');
     if (!tbody) return;
+    const isEn = (window.i18n && window.i18n.currentLang === 'en');
 
     if (!items || items.length === 0) {
       tbody.innerHTML = `
         <tr>
           <td colspan="8" style="text-align: center; padding: 36px 16px; color: #94a3b8;">
             <div style="font-size: 2rem; margin-bottom: 6px;">🤝</div>
-            <div style="font-size: 0.95rem; font-weight: 800; color: #64748b;">કોઈ એન્ટ્રી મળી નથી</div>
-            <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">ઉપરના ફોર્મમાંથી નવી એન્ટ્રી ઉમેરી શકો છો.</div>
+            <div style="font-size: 0.95rem; font-weight: 800; color: #64748b;">${isEn ? 'No entries found' : 'કોઈ એન્ટ્રી મળી નથી'}</div>
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 2px;">${isEn ? 'You can add new entries using the form above.' : 'ઉપરના ફોર્મમાંથી નવી એન્ટ્રી ઉમેરી શકો છો.'}</div>
           </td>
         </tr>
       `;
       if (tfoot) tfoot.innerHTML = '';
       const countBadge = document.getElementById('dues-items-count-badge');
-      if (countBadge) countBadge.textContent = '0 એન્ટ્રી';
+      if (countBadge) countBadge.textContent = isEn ? '0 Entries' : '0 એન્ટ્રી';
       const footerTotal = document.getElementById('dues-footer-total');
       if (footerTotal) footerTotal.textContent = '₹ 0';
       return;
@@ -13944,19 +14354,19 @@ const App = {
 
       let statusBadge = '';
       if (remaining === 0) {
-        statusBadge = `<span style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; border-radius: 12px; padding: 2px 7px; font-size: 0.74rem; font-weight: 800;">🟢 પૂર્ણ</span>`;
+        statusBadge = `<span style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; border-radius: 12px; padding: 2px 7px; font-size: 0.74rem; font-weight: 800;">${isEn ? '🟢 Settled' : '🟢 પૂર્ણ'}</span>`;
       } else if (settled > 0) {
-        statusBadge = `<span style="background: #fef9c3; color: #854d0e; border: 1px solid #fde047; border-radius: 12px; padding: 2px 7px; font-size: 0.74rem; font-weight: 800;">🟡 આંશિક</span>`;
+        statusBadge = `<span style="background: #fef9c3; color: #854d0e; border: 1px solid #fde047; border-radius: 12px; padding: 2px 7px; font-size: 0.74rem; font-weight: 800;">${isEn ? '🟡 Partial' : '🟡 આંશિક'}</span>`;
       } else {
-        statusBadge = `<span style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 12px; padding: 2px 7px; font-size: 0.74rem; font-weight: 800;">🔴 બાકી</span>`;
+        statusBadge = `<span style="background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; border-radius: 12px; padding: 2px 7px; font-size: 0.74rem; font-weight: 800;">${isEn ? '🔴 Pending' : '🔴 બાકી'}</span>`;
       }
 
       const formattedDate = this.formatDateDisplay(item.date);
       const typeBadge = isReceivable
-        ? `<span style="background: #f0fdf4; color: #166534; border: 1px solid #86efac; border-radius: 6px; padding: 2px 6px; font-size: 0.74rem; font-weight: 800;">🟢 લેવાના</span>`
-        : `<span style="background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 6px; padding: 2px 6px; font-size: 0.74rem; font-weight: 800;">🔴 આપવાના</span>`;
+        ? `<span style="background: #f0fdf4; color: #166534; border: 1px solid #86efac; border-radius: 6px; padding: 2px 6px; font-size: 0.74rem; font-weight: 800;">${isEn ? '🟢 Receivable' : '🟢 લેવાના'}</span>`
+        : `<span style="background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; border-radius: 6px; padding: 2px 6px; font-size: 0.74rem; font-weight: 800;">${isEn ? '🔴 Payable' : '🔴 આપવાના'}</span>`;
 
-      const settleBtnTitle = isReceivable ? 'જમા લો' : 'ચૂકવણી કરો';
+      const settleBtnTitle = isReceivable ? (isEn ? 'Receive' : 'જમા લો') : (isEn ? 'Pay' : 'ચૂકવણી કરો');
       const settleBtnBg = isReceivable ? '#059669' : '#dc2626';
 
       return `
@@ -13976,11 +14386,11 @@ const App = {
             </div>
             ${settled > 0 ? `
               <div style="font-size: 0.76rem; color: #64748b; margin-top: 2px;">
-                કુલ ₹${amt.toLocaleString('en-IN')} | જમા ₹${settled.toLocaleString('en-IN')}
+                ${isEn ? `Total ₹${amt.toLocaleString('en-IN')} | Settle ₹${settled.toLocaleString('en-IN')}` : `કુલ ₹${amt.toLocaleString('en-IN')} | જમા ₹${settled.toLocaleString('en-IN')}`}
               </div>
             ` : (remaining === 0 ? `
               <div style="font-size: 0.76rem; color: #15803d; font-weight: 700; margin-top: 2px;">
-                કુલ ₹${amt.toLocaleString('en-IN')} પૂર્ણ
+                ${isEn ? `Total ₹${amt.toLocaleString('en-IN')} Settled` : `કુલ ₹${amt.toLocaleString('en-IN')} પૂર્ણ`}
               </div>
             ` : '')}
           </td>
@@ -13994,12 +14404,12 @@ const App = {
                 </button>
               ` : `
                 <button type="button" class="btn-secondary" onclick="App.openDueSettleModal('${item.id}')"
-                  style="padding: 5px 12px; font-size: 0.82rem; font-weight: 700; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;" title="ઇતિહાસ જુઓ">
-                  <span>📜</span> <span>ઇતિહાસ</span>
+                  style="padding: 5px 12px; font-size: 0.82rem; font-weight: 700; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;" title="${isEn ? 'View History' : 'ઇતિહાસ જુઓ'}">
+                  <span>📜</span> <span>${isEn ? 'History' : 'ઇતિહાસ'}</span>
                 </button>
               `}
               <button type="button" class="btn-icon" onclick="App.deleteDue('${item.id}', '${(item.name || '').replace(/'/g, "\\'")}')"
-                style="padding: 5px 8px; color: #dc2626; border-radius: 6px; border: 1px solid #fecaca; background: #fff5f5;" title="કાઢી નાખો">
+                style="padding: 5px 8px; color: #dc2626; border-radius: 6px; border: 1px solid #fecaca; background: #fff5f5;" title="${isEn ? 'Delete' : 'કાઢી નાખો'}">
                 🗑️
               </button>
             </div>
@@ -14012,7 +14422,7 @@ const App = {
       tfoot.innerHTML = `
         <tr style="background: #f8fafc; font-weight: 900;">
           <td colspan="5" style="padding: 8px 10px; text-align: right; font-size: 0.88rem; color: #1e293b;">
-            કુલ બાકી (${items.length} એન્ટ્રીઓ):
+            ${isEn ? `Total Outstanding (${items.length} ${items.length === 1 ? 'entry' : 'entries'}):` : `કુલ બાકી (${items.length} એન્ટ્રીઓ):`}
           </td>
           <td style="padding: 8px 8px; text-align: right; font-size: 0.95rem; color: #0f172a;">
             ₹ ${sumRemaining.toLocaleString('en-IN')}
@@ -14023,7 +14433,9 @@ const App = {
     }
 
     const countBadge = document.getElementById('dues-items-count-badge');
-    if (countBadge) countBadge.textContent = `${items.length} એન્ટ્રી${items.length === 1 ? '' : 'ઓ'}`;
+    if (countBadge) countBadge.textContent = isEn
+      ? `${items.length} Entr${items.length === 1 ? 'y' : 'ies'}`
+      : `${items.length} એન્ટ્રી${items.length === 1 ? '' : 'ઓ'}`;
 
     const footerTotal = document.getElementById('dues-footer-total');
     if (footerTotal) {
@@ -14080,6 +14492,9 @@ const App = {
 
       this.showToast(`✅ ${type === 'receivable' ? 'લેવાના બાકી' : 'આપવાના બાકી'} સફળતાપૂર્વક ઉમેરાયા!`, 'success');
       await this.loadDues();
+      if (this.currentDuesTab !== 'all' && this.currentDuesTab !== type) {
+        this.switchDuesTab(type);
+      }
     } catch (err) {
       console.error('Error submitting due:', err);
       this.showToast('❌ સર્વર કનેક્શનમાં ક્ષતિ થઈ', 'danger');
@@ -14106,17 +14521,24 @@ const App = {
     const submitBtn = document.getElementById('btn-due-settle-submit');
     const labelAmt = document.getElementById('due-settle-label-amount');
 
-    if (titleEl) titleEl.textContent = isReceivable ? '💰 રકમ જમા નોંધો' : '💸 ચુકવણી નોંધો';
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    if (titleEl) titleEl.textContent = isEn
+      ? (isReceivable ? '💰 Record Receipt' : '💸 Record Payment')
+      : (isReceivable ? '💰 રકમ જમા નોંધો' : '💸 ચુકવણી નોંધો');
     if (subEl) subEl.textContent = `${due.name} (${due.description || ''})`;
     if (totalEl) totalEl.textContent = '₹ ' + (due.amount || 0).toLocaleString('en-IN');
     if (settledEl) settledEl.textContent = '₹ ' + (due.settledAmount || 0).toLocaleString('en-IN');
     if (remEl) remEl.textContent = '₹ ' + (due.remainingAmount || 0).toLocaleString('en-IN');
-    if (labelAmt) labelAmt.textContent = isReceivable ? 'જમા રકમ (₹) *' : 'ચૂકવેલ રકમ (₹) *';
+    if (labelAmt) labelAmt.textContent = isEn
+      ? (isReceivable ? 'Amount Received (₹) *' : 'Amount Paid (₹) *')
+      : (isReceivable ? 'જમા રકમ (₹) *' : 'ચૂકવેલ રકમ (₹) *');
 
     if (submitBtn) {
       submitBtn.style.background = isReceivable ? '#059669' : '#dc2626';
       submitBtn.style.borderColor = isReceivable ? '#059669' : '#dc2626';
-      submitBtn.innerHTML = isReceivable ? '<span>✅</span> <span>રકમ જમા કરો</span>' : '<span>✅</span> <span>ચુકવણી સેવ કરો</span>';
+      submitBtn.innerHTML = isEn
+        ? (isReceivable ? '<span>✅</span> <span>Record Receipt</span>' : '<span>✅</span> <span>Save Payment</span>')
+        : (isReceivable ? '<span>✅</span> <span>રકમ જમા કરો</span>' : '<span>✅</span> <span>ચુકવણી સેવ કરો</span>');
     }
 
     // Render history
@@ -14130,8 +14552,9 @@ const App = {
     if (!listEl) return;
 
     const hist = due.history || [];
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
     if (hist.length === 0) {
-      listEl.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 0.82rem; padding: 10px;">અગાઉ કોઈ જમા/ચુકવણી થયેલ નથી.</div>`;
+      listEl.innerHTML = `<div style="text-align: center; color: #94a3b8; font-size: 0.82rem; padding: 10px;">${isEn ? 'No prior settlements recorded.' : 'અગાઉ કોઈ જમા/ચુકવણી થયેલ નથી.'}</div>`;
       return;
     }
 
@@ -14139,10 +14562,10 @@ const App = {
       <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
         <thead>
           <tr style="border-bottom: 1px solid #cbd5e1; color: #64748b; text-align: left;">
-            <th style="padding: 4px 6px;">તારીખ</th>
-            <th style="padding: 4px 6px;">રકમ</th>
-            <th style="padding: 4px 6px;">નોંધ</th>
-            <th style="padding: 4px 6px; text-align: center;">રદ</th>
+            <th style="padding: 4px 6px;">${isEn ? 'Date' : 'તારીખ'}</th>
+            <th style="padding: 4px 6px;">${isEn ? 'Amount' : 'રકમ'}</th>
+            <th style="padding: 4px 6px;">${isEn ? 'Note' : 'નોંધ'}</th>
+            <th style="padding: 4px 6px; text-align: center;">${isEn ? 'Del' : 'રદ'}</th>
           </tr>
         </thead>
         <tbody>
@@ -14153,7 +14576,7 @@ const App = {
               <td style="padding: 5px 6px; color: #475569;">${h.note || '-'}</td>
               <td style="padding: 5px 6px; text-align: center;">
                 <button type="button" class="btn-icon" onclick="App.deleteDueSettlement('${due.id}', '${h.id}')"
-                  style="color: #dc2626; padding: 2px 6px; font-size: 0.75rem;" title="આ હપ્તો રદ કરો">✕</button>
+                  style="color: #dc2626; padding: 2px 6px; font-size: 0.75rem;" title="${isEn ? 'Cancel this installment' : 'આ હપ્તો રદ કરો'}">✕</button>
               </td>
             </tr>
           `).join('')}

@@ -37,5 +37,6 @@
   "smtpEmail": "Teraiya.Kaushik24@gmail.com",
   "smtpSenderName": "Gadisthan Jetpur",
   "inactiveBanks": [],
-  "inactiveVouchers": []
+  "inactiveVouchers": [],
+  "login2faEnabled": true
 }

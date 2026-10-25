@@ -48,7 +48,8 @@
         "openingBalance": 0,
         "upadDeduction": 1500
       }
-    ]
+    ],
+    "paymentType": "monthly"
   },
   {
     "id": "emp_101",
@@ -170,7 +171,8 @@
         "openingBalance": 0,
         "upadDeduction": 2500
       }
-    ]
+    ],
+    "paymentType": "monthly"
   },
   {
     "id": "emp_104",
@@ -211,6 +213,60 @@
         "openingBalance": 0,
         "upadDeduction": 0
       }
-    ]
+    ],
+    "paymentType": "monthly",
+    "paymentMode": "bank",
+    "role": "પૂજારી / સેવક"
+  },
+  {
+    "id": "emp_1792583472157",
+    "joiningDate": "2026-10-21",
+    "name": "કાનજીભાઈ ભરવાડ",
+    "pagars": [],
+    "paymentType": "15days",
+    "phone": "9825012345",
+    "role": "ગૌશાળા સહાયક",
+    "salary": 6000,
+    "status": "active",
+    "upads": []
+  },
+  {
+    "id": "emp_1792900764735",
+    "joiningDate": "2026-10-25",
+    "name": "Shyam Test Maharaj",
+    "pagars": [],
+    "paymentMode": "cash",
+    "paymentType": "monthly",
+    "phone": "9988776655",
+    "role": "Rasoiya",
+    "salary": 15000,
+    "status": "active",
+    "upads": []
+  },
+  {
+    "id": "emp_1792900777584",
+    "joiningDate": "2026-10-25",
+    "name": "બલ્ક ૧",
+    "pagars": [],
+    "paymentMode": "cash",
+    "paymentType": "monthly",
+    "phone": "9000000011",
+    "role": "સ્ટાફ",
+    "salary": 10000,
+    "status": "active",
+    "upads": []
+  },
+  {
+    "id": "emp_1792900777592",
+    "joiningDate": "2026-10-25",
+    "name": "બલ્ક ૨",
+    "pagars": [],
+    "paymentMode": "cash",
+    "paymentType": "monthly",
+    "phone": "9000000012",
+    "role": "સ્ટાફ",
+    "salary": 10000,
+    "status": "active",
+    "upads": []
   }
 ]

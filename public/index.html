@@ -37,8 +37,7 @@
     <!-- Top Header -->
     <header class="top-header">
       <div class="brand-wrapper">
-        <div class="brand-logo-icon" id="header-brand-logo" onclick="App.openAdminModal()" role="button" tabindex="0"
-          title="એડમિન પેનલ (Alt+A)" data-shortcut="Alt+A" data-shortcut-pos="bottom" data-i18n-title="adminPanelTitle">
+        <div class="brand-logo-icon" id="header-brand-logo" style="cursor: default;">
           <img src="images/logo.png" alt="Gadisthan Jetpur" class="brand-logo-img">
         </div>
         <div class="brand-info">
@@ -55,14 +54,14 @@
 
         <!-- Expense Diary / Kharch Menu Button -->
         <button id="btn-expense-diary" class="btn-expense-diary" onclick="App.openExpenseDiaryModal()"
-          title="ખર્ચ ડાયરી (Alt+V)" data-shortcut="Alt+V" data-shortcut-pos="bottom"
+          title="ખર્ચ ડાયરી (F1)" data-shortcut="F1" data-shortcut-pos="bottom"
           data-i18n-title="expenseDiaryTitle">
           <span>📝</span> <span data-i18n="expenseDiary">ખર્ચ ડાયરી</span>
         </button>
 
         <!-- Top-Right Accumulated Unbanked Cash Button (🏦 એકઠી થયેલ રોકડ) -->
         <button id="btn-header-bank-accumulated" class="btn-expense-diary btn-bank-accum-header"
-          onclick="App.openBankAccumulatedModal()" title="એકઠી થયેલ રોકડ (Alt+B)" data-shortcut="Alt+B"
+          onclick="App.openBankAccumulatedModal()" title="એકઠી થયેલ રોકડ (F2)" data-shortcut="F2"
           data-shortcut-pos="bottom" data-i18n-title="accumulatedCashTitle">
           <span>🏦</span> <span style="font-weight: 800;" data-i18n="accumulatedCash">એકઠી રોકડ:</span>
           <span id="header-bank-accumulated-amount"
@@ -77,7 +76,7 @@
           </button>
           <div class="header-dropdown-menu" id="header-dropdown-menu">
             <button id="btn-employees-menu" class="menu-item-btn"
-              onclick="App.openEmployeesModal(); App.closeHeaderMenu();" title="કર્મચારીઓ (Alt+E)" data-shortcut="Alt+E"
+              onclick="App.openEmployeesModal(); App.closeHeaderMenu();" title="કર્મચારીઓ (F6)" data-shortcut="F6"
               data-shortcut-pos="left" data-i18n-title="employeesTitle">
               <span class="menu-item-icon">👥</span>
               <div class="menu-item-content">
@@ -95,7 +94,7 @@
             </button>
 
             <button id="btn-history" class="menu-item-btn" onclick="App.openHistoryModal(); App.closeHeaderMenu();"
-              title="પાછલો હિસાબ (Alt+H)" data-shortcut="Alt+H" data-shortcut-pos="left" data-i18n-title="historyTitle">
+              title="પાછલો હિસાબ (F3)" data-shortcut="F3" data-shortcut-pos="left" data-i18n-title="historyTitle">
               <span class="menu-item-icon">📋</span>
               <div class="menu-item-content">
                 <span class="menu-item-title" data-i18n="history">પાછલો હિસાબ</span>
@@ -117,7 +116,7 @@
 
             <!-- Dues Register (લેણાં - દેવાં / બાકી હિસાબ) -->
             <button id="btn-dues-menu" class="menu-item-btn" onclick="App.openDuesModal(); App.closeHeaderMenu();"
-              title="લેણાં - દેવાં / બાકી હિસાબ (Alt+D)" data-shortcut="Alt+D" data-shortcut-pos="left"
+              title="લેણાં - દેવાં / બાકી હિસાબ (F7)" data-shortcut="F7" data-shortcut-pos="left"
               data-i18n-title="duesMenuTitle">
               <span class="menu-item-icon">⚖️</span>
               <div class="menu-item-content">
@@ -129,12 +128,33 @@
               </div>
             </button>
 
-            <button id="btn-ai-report-menu" class="menu-item-btn"
-              onclick="App.openAiReportModal(); App.closeHeaderMenu();" title="AI રિપોર્ટ સહાયક (Alt+R)"
-              data-shortcut="Alt+R" data-shortcut-pos="left" data-i18n-title="aiReportTitle">
-              <span class="menu-item-icon" style="background: #eef2ff; border-color: #c7d2fe;">✨</span>
+            <!-- On-Screen Mini Calculator (F8) -->
+            <button id="btn-calc-menu" class="menu-item-btn"
+              onclick="App.toggleCalculator(); App.closeHeaderMenu();" title="ઓન-સ્ક્રીન કેલ્ક્યુલેટર (F8)"
+              data-shortcut="F8" data-shortcut-pos="left" data-i18n-title="calcMenuTitle">
+              <span class="menu-item-icon">🧮</span>
               <div class="menu-item-content">
-                <span class="menu-item-title" style="color: #4338ca;" data-i18n="aiReport">AI રિપોર્ટ સહાયક</span>
+                <span class="menu-item-title" data-i18n="calculatorMenu">કેલ્ક્યુલેટર</span>
+              </div>
+            </button>
+
+            <!-- Shortcuts Guide (F12) -->
+            <button id="btn-shortcuts-help-menu" class="menu-item-btn"
+              onclick="App.openShortcutsHelpModal(); App.closeHeaderMenu();" title="કીબોર્ડ શોર્ટકટ્સ માર્ગદર્શિકા (F12)"
+              data-shortcut="F12" data-shortcut-pos="left" data-i18n-title="shortcutsHelpTitle">
+              <span class="menu-item-icon">⌨️</span>
+              <div class="menu-item-content">
+                <span class="menu-item-title" data-i18n="shortcutsHelpMenu">શોર્ટકટ્સ હેલ્પ</span>
+              </div>
+            </button>
+
+            <!-- Admin Control Center (Admin Only) -->
+            <button id="btn-admin-panel-menu" class="menu-item-btn"
+              onclick="App.openAdminModal(); App.closeHeaderMenu();" title="એડમિન કંટ્રોલ સેન્ટર"
+              data-shortcut-pos="left" data-i18n-title="adminControlCenter">
+              <span class="menu-item-icon" style="background: #fef3c7; border-color: #fde68a;">⚙️</span>
+              <div class="menu-item-content">
+                <span class="menu-item-title" style="color: #b45309;" data-i18n="adminControlCenter">એડમિન કંટ્રોલ સેન્ટર</span>
               </div>
             </button>
 
@@ -225,8 +245,8 @@
 
             <button id="btn-next-day" class="btn-icon" data-shortcut="Alt+→" data-shortcut-pos="bottom"
               data-i18n-title="nextDay" title="આગળનો દિવસ (Alt+→)">▶</button>
-            <button id="btn-date-today" class="date-pill-btn active" data-shortcut="Alt+T" data-shortcut-pos="bottom"
-              data-i18n="today" title="આજનો હિસાબ (Alt+T)">આજે</button>
+            <button id="btn-date-today" class="date-pill-btn active" data-shortcut="Ctrl+T" data-shortcut-pos="bottom"
+              data-i18n="today" title="આજનો હિસાબ (Ctrl+T)">આજે</button>
           </div>
 
           <div class="grand-total-hero">
@@ -609,6 +629,11 @@
       <!-- Top Admin Header Bar -->
       <div class="admin-page-header">
         <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+          <button type="button" class="btn-toggle-admin-sidebar" id="btn-toggle-admin-sidebar" onclick="App.toggleAdminSidebar()" title="મેનુ સંકોચો / મોટું કરો (Alt + M)">
+            <span class="sidebar-toggle-icon">◀</span>
+            <span class="sidebar-toggle-text" data-i18n="adminCollapseMenu">મેનુ સંકોચો</span>
+          </button>
+
           <div style="display: flex; align-items: center; gap: 8px;">
             <span style="font-size: 1.4rem;">🛡️</span>
             <h2 style="margin: 0; font-size: 1.35rem; color: #0f172a; font-weight: 900;" data-i18n="adminControlCenter">
@@ -636,6 +661,12 @@
       <div class="admin-dashboard-container">
         <!-- Left Sidebar Menu -->
         <aside class="admin-sidebar">
+          <div class="admin-sidebar-header">
+            <div class="admin-sidebar-title" data-i18n="adminSidebarTitle">એડમિન મેનુ</div>
+            <button type="button" class="admin-sidebar-collapse-btn" onclick="App.toggleAdminSidebar()" title="મેનુ સંકોચો (Hide Sidebar)">
+              <span>◀</span>
+            </button>
+          </div>
           <nav class="admin-sidebar-nav">
             <button type="button" class="admin-sidebar-btn active" id="admin-nav-master-hisab"
               onclick="App.switchAdminTab('master-hisab', this)">
@@ -671,6 +702,11 @@
               onclick="App.switchAdminTab('history', this)">
               <span class="admin-nav-icon">📜</span>
               <span class="admin-nav-text" data-i18n="adminNavHistory">એક્ટિવિટી હિસ્ટ્રી</span>
+            </button>
+            <button type="button" class="admin-sidebar-btn" id="admin-nav-users"
+              onclick="App.switchAdminTab('users', this)">
+              <span class="admin-nav-icon">👤</span>
+              <span class="admin-nav-text" data-i18n="adminNavUsers">યુઝર્સ & લૉગિન</span>
             </button>
           </nav>
         </aside>
@@ -745,12 +781,26 @@
                   </datalist>
                 </div>
                 <div class="form-group-item">
+                  <label for="admin-emp-payment-type" data-i18n="adminEmpPaymentTypeLbl">ચૂકવણી પ્રકાર (Payment Type) *:</label>
+                  <select id="admin-emp-payment-type" class="input-text" style="font-weight: 700; cursor: pointer;" onchange="App.onAdminEmpPaymentTypeChange(this.value)">
+                    <option value="monthly" data-i18n="adminEmpPaymentMonthly">📅 માસિક ચૂકવણી (Monthly)</option>
+                    <option value="15days" data-i18n="adminEmpPayment15Days">⏳ ૧૫ દિવસીય ચૂકવણી (15 Days)</option>
+                  </select>
+                </div>
+                <div class="form-group-item">
+                  <label for="admin-emp-payment-mode" data-i18n="adminEmpPaymentModeLbl">પગાર પદ્ધતિ (Salary Mode) *:</label>
+                  <select id="admin-emp-payment-mode" class="input-text" style="font-weight: 700; cursor: pointer;">
+                    <option value="cash" data-i18n="adminEmpModeCashOpt">💵 રોકડ ચુકવણી (Cash - વાઉચરમાં એડ થશે)</option>
+                    <option value="bank" data-i18n="adminEmpModeBankOpt">🏦 બેંક ટ્રાન્સફર (Bank - માત્ર શો થશે)</option>
+                  </select>
+                </div>
+                <div class="form-group-item">
                   <label for="admin-emp-phone" data-i18n="adminEmpPhoneLbl">મોબાઇલ નંબર:</label>
                   <input type="tel" id="admin-emp-phone" class="input-text" placeholder=""
                     data-i18n-ph="adminEmpPhonePh">
                 </div>
                 <div class="form-group-item">
-                  <label for="admin-emp-salary" data-i18n="adminEmpSalaryLbl">માસિક નક્કી પગાર (₹) *:</label>
+                  <label for="admin-emp-salary" id="admin-emp-salary-lbl" data-i18n="adminEmpSalaryLbl">નક્કી પગાર (₹) *:</label>
                   <input type="number" id="admin-emp-salary" class="input-text" placeholder=""
                     data-i18n-ph="adminEmpSalaryPh" min="0">
                 </div>
@@ -773,7 +823,7 @@
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; flex-wrap: wrap; gap: 10px;">
                 <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                   <h4 style="margin: 0; color: #1e40af;" data-i18n="adminEmpListHeading">📋 હાલની કર્મચારી યાદી</h4>
-                  <div class="status-filter-group" style="display: flex; gap: 4px; margin-left: 6px;">
+                  <div class="status-filter-group" style="display: flex; gap: 4px; margin-left: 6px; flex-wrap: wrap;">
                     <button type="button" id="admin-emp-filter-all" class="btn-filter"
                       onclick="App.setAdminEmpStatusFilter('all')"
                       style="padding: 3px 8px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; border: 1px solid #cbd5e1; background: #ffffff; color: #334155;">
@@ -791,6 +841,40 @@
                       style="padding: 3px 8px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; border: 1px solid #cbd5e1; background: #ffffff; color: #334155;">
                       <span data-i18n="adminEmpInactiveStaff">⏸️ છૂટા કરેલ</span> <span id="admin-emp-count-inactive"
                         style="font-size: 0.74rem; opacity: 0.85;">(0)</span>
+                    </button>
+                    <span style="border-left: 1px solid #cbd5e1; margin: 0 2px; height: 18px; align-self: center;"></span>
+                    <button type="button" id="admin-emp-filter-cycle-all" class="btn-filter active"
+                      onclick="App.setAdminEmpPaymentFilter('all')"
+                      style="padding: 3px 8px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; border: 1px solid #cbd5e1; background: #0f172a; color: #ffffff;">
+                      <span data-i18n="adminEmpFilterCycleAll">બધા પ્રકાર</span>
+                    </button>
+                    <button type="button" id="admin-emp-filter-monthly" class="btn-filter"
+                      onclick="App.setAdminEmpPaymentFilter('monthly')"
+                      style="padding: 3px 8px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; border: 1px solid #cbd5e1; background: #ffffff; color: #334155;">
+                      <span data-i18n="adminEmpFilterMonthly">📅 માસિક</span> <span id="admin-emp-count-monthly"
+                        style="font-size: 0.74rem; opacity: 0.85;">(0)</span>
+                    </button>
+                    <button type="button" id="admin-emp-filter-15days" class="btn-filter"
+                      onclick="App.setAdminEmpPaymentFilter('15days')"
+                      style="padding: 3px 8px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; border: 1px solid #cbd5e1; background: #ffffff; color: #334155;">
+                      <span data-i18n="adminEmpFilter15Days">⏳ ૧૫ દિવસ</span> <span id="admin-emp-count-15days"
+                        style="font-size: 0.74rem; opacity: 0.85;">(0)</span>
+                    </button>
+                    <span style="border-left: 1px solid #cbd5e1; margin: 0 2px; height: 18px; align-self: center;"></span>
+                    <button type="button" id="admin-emp-filter-mode-all" class="btn-filter active"
+                      onclick="App.setAdminEmpModeFilter('all')"
+                      style="padding: 3px 8px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; border: 1px solid #cbd5e1; background: #0f172a; color: #ffffff;">
+                      <span data-i18n="adminEmpFilterModeAll">બધા મોડ</span>
+                    </button>
+                    <button type="button" id="admin-emp-filter-mode-cash" class="btn-filter"
+                      onclick="App.setAdminEmpModeFilter('cash')"
+                      style="padding: 3px 8px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; border: 1px solid #cbd5e1; background: #ffffff; color: #334155;">
+                      <span data-i18n="adminEmpFilterModeCash">💵 રોકડ</span> <span id="admin-emp-count-cash" style="font-size: 0.74rem; opacity: 0.85;">(0)</span>
+                    </button>
+                    <button type="button" id="admin-emp-filter-mode-bank" class="btn-filter"
+                      onclick="App.setAdminEmpModeFilter('bank')"
+                      style="padding: 3px 8px; font-size: 0.8rem; border-radius: 6px; cursor: pointer; font-weight: 700; border: 1px solid #cbd5e1; background: #ffffff; color: #334155;">
+                      <span data-i18n="adminEmpFilterModeBank">🏦 બેંક</span> <span id="admin-emp-count-bank" style="font-size: 0.74rem; opacity: 0.85;">(0)</span>
                     </button>
                   </div>
                 </div>
@@ -838,42 +922,37 @@
               <div
                 style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px;">
                 <div class="form-group-item">
-                  <label for="admin-bhakt-donor-id" style="font-weight: 700; font-size: 0.85rem; color: #334155;">દાતા
-                    ID / સભ્ય ક્રમ:</label>
+                  <label for="admin-bhakt-donor-id" style="font-weight: 700; font-size: 0.85rem; color: #334155;" data-i18n="bhaktFormDonorIdLbl">દાતા ID / સભ્ય ક્રમ:</label>
                   <input type="text" id="admin-bhakt-donor-id" class="input-text" placeholder=""
                     style="font-weight: 700;">
                 </div>
                 <div class="form-group-item">
-                  <label for="admin-bhakt-name" style="font-weight: 700; font-size: 0.85rem; color: #334155;">હરિભક્તનું
-                    પૂરું નામ *:</label>
+                  <label for="admin-bhakt-name" style="font-weight: 700; font-size: 0.85rem; color: #334155;" data-i18n="bhaktFormNameLbl">હરિભક્તનું પૂરું નામ *:</label>
                   <input type="text" id="admin-bhakt-name" class="input-text auto-gujarati" placeholder=""
                     style="font-weight: 700;">
                 </div>
                 <div class="form-group-item">
-                  <label for="admin-bhakt-rate" style="font-weight: 700; font-size: 0.85rem; color: #334155;">દૈનિક
-                    મહાપૂજા દર (₹) *:</label>
+                  <label for="admin-bhakt-rate" style="font-weight: 700; font-size: 0.85rem; color: #334155;" data-i18n="bhaktFormRateLbl">દૈનિક મહાપૂજા દર (₹) *:</label>
                   <input type="number" id="admin-bhakt-rate" class="input-text" placeholder="" min="1"
                     style="font-weight: 700;">
                 </div>
                 <div class="form-group-item">
-                  <label for="admin-bhakt-phone" style="font-weight: 700; font-size: 0.85rem; color: #334155;">મોબાઇલ
-                    નંબર:</label>
+                  <label for="admin-bhakt-phone" style="font-weight: 700; font-size: 0.85rem; color: #334155;" data-i18n="bhaktFormPhoneLbl">મોબાઇલ નંબર:</label>
                   <input type="tel" id="admin-bhakt-phone" class="input-text" placeholder="" style="font-weight: 700;">
                 </div>
                 <div class="form-group-item">
-                  <label for="admin-bhakt-pay-type" style="font-weight: 700; font-size: 0.85rem; color: #334155;">ગણતરી
-                    પદ્ધતિ:</label>
+                  <label for="admin-bhakt-pay-type" style="font-weight: 700; font-size: 0.85rem; color: #334155;" data-i18n="bhaktFormCalcModeLbl">ગણતરી પદ્ધતિ:</label>
                   <select id="admin-bhakt-pay-type" class="input-text" style="font-weight: 700;">
-                    <option value="date_wise">📆 તારીખવાર (Date-to-Date)</option>
-                    <option value="month_wise">📅 માસિક (Month-wise)</option>
+                    <option value="date_wise" data-i18n="bhaktOptDateWise">📆 તારીખવાર (Date-to-Date)</option>
+                    <option value="month_wise" data-i18n="bhaktOptMonthWise">📅 માસિક (Month-wise)</option>
                   </select>
                 </div>
                 <div class="form-group-item">
                   <label for="admin-bhakt-status"
-                    style="font-weight: 700; font-size: 0.85rem; color: #334155;">સ્થિતિ:</label>
+                    style="font-weight: 700; font-size: 0.85rem; color: #334155;" data-i18n="bhaktFormStatusLbl">સ્થિતિ:</label>
                   <select id="admin-bhakt-status" class="input-text" style="font-weight: 700;">
-                    <option value="active">🟢 સક્રિય</option>
-                    <option value="inactive">⚪ નિષ્ક્રિય</option>
+                    <option value="active" data-i18n="bhaktOptActive">🟢 સક્રિય</option>
+                    <option value="inactive" data-i18n="bhaktOptInactive">⚪ નિષ્ક્રિય</option>
                   </select>
                 </div>
               </div>
@@ -1265,7 +1344,7 @@
               style="padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
               <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 240px;">
                 <input type="text" id="admin-history-search" class="input-text"
-                  placeholder="🔍 હિસ્ટ્રીમાં શોધો (તારીખ, પ્રવૃત્તિ, વિગત)..." oninput="App.filterAdminHistory()"
+                  placeholder="🔍 હિસ્ટ્રીમાં શોધો (તારીખ, પ્રવૃત્તિ, વિગત)..." data-i18n-ph="adminHistorySearchPh" oninput="App.filterAdminHistory()"
                   style="font-size: 0.88rem; padding: 7px 12px;">
               </div>
               <div style="display: flex; gap: 6px; flex-wrap: wrap;" id="admin-history-category-pills">
@@ -1307,6 +1386,175 @@
                     </tr>
                   </thead>
                   <tbody id="admin-history-table-body">
+                    <!-- Populated via JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 7: USER MANAGEMENT & LOGIN LOGS -->
+          <div class="admin-tab-content" id="admin-tab-users">
+            <!-- Header Banner -->
+            <div class="admin-card-section"
+              style="border-left: 4px solid #2563eb; background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%); margin-bottom: 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                <div>
+                  <h3 style="margin: 0; color: #1e40af; font-size: 1.2rem; font-weight: 900; display: flex; align-items: center; gap: 10px;">
+                    <span data-i18n="adminUserManagementTitle">👥 વપરાશકર્તા સંચાલન (User & Accountant Management)</span>
+                  </h3>
+                  <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #64748b;">
+                    યુઝર અને એકાઉન્ટન્ટ એકાઉન્ટ્સ, પાસવર્ડ રીસેટ અને તાજેતરના લૉગિન લૉગ્સ
+                  </p>
+                </div>
+
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                  <button type="button" class="btn-primary" onclick="App.toggleAddUserForm(true)"
+                    style="background: #2563eb; padding: 7px 16px; font-weight: 800; border-radius: 8px; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <span>➕</span> <span data-i18n="adminAddUserBtn">નવો યુઝર ઉમેરો</span>
+                  </button>
+                  <button type="button" class="btn-icon" onclick="App.loadUsersList(); App.loadLoginHistory();"
+                    style="background: #ffffff; color: #1e40af; border: 1.5px solid #bfdbfe; padding: 7px 14px; font-weight: 700; border-radius: 8px; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <span>🔄</span> <span data-i18n="adminRefreshBtn">રીફ્રેશ</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Collapsible Add/Edit User Form -->
+            <div id="admin-user-form-card" class="admin-card-section"
+              style="display: none; border: 1.5px solid #93c5fd; background: #ffffff; margin-bottom: 16px; border-radius: 10px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+                <h4 id="user-form-title" style="margin: 0; color: #1e40af; font-weight: 800; font-size: 1.05rem;" data-i18n="adminUserFormAddTitle">
+                  ➕ નવો વપરાશકર્તા ઉમેરો
+                </h4>
+                <button type="button" class="btn-icon" onclick="App.toggleAddUserForm(false)"
+                  style="padding: 2px 8px; font-size: 0.82rem; font-weight: 700; color: #64748b;">✕ બંધ કરો</button>
+              </div>
+
+              <form onsubmit="App.submitUserForm(event)">
+                <input type="hidden" id="user-form-id" value="">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: flex-end;">
+                  <div>
+                    <label for="user-form-name" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;">
+                      પૂરું નામ *:
+                    </label>
+                    <input type="text" id="user-form-name" class="input-text" placeholder="દા.ત. રમેશભાઈ પટેલ" required>
+                  </div>
+
+                  <div>
+                    <label for="user-form-username" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;">
+                      યુઝરનેમ (Login ID) *:
+                    </label>
+                    <input type="text" id="user-form-username" class="input-text" placeholder="દા.ત. ramesh_clerk" required autocomplete="off">
+                  </div>
+
+                  <div>
+                    <label for="user-form-password" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;">
+                      પાસવર્ડ *:
+                    </label>
+                    <input type="password" id="user-form-password" class="input-text" placeholder="પાસવર્ડ દાખલ કરો" autocomplete="new-password">
+                  </div>
+
+                  <div>
+                    <label for="user-form-role" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;">
+                      હોદ્દો / રોલ *:
+                    </label>
+                    <select id="user-form-role" class="input-text" style="font-weight: 700; cursor: pointer;">
+                      <option value="user">👤 User (કાઉન્ટર સ્ટાફ / દૈનિક પાવતી)</option>
+                      <option value="accountant">💼 Accountant (મુખ્ય હિસાબનીશ)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="user-form-phone" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;">
+                      મોબાઈલ નંબર:
+                    </label>
+                    <input type="text" id="user-form-phone" class="input-text" placeholder="૧૦ અંકનો નંબર">
+                  </div>
+
+                  <div>
+                    <label for="user-form-email" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;">
+                      ઈમેલ (OTP મેળવવા માટે):
+                    </label>
+                    <input type="email" id="user-form-email" class="input-text" placeholder="user@gmail.com">
+                  </div>
+
+                  <div>
+                    <label for="user-form-status" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;">
+                      સ્ટેટસ:
+                    </label>
+                    <select id="user-form-status" class="input-text" style="font-weight: 700; cursor: pointer;">
+                      <option value="active">🟢 સક્રિય (Active)</option>
+                      <option value="inactive">🔴 નિષ્ક્રિય (Inactive)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; padding-top: 10px; border-top: 1px solid #f1f5f9;">
+                  <button type="button" class="btn-icon" onclick="App.toggleAddUserForm(false)">રદ કરો</button>
+                  <button type="submit" class="btn-primary" style="background: #2563eb; padding: 8px 20px; font-weight: 800;">
+                    <span>💾</span> <span>સાચવો</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Users List Table -->
+            <div class="admin-card-section" style="padding: 0; overflow: hidden; border: 1.5px solid #e2e8f0; border-radius: 10px; margin-bottom: 24px;">
+              <div style="padding: 12px 16px; background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0; color: #0f172a; font-weight: 800; font-size: 0.95rem;" data-i18n="adminUsersListHeading">
+                  📋 સિસ્ટમના અધિકૃત વપરાશકર્તાઓ (Users List)
+                </h4>
+                <span id="admin-users-count-badge" style="background: #e0e7ff; color: #3730a3; padding: 2px 10px; border-radius: 20px; font-size: 0.78rem; font-weight: 800;">
+                  કુલ: ૦
+                </span>
+              </div>
+              <div style="max-height: 380px; overflow-y: auto;">
+                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                  <thead>
+                    <tr style="background: #ffffff; border-bottom: 2px solid #e2e8f0; text-align: left; position: sticky; top: 0; z-index: 1;">
+                      <th style="padding: 10px 14px; width: 50px;" data-i18n="colIndex">ક્રમ</th>
+                      <th style="padding: 10px 14px;" data-i18n="colName">નામ</th>
+                      <th style="padding: 10px 14px;" data-i18n="colUsername">યુઝરનેમ</th>
+                      <th style="padding: 10px 14px; width: 140px;" data-i18n="colRole">રોલ</th>
+                      <th style="padding: 10px 14px; width: 120px;" data-i18n="colMobile">મોબાઈલ</th>
+                      <th style="padding: 10px 14px; width: 150px;" data-i18n="colLastLogin">છેલ્લું લૉગિન</th>
+                      <th style="padding: 10px 14px; width: 100px; text-align: center;" data-i18n="colStatus">સ્થિતિ</th>
+                      <th style="padding: 10px 14px; width: 130px; text-align: center;" data-i18n="colAction">ઍક્શન</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-users-table-body">
+                    <!-- Populated via JavaScript -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Login History Section -->
+            <div class="admin-card-section" style="padding: 0; overflow: hidden; border: 1.5px solid #e2e8f0; border-radius: 10px;">
+              <div style="padding: 12px 16px; background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <h4 style="margin: 0; color: #0f172a; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                  <span>🕒</span> <span data-i18n="adminLoginLogsHeading">તાજેતરની લૉગિન પ્રવૃત્તિ (Login History Logs)</span>
+                </h4>
+                <button type="button" class="btn-icon" onclick="App.loadLoginHistory()"
+                  style="padding: 3px 10px; font-size: 0.8rem; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px; cursor: pointer;">
+                  <span>🔄</span> <span data-i18n="adminRefreshBtn">રીફ્રેશ</span>
+                </button>
+              </div>
+              <div style="max-height: 400px; overflow-y: auto;">
+                <table class="data-table" style="width: 100%; border-collapse: collapse; font-size: 0.88rem;">
+                  <thead>
+                    <tr style="background: #ffffff; border-bottom: 2px solid #e2e8f0; text-align: left; position: sticky; top: 0; z-index: 1;">
+                      <th style="padding: 10px 14px; width: 170px;" data-i18n="colDateTime">તારીખ & સમય</th>
+                      <th style="padding: 10px 14px; width: 150px;" data-i18n="colUsername">યુઝરનેમ</th>
+                      <th style="padding: 10px 14px; width: 160px;" data-i18n="colName">નામ</th>
+                      <th style="padding: 10px 14px; width: 120px;" data-i18n="colRole">રોલ</th>
+                      <th style="padding: 10px 14px; width: 100px; text-align: center;" data-i18n="colResult">પરિણામ</th>
+                      <th style="padding: 10px 14px;" data-i18n="colIpDetails">IP / વિગત</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-login-history-table-body">
                     <!-- Populated via JavaScript -->
                   </tbody>
                 </table>
@@ -1406,7 +1654,7 @@
       <div class="modal-body" style="padding: 20px; background: #ffffff;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
-            📅 તારીખ: <strong id="remarks-modal-date-label">-</strong>
+            📅 <span data-i18n="date">તારીખ</span>: <strong id="remarks-modal-date-label">-</strong>
           </p>
           <button type="button" class="guj-typing-badge" onclick="GujaratiTyping.toggle()"
             title="English માં લખો -> Gujarati થશે! (Ctrl+G)" style="padding: 2px 7px; font-size: 0.72rem;">
@@ -1421,12 +1669,12 @@
         style="padding: 12px 20px; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0;">
         <button type="button" class="btn-icon" style="color: var(--rose);" onclick="App.clearRemarksModal()"
           title="નોંધ કાઢી નાખો">
-          <span>🗑️</span> નોંધ ભૂંસો
+          <span>🗑️</span> <span data-i18n="clearNoteBtn">નોંધ ભૂંસો</span>
         </button>
         <div style="display: flex; gap: 8px;">
-          <button type="button" class="btn-icon" onclick="App.closeRemarksModal()">બંધ કરો</button>
+          <button type="button" class="btn-icon" onclick="App.closeRemarksModal()" data-i18n="close">બંધ કરો</button>
           <button type="button" class="btn-primary" onclick="App.saveRemarksModal()" style="padding: 8px 20px;">
-            <span>💾</span> સાચવો
+            <span>💾</span> <span data-i18n="save">સાચવો</span>
           </button>
         </div>
       </div>
@@ -2101,17 +2349,16 @@
        MODAL: EMPLOYEES & SALARY / UPAD MANAGEMENT (કર્મચારી પગાર અને ઉપાડ)
        ====================================================================== -->
   <div class="modal-overlay" id="modal-employees">
-    <div class="modal-box modal-fullscreen">
-      <div class="modal-header" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff;">
+    <div class="modal-box modal-emp-box">
+      <div class="modal-header" style="background: linear-gradient(135deg, #0284c7, #2563eb); color: #ffffff; padding: 12px 20px;">
         <div>
-          <h3 style="color: #ffffff; margin: 0; font-size: 1.25rem;" data-i18n="staffModalTitle">👥 કર્મચારી પગાર અને
-            ઉપાડ ખાતાવહી</h3>
+          <h3 style="color: #ffffff; margin: 0; font-size: 1.15rem; font-weight: 700;" data-i18n="staffModalTitle">👥 કર્મચારી પગાર અને ઉપાડ ખાતાવહી</h3>
         </div>
-        <button class="modal-close-btn" style="color: #ffffff;" onclick="App.closeModal('modal-employees')">✕</button>
+        <button class="modal-close-btn" style="color: #ffffff; font-size: 1.1rem;" onclick="App.closeModal('modal-employees')">✕</button>
       </div>
 
-      <div class="modal-body admin-modal-body" style="padding: 20px; flex: 1; min-height: 0; overflow-y: auto;">
-        <!-- Top KPI Cards Row -->
+      <div class="modal-body admin-modal-body" style="padding: 16px 20px; flex: 1; min-height: 0; overflow-y: auto;">
+        <!-- Sleek Horizontal Summary Bar -->
         <div class="emp-kpi-grid">
           <div class="emp-kpi-card">
             <span class="emp-kpi-icon">👥</span>
@@ -2126,6 +2373,7 @@
             <div>
               <div class="emp-kpi-title" data-i18n="staffKpiPayroll">કુલ માસિક પગાર</div>
               <div class="emp-kpi-val" id="emp-summary-payroll" style="color: #0284c7;">₹ 0</div>
+              <div id="emp-summary-payroll-breakdown" style="font-size: 0.72rem; color: #64748b; margin-top: 2px; font-weight: 600;">રોકડ: ₹ 0 | બેંક: ₹ 0</div>
             </div>
           </div>
 
@@ -2140,7 +2388,7 @@
           <div class="emp-kpi-card">
             <span class="emp-kpi-icon">💵</span>
             <div>
-              <div class="emp-kpi-title" id="emp-kpi-paid-title">આ માસે ચૂકવેલ પગાર</div>
+              <div class="emp-kpi-title" id="emp-kpi-paid-title" data-i18n="staffKpiPaid">આ માસે ચૂકવેલ પગાર</div>
               <div class="emp-kpi-val" id="emp-summary-paid" style="color: #2563eb;">₹ 0</div>
             </div>
           </div>
@@ -2148,43 +2396,57 @@
           <div class="emp-kpi-card">
             <span class="emp-kpi-icon">🟢</span>
             <div>
-              <div class="emp-kpi-title" id="emp-kpi-balance-title" data-i18n="staffKpiBalance">કુલ બાકી ચૂકવવાપાત્ર
-                પગાર</div>
+              <div class="emp-kpi-title" id="emp-kpi-balance-title" data-i18n="staffKpiBalance">કુલ બાકી પગાર (રોકડ)</div>
               <div class="emp-kpi-val" id="emp-summary-balance" style="color: #059669;">₹ 0</div>
+              <div style="font-size: 0.68rem; color: #0284c7; margin-top: 2px; font-weight: 600;" data-i18n="staffKpiBankNote">(બેંક પગાર માત્ર શો થશે)</div>
             </div>
           </div>
         </div>
 
         <!-- Filter & Action Bar: Pagar Selection & Bulk Payout -->
         <div class="emp-action-bar">
-          <div style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 280px; flex-wrap: wrap;">
+          <div style="display: flex; gap: 8px; align-items: center; flex: 1; min-width: 280px; flex-wrap: wrap;">
             <input type="text" id="emp-search-input" class="input-text auto-gujarati" data-i18n-ph="staffSearchPh"
-              placeholder="🔍 કર્મચારીનું નામ કે હોદ્દો શોધો..." oninput="App.onEmployeeSearch(this.value)"
-              style="min-width: 170px; flex: 1;">
-            <div
-              style="display: flex; align-items: center; gap: 6px; background: #f0fdf4; border: 1.5px solid #10b981; border-radius: var(--radius-sm); padding: 4px 10px;">
-              <label for="emp-month-filter" data-i18n="staffMonthSelectLbl"
-                style="font-size: 0.84rem; font-weight: 800; color: #065f46; white-space: nowrap;">📅 કયા માસનો
-                હિસાબ:</label>
+              placeholder="🔍 કર્મચારી શોધો..." oninput="App.onEmployeeSearch(this.value)"
+              style="min-width: 160px; max-width: 240px; padding: 6px 12px; font-size: 0.85rem; border-radius: 6px; border: 1px solid #cbd5e1;">
+            
+            <div style="display: flex; align-items: center; gap: 4px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 8px;">
+              <span style="font-size: 0.88rem;">📅</span>
               <input type="month" id="emp-month-filter" class="input-text"
-                style="border: none; background: transparent; padding: 2px 4px; font-weight: 800; color: #047857; font-size: 0.95rem; width: 140px;"
+                style="border: none; background: transparent; padding: 2px 4px; font-weight: 700; color: #0f172a; font-size: 0.88rem; width: 140px; cursor: pointer;"
                 onchange="App.onEmployeeMonthChange(this.value)">
-              <span id="emp-month-name-badge"
-                style="font-size: 0.82rem; font-weight: 800; color: #065f46; background: #d1fae5; padding: 3px 8px; border-radius: 4px; white-space: nowrap;">-</span>
+              <span id="emp-month-name-badge" style="display: none;">-</span>
+            </div>
+
+            <!-- Mode Filter Tabs: બધા | રોકડ સ્ટાફ | બેંક સ્ટાફ -->
+            <div style="display: flex; gap: 4px; background: #e2e8f0; padding: 3px; border-radius: 8px;">
+              <button type="button" class="btn-filter active" id="emp-mode-tab-all"
+                onclick="App.setEmployeePaymentModeFilter('all')"
+                style="padding: 4px 10px; font-size: 0.82rem; font-weight: 700; border-radius: 6px; border: none; background: #0f172a; color: #ffffff; cursor: pointer;">
+                👥 <span data-i18n="filterAll">બધા</span> (<span id="emp-count-badge-all">0</span>)
+              </button>
+              <button type="button" class="btn-filter" id="emp-mode-tab-cash"
+                onclick="App.setEmployeePaymentModeFilter('cash')"
+                style="padding: 4px 10px; font-size: 0.82rem; font-weight: 700; border-radius: 6px; border: none; background: transparent; color: #334155; cursor: pointer;">
+                💵 <span data-i18n="filterCash">રોકડ</span> (<span id="emp-count-badge-cash">0</span>)
+              </button>
+              <button type="button" class="btn-filter" id="emp-mode-tab-bank"
+                onclick="App.setEmployeePaymentModeFilter('bank')"
+                style="padding: 4px 10px; font-size: 0.82rem; font-weight: 700; border-radius: 6px; border: none; background: transparent; color: #334155; cursor: pointer;">
+                🏦 <span data-i18n="filterBank">બેંક</span> (<span id="emp-count-badge-bank">0</span>)
+              </button>
             </div>
           </div>
 
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <button class="btn-primary" id="btn-pay-selected-staff" onclick="App.openBulkPagarModal(false)"
-              style="display: none; background: linear-gradient(135deg, #059669, #10b981); font-weight: 700;">
-              <span>☑️💵</span> <span id="lbl-pay-selected-staff" data-i18n="paySelectedStaffLbl">પસંદ કરેલાનો પગાર
-                ખર્ચમાં ચડાવો (0)</span>
+              style="display: none; background: #059669; font-weight: 600; font-size: 0.82rem; padding: 6px 12px; border-radius: 6px;">
+              <span>☑️💵</span> <span id="lbl-pay-selected-staff" data-i18n="paySelectedStaffLbl">Selected Salary Paid</span>
             </button>
             <button class="btn-primary" id="btn-pay-all-staff" onclick="App.openBulkPagarModal(true)"
-              style="background: linear-gradient(135deg, #2563eb, #3b82f6); font-weight: 700;" title="બધાનો પગાર ચૂકવો"
-              data-i18n-title="payAllStaffTitle">
-              <span>⚡</span> <span id="lbl-pay-all-staff" data-i18n="staffBulkPayBtn">બધાનો પગાર એકસાથે ખર્ચમાં
-                ચડાવો</span>
+              style="background: #2563eb; font-weight: 600; font-size: 0.82rem; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 5px;"
+              title="All Salary Paid" data-i18n-title="staffBulkPayBtn">
+              <span>⚡</span> <span id="lbl-pay-all-staff" data-i18n="staffBulkPayBtn">All Salary Paid</span>
             </button>
           </div>
         </div>
@@ -2195,24 +2457,23 @@
           <table class="table-hisab emp-compact-table" id="table-employees-list">
             <thead>
               <tr>
-                <th style="width: 38px; text-align: center;">
+                <th style="width: 32px; text-align: center;">
                   <input type="checkbox" id="emp-select-all" onchange="App.toggleSelectAllEmployees(this.checked)"
                     title="બધા પસંદ કરો" data-i18n-title="selectAllTitle"
-                    style="width: 17px; height: 17px; cursor: pointer;">
+                    style="width: 16px; height: 16px; cursor: pointer;">
                 </th>
-                <th style="width: 35px; text-align: center;">#</th>
+                <th style="width: 28px; text-align: center;">#</th>
                 <th data-i18n="staffColName">કર્મચારી વિગત</th>
-                <th style="width: 110px; text-align: right;" data-i18n="staffColSalary">માસિક પગાર</th>
-                <th style="width: 115px; text-align: right; color: #4338ca;" id="th-emp-opening-col"
-                  title="અગાઉની બાકી રકમ" data-i18n="staffColOpening" data-i18n-title="openingBalanceTitle">અગાઉની બાકી
-                </th>
-                <th style="width: 115px; text-align: right; color: #b91c1c;" id="th-emp-upad-col"
-                  data-i18n="staffColUpad">આ માસનો ઉપાડ</th>
-                <th style="width: 115px; text-align: right; color: #2563eb;" id="th-emp-paid-col"
-                  data-i18n="staffColPaid">ચૂકવેલ પગાર</th>
-                <th style="width: 140px; text-align: right; color: #059669;" id="th-emp-balance-col"
-                  data-i18n="staffColBalance">ચોખ્ખો બાકી પગાર</th>
-                <th style="width: 215px; text-align: center;" data-i18n="staffColActions">પગાર / ઉપાડ એકશન</th>
+                <th style="width: 100px; text-align: right;" data-i18n="staffColSalary">પગાર</th>
+                <th style="width: 100px; text-align: right; color: #4338ca;" id="th-emp-opening-col"
+                  title="અગાઉની બાકી રકમ" data-i18n="staffColOpening" data-i18n-title="openingBalanceTitle">અગાઉની બાકી</th>
+                <th style="width: 105px; text-align: right; color: #b91c1c;" id="th-emp-upad-col"
+                  data-i18n="staffColUpad">ઉપાડ</th>
+                <th style="width: 105px; text-align: right; color: #2563eb;" id="th-emp-paid-col"
+                  data-i18n="staffColPaid">ચૂકવેલ</th>
+                <th style="width: 120px; text-align: right; color: #059669;" id="th-emp-balance-col"
+                  data-i18n="staffColBalance">બાકી પગાર</th>
+                <th style="width: 200px; text-align: center;" data-i18n="staffColActions">પગાર / ઉપાડ</th>
               </tr>
             </thead>
             <tbody id="tbody-employees-list">
@@ -2220,38 +2481,38 @@
             </tbody>
             <tfoot id="tfoot-employees-list">
               <tr
-                style="background: #f8fafc; font-weight: 800; border-top: 2px solid var(--border-color); font-size: 0.95rem;">
+                style="background: #f8fafc; font-weight: 700; border-top: 1px solid #cbd5e1; font-size: 0.88rem;">
                 <td colspan="3"
-                  style="text-align: right; padding: 12px 14px; color: var(--text-main); font-weight: 800;"
+                  style="text-align: right; padding: 7px 12px; color: var(--text-main); font-weight: 700;"
                   data-i18n="grandTotal">
                   કુલ સરવાળો:
                 </td>
                 <td
-                  style="text-align: right; padding: 12px 10px; font-family: var(--font-heading); font-size: 1rem; color: var(--text-main); font-weight: 800;"
+                  style="text-align: right; padding: 7px 10px; font-family: var(--font-heading); font-size: 0.92rem; color: var(--text-main); font-weight: 700;"
                   id="emp-foot-total-salary">
                   ₹ 0
                 </td>
                 <td
-                  style="text-align: right; padding: 12px 10px; font-family: var(--font-heading); font-size: 1rem; color: #4338ca; font-weight: 800;"
+                  style="text-align: right; padding: 7px 10px; font-family: var(--font-heading); font-size: 0.92rem; color: #4338ca; font-weight: 700;"
                   id="emp-foot-total-opening">
                   ₹ 0
                 </td>
                 <td
-                  style="text-align: right; padding: 12px 10px; font-family: var(--font-heading); font-size: 1rem; color: #b91c1c; font-weight: 800;"
+                  style="text-align: right; padding: 7px 10px; font-family: var(--font-heading); font-size: 0.92rem; color: #b91c1c; font-weight: 700;"
                   id="emp-foot-total-upad">
                   ₹ 0
                 </td>
                 <td
-                  style="text-align: right; padding: 12px 10px; font-family: var(--font-heading); font-size: 1rem; color: #2563eb; font-weight: 800;"
+                  style="text-align: right; padding: 7px 10px; font-family: var(--font-heading); font-size: 0.92rem; color: #2563eb; font-weight: 700;"
                   id="emp-foot-total-paid">
                   ₹ 0
                 </td>
                 <td
-                  style="text-align: right; padding: 12px 10px; font-family: var(--font-heading); font-size: 1.1rem; color: #059669; font-weight: 900; background: #ecfdf5;"
+                  style="text-align: right; padding: 7px 10px; font-family: var(--font-heading); font-size: 0.98rem; color: #059669; font-weight: 800; background: #ecfdf5;"
                   id="emp-foot-total-balance">
                   ₹ 0
                 </td>
-                <td style="text-align: center; padding: 12px 14px; font-size: 0.82rem;" id="emp-foot-selected-info">
+                <td style="text-align: center; padding: 7px 10px; font-size: 0.78rem;" id="emp-foot-selected-info">
                   <span style="color: var(--text-muted);" data-i18n="staffFootAllSummary">બધા સ્ટાફનો હિસાબ</span>
                 </td>
               </tr>
@@ -2441,22 +2702,21 @@
             data-i18n="quickUpadAddToHisabLbl">આજના દૈનિક હિસાબમાં 'UPAD' વાઉચરમાં આપોઆપ ઉમેરો</label>
         </div>
       </div>
+      <div class="modal-footer">
+        <button class="btn-icon" onclick="App.closeModal('modal-employee-quick-upad')" data-i18n="cancel">રદ
+          કરો</button>
+        <button class="btn-primary" onclick="App.submitQuickUpad()"
+          style="background: linear-gradient(135deg, #b91c1c, #dc2626);" data-i18n="quickUpadSubmitBtn">💸 ઉપાડ નોંધો
+          અને ખર્ચમાં ચડાવો</button>
+      </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn-icon" onclick="App.closeModal('modal-employee-quick-upad')" data-i18n="cancel">રદ
-        કરો</button>
-      <button class="btn-primary" onclick="App.submitQuickUpad()"
-        style="background: linear-gradient(135deg, #b91c1c, #dc2626);" data-i18n="quickUpadSubmitBtn">💸 ઉપાડ નોંધો
-        અને ખર્ચમાં ચડાવો</button>
-    </div>
-  </div>
   </div>
 
   <!-- MODAL: Quick Pagar (Salary Payment) Entry -->
   <div class="modal-overlay" id="modal-employee-quick-pagar">
     <div class="modal-box" style="max-width: 480px;">
       <div class="modal-header" style="background: linear-gradient(135deg, #059669, #10b981); color: #ffffff;">
-        <h3 id="quick-pagar-title" style="color: #ffffff; margin: 0;" data-i18n="quickPagarTitle">💵 પગાર ચૂકવણી</h3>
+        <h3 id="quick-pagar-title" style="color: #ffffff; margin: 0;">💵 પગાર ચૂકવણી</h3>
         <button class="modal-close-btn" style="color: #ffffff;"
           onclick="App.closeModal('modal-employee-quick-pagar')">✕</button>
       </div>
@@ -2467,9 +2727,10 @@
           <!-- Injected via JS -->
         </div>
 
-        <div class="form-group-item"
+        <!-- For Monthly Staff: Month Picker -->
+        <div class="form-group-item" id="quick-pagar-month-container"
           style="margin-bottom: 12px; background: #ecfdf5; padding: 10px 14px; border: 1.5px solid #a7f3d0; border-radius: var(--radius-sm);">
-          <label for="quick-pagar-month" style="font-weight: 800; color: #065f46;" data-i18n="quickPagarMonthLbl">📅 કયા
+          <label for="quick-pagar-month" id="quick-pagar-month-lbl" style="font-weight: 800; color: #065f46;">📅 કયા
             માસનો પગાર ચૂકવો છો? *:</label>
           <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
             <input type="month" id="quick-pagar-month" class="input-text"
@@ -2477,6 +2738,40 @@
               onchange="App.onQuickPagarMonthChange(this.value)">
             <span id="quick-pagar-month-text"
               style="font-size: 0.85rem; font-weight: 800; color: #065f46; background: #d1fae5; padding: 4px 10px; border-radius: 4px;">-</span>
+          </div>
+        </div>
+
+        <!-- For 15-Day Staff: Date-wise Range (is date se is date tak 15 din ka - Automated & Non-editable) -->
+        <div id="quick-pagar-15days-container"
+          style="display: none; margin-bottom: 12px; background: #ecfdf5; padding: 12px 14px; border: 1.5px solid #10b981; border-radius: var(--radius-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <label style="font-weight: 800; color: #065f46; margin: 0; font-size: 0.88rem;">🔒 ૧૫ દિવસ પગાર ગાળો (આપોઆપ નિર્ધારિત) *:</label>
+            <span id="quick-pagar-15days-calc-badge" style="background: #059669; color: #ffffff; font-size: 0.78rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">૧૫ દિવસ</span>
+          </div>
+
+          <!-- Quick Half Selection Buttons (Toggles cycle, dates stay locked) -->
+          <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+            <button type="button" id="btn-15days-preset-1" class="btn-icon" style="flex: 1; font-size: 0.78rem; padding: 5px 8px; font-weight: 800; background: #059669; border: 1.5px solid #059669; color: #ffffff; border-radius: 4px; cursor: pointer;" onclick="App.set15DaysCyclePreset(1)">
+              1️⃣ ૧ થી ૧૫ (પહેલું પખવાડિયું)
+            </button>
+            <button type="button" id="btn-15days-preset-2" class="btn-icon" style="flex: 1; font-size: 0.78rem; padding: 5px 8px; font-weight: 800; background: #ffffff; border: 1.5px solid #10b981; color: #065f46; border-radius: 4px; cursor: pointer;" onclick="App.set15DaysCyclePreset(2)">
+              2️⃣ ૧૬ થી માસ આખર (બીજું પખવાડિયું)
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <div style="flex: 1;">
+              <span style="font-size: 0.76rem; font-weight: 700; color: #047857; display: block; margin-bottom: 2px;">શરૂઆત તારીખ:</span>
+              <input type="date" id="quick-pagar-from-date" class="input-text" readonly style="padding: 5px 8px; font-weight: 800; color: #065f46; background: #e2e8f0; border: 1.5px solid #cbd5e1; cursor: not-allowed; pointer-events: none;">
+            </div>
+            <span style="font-weight: 800; color: #059669; margin-top: 16px;">થી</span>
+            <div style="flex: 1;">
+              <span style="font-size: 0.76rem; font-weight: 700; color: #047857; display: block; margin-bottom: 2px;">અંતિમ તારીખ:</span>
+              <input type="date" id="quick-pagar-to-date" class="input-text" readonly style="padding: 5px 8px; font-weight: 800; color: #065f46; background: #e2e8f0; border: 1.5px solid #cbd5e1; cursor: not-allowed; pointer-events: none;">
+            </div>
+          </div>
+          <div id="quick-pagar-15days-summary-text" style="font-size: 0.82rem; font-weight: 800; color: #047857; margin-top: 6px; background: #d1fae5; padding: 4px 10px; border-radius: 4px;">
+            -
           </div>
         </div>
 
@@ -2490,7 +2785,7 @@
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <div style="flex: 1;">
-              <label for="quick-pagar-total-days" style="font-size: 0.78rem; font-weight: 700; color: #64748b;">મહિનાના
+              <label for="quick-pagar-total-days" id="quick-pagar-total-days-lbl" style="font-size: 0.78rem; font-weight: 700; color: #64748b;">મહિનાના
                 દિવસો:</label>
               <input type="number" id="quick-pagar-total-days" class="input-text" value="30" min="1" max="31"
                 style="font-weight: 700; padding: 5px 8px;" oninput="App.onQuickPagarAttendanceChange()">
@@ -3224,7 +3519,8 @@
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="font-size: 1.5rem;">🏦</span>
           <div>
-            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: white;" data-i18n="bankAccumTitle">એકઠી થયેલ રોકડ (બેંક ડિપોઝિટ વિગત)</h3>
+            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 800; color: white;" data-i18n="bankAccumTitle">એકઠી
+              થયેલ રોકડ (બેંક ડિપોઝિટ વિગત)</h3>
           </div>
         </div>
         <button class="modal-close-btn" onclick="App.closeModal('modal-bank-accumulated-detail')"
@@ -3235,17 +3531,22 @@
         style="padding: 16px 20px !important; display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0; overflow-y: auto; background: #fafaf9;">
 
         <!-- Top Section: Total Cash + Badges + Note Denominations -->
-        <div class="admin-card-section" style="padding: 12px 16px !important; margin-bottom: 0; border: 1.5px solid #bbf7d0; background: #ffffff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+        <div class="admin-card-section"
+          style="padding: 12px 16px !important; margin-bottom: 0; border: 1.5px solid #bbf7d0; background: #ffffff; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
           <!-- Top Row: Total + Badges -->
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;">
+          <div
+            style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;">
             <div style="display: flex; align-items: baseline; gap: 10px;">
-              <span style="font-size: 0.88rem; font-weight: 700; color: #166534;" data-i18n="unbankedCashTotalLbl">કુલ બાકી એકઠી રોકડ:</span>
+              <span style="font-size: 0.88rem; font-weight: 700; color: #166534;" data-i18n="unbankedCashTotalLbl">કુલ
+                બાકી એકઠી રોકડ:</span>
               <span id="side-accumulated-total-amount"
-                style="font-size: 1.45rem; font-weight: 900; color: #15803d; font-family: var(--font-heading);">₹ 0</span>
+                style="font-size: 1.45rem; font-weight: 900; color: #15803d; font-family: var(--font-heading);">₹
+                0</span>
             </div>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
               <span id="side-accumulated-days-badge"
-                style="background: #15803d; color: white; font-weight: 800; font-size: 0.82rem; padding: 4px 12px; border-radius: 20px;">0 દિવસ બાકી</span>
+                style="background: #15803d; color: white; font-weight: 800; font-size: 0.82rem; padding: 4px 12px; border-radius: 20px;">0
+                દિવસ બાકી</span>
               <span id="side-accumulated-notes-count"
                 style="background: #dcfce7; color: #14532d; font-weight: 800; font-size: 0.82rem; padding: 4px 12px; border-radius: 20px; border: 1px solid #86efac;">-</span>
               <span id="side-accumulated-date-range"
@@ -3257,7 +3558,8 @@
 
           <!-- Denominations Grid (6 note boxes) -->
           <div style="margin-top: 10px;">
-            <div style="font-size: 0.82rem; font-weight: 800; color: #166534; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+            <div
+              style="font-size: 0.82rem; font-weight: 800; color: #166534; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
               <span>💵</span> <span data-i18n="currencyNotesTitle">કરન્સી નોટોની વિગત:</span>
             </div>
             <div id="side-notes-summary-grid"
@@ -3268,18 +3570,24 @@
         </div>
 
         <!-- Daily Cash Table Section -->
-        <div class="admin-card-section" style="flex: 1; min-height: 0; display: flex; flex-direction: column; margin-bottom: 0; border: 1.5px solid #cbd5e1; background: #ffffff; border-radius: 12px; padding: 14px 16px !important; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
-          <div style="margin: 0 0 10px 0; font-size: 0.95rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 6px;">
+        <div class="admin-card-section"
+          style="flex: 1; min-height: 0; display: flex; flex-direction: column; margin-bottom: 0; border: 1.5px solid #cbd5e1; background: #ffffff; border-radius: 12px; padding: 14px 16px !important; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+          <div
+            style="margin: 0 0 10px 0; font-size: 0.95rem; font-weight: 800; color: #1e293b; display: flex; align-items: center; gap: 6px;">
             <span>🗓️</span> <span data-i18n="dailyCashListTitle">દૈનિક રોકડ હિસાબ યાદી (તારીખ મુજબ):</span>
           </div>
           <div class="table-scroll-wrap"
             style="flex: 1; min-height: 0; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px;">
             <table class="table-hisab" style="width: 100%; border-collapse: collapse;">
               <thead>
-                <tr style="position: sticky; top: 0; z-index: 2; background: #f8fafc; border-bottom: 1.5px solid #cbd5e1;">
-                  <th style="width: 220px; padding: 10px 16px; text-align: left; font-weight: 800; color: #334155;" data-i18n="date">તારીખ</th>
-                  <th style="width: 240px; padding: 10px 16px; text-align: center; font-weight: 800; color: #334155;" data-i18n="totalNotes">કુલ નોટો (નંગ)</th>
-                  <th style="padding: 10px 16px; text-align: right; font-weight: 800; color: #334155;" data-i18n="dailyCashAmt">દૈનિક રોકડ (₹)</th>
+                <tr
+                  style="position: sticky; top: 0; z-index: 2; background: #f8fafc; border-bottom: 1.5px solid #cbd5e1;">
+                  <th style="width: 220px; padding: 10px 16px; text-align: left; font-weight: 800; color: #334155;"
+                    data-i18n="date">તારીખ</th>
+                  <th style="width: 240px; padding: 10px 16px; text-align: center; font-weight: 800; color: #334155;"
+                    data-i18n="totalNotes">કુલ નોટો (નંગ)</th>
+                  <th style="padding: 10px 16px; text-align: right; font-weight: 800; color: #334155;"
+                    data-i18n="dailyCashAmt">દૈનિક રોકડ (₹)</th>
                 </tr>
               </thead>
               <tbody id="side-tbody-daily-cash">
@@ -3738,60 +4046,88 @@
   <!-- ========================================================================= -->
   <!-- MODAL: DUES REGISTER (લેણાં અને દેવાં / બાકી હિસાબ)                         -->
   <!-- ========================================================================= -->
+  <!-- MODAL: DUES REGISTER (લેણાં અને દેવાં / બાકી હિસાબ)                         -->
+  <!-- ========================================================================= -->
   <div class="modal-overlay" id="modal-dues" style="z-index: 9999;">
-    <div class="modal-box" style="max-width: 920px; width: 95vw; max-height: 90vh; display: flex; flex-direction: column;">
-      <!-- Modal Header -->
-      <div class="modal-header" style="padding: 12px 18px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 1.35rem;">⚖️</span>
-          <h3 style="color: var(--text-heading); margin: 0; font-size: 1.15rem; font-weight: 800;" data-i18n="duesModalTitle">લેણાં અને દેવાં રજિસ્ટર (બાકી હિસાબ)</h3>
-        </div>
-        <button class="modal-close-btn" onclick="App.closeModal('modal-dues')">✕</button>
-      </div>
-
-      <!-- Quick Compact KPI Summary Bar -->
-      <div style="display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 18px; background: #f8fafc; border-bottom: 1px solid var(--border-color); align-items: center; justify-content: space-between;">
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 6px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 5px; font-size: 0.82rem; color: #065f46;">
-            <span style="font-weight: 700;">🟢 લેવાના બાકી:</span>
-            <span id="dues-stat-receivable-amount" style="font-weight: 900; font-family: var(--font-heading); color: #047857;">₹ 0</span>
-            <span id="dues-stat-receivable-count" style="font-size: 0.72rem; opacity: 0.8;">(0)</span>
-          </div>
-          <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 5px; font-size: 0.82rem; color: #9f1239;">
-            <span style="font-weight: 700;">🔴 આપવાના બાકી:</span>
-            <span id="dues-stat-payable-amount" style="font-weight: 900; font-family: var(--font-heading); color: #b91c1c;">₹ 0</span>
-            <span id="dues-stat-payable-count" style="font-size: 0.72rem; opacity: 0.8;">(0)</span>
-          </div>
-          <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 4px 10px; display: inline-flex; align-items: center; gap: 5px; font-size: 0.82rem; color: #1e40af;">
-            <span style="font-weight: 700;">⚖️ ચોખ્ખો તફાવત:</span>
-            <span id="dues-stat-net-amount" style="font-weight: 900; font-family: var(--font-heading);">₹ 0</span>
-            <span id="dues-stat-net-desc" style="font-size: 0.72rem; opacity: 0.8;">(સરભર)</span>
+    <div class="modal-box modal-fullscreen" style="display: flex; flex-direction: column;">
+      <!-- Modal Header (Rich Modern Header) -->
+      <div class="modal-header"
+        style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 14px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.5rem; background: rgba(255,255,255,0.1); border-radius: 10px; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center;">⚖️</span>
+          <div>
+            <h3 style="color: #ffffff; margin: 0; font-size: 1.25rem; font-weight: 800; letter-spacing: -0.01em;"
+              data-i18n="duesModalTitle">લેણાં અને દેવાં રજિસ્ટર (બાકી હિસાબ)</h3>
+            <p style="margin: 2px 0 0; font-size: 0.8rem; color: #94a3b8;">ગ્રાહકો, ભક્તો અને વેપારીઓના બાકી લેણાં-દેવાંનું સંપૂર્ણ સંચાલન</p>
           </div>
         </div>
-
-        <!-- Gujarati Typing Switcher -->
-        <button type="button" class="guj-typing-badge" onclick="GujaratiTyping.toggle()"
-          title="English માં લખો -> Gujarati થશે! (Ctrl+G)" style="font-size: 0.76rem; padding: 3px 8px;">
-          <span>🇮🇳</span> <span>ગુજરાતી ટાઈપિંગ</span>
-        </button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button class="modal-close-btn" style="color: #ffffff; font-size: 1.1rem; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.08); border-radius: 50%; border: none; cursor: pointer;" onclick="App.closeModal('modal-dues')">✕</button>
+        </div>
       </div>
 
-      <!-- Modal Body (Compact Scrollable Content) -->
-      <div class="modal-body admin-modal-body" style="padding: 14px 18px !important; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+      <!-- Quick Executive KPI Summary Bar (3 Spacious Modern Cards) -->
+      <div class="dues-kpi-bar"
+        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 14px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+        <!-- Card 1: Receivable -->
+        <div style="background: #ffffff; border: 1.5px solid #a7f3d0; border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+          <div>
+            <div style="font-size: 0.82rem; font-weight: 800; color: #065f46; display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #10b981;"></span>
+              <span>લેવાના બાકી (Receivable)</span>
+            </div>
+            <div id="dues-stat-receivable-amount" style="font-weight: 900; font-size: 1.4rem; font-family: var(--font-heading); color: #047857; margin-top: 3px;">₹ 0</div>
+          </div>
+          <span id="dues-stat-receivable-count" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 20px; font-weight: 800; font-size: 0.78rem; padding: 4px 12px;">0 બાકી</span>
+        </div>
+
+        <!-- Card 2: Payable -->
+        <div style="background: #ffffff; border: 1.5px solid #fecdd3; border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+          <div>
+            <div style="font-size: 0.82rem; font-weight: 800; color: #9f1239; display: flex; align-items: center; gap: 6px;">
+              <span style="display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #ef4444;"></span>
+              <span>આપવાના બાકી (Payable)</span>
+            </div>
+            <div id="dues-stat-payable-amount" style="font-weight: 900; font-size: 1.4rem; font-family: var(--font-heading); color: #b91c1c; margin-top: 3px;">₹ 0</div>
+          </div>
+          <span id="dues-stat-payable-count" style="background: #fff1f2; color: #9f1239; border: 1px solid #fecdd3; border-radius: 20px; font-weight: 800; font-size: 0.78rem; padding: 4px 12px;">0 બાકી</span>
+        </div>
+
+        <!-- Card 3: Net Balance -->
+        <div style="background: #ffffff; border: 1.5px solid #bfdbfe; border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+          <div>
+            <div style="font-size: 0.82rem; font-weight: 800; color: #1e40af; display: flex; align-items: center; gap: 6px;">
+              <span>⚖️</span>
+              <span>ચોખ્ખો તફાવત (Net)</span>
+            </div>
+            <div id="dues-stat-net-amount" style="font-weight: 900; font-size: 1.4rem; font-family: var(--font-heading); color: #1d4ed8; margin-top: 3px;">₹ 0</div>
+          </div>
+          <span id="dues-stat-net-desc" style="background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; border-radius: 20px; font-weight: 800; font-size: 0.78rem; padding: 4px 12px;">સરભર</span>
+        </div>
+      </div>
+
+      <!-- Modal Body (Fullscreen Dynamic Layout) -->
+      <div class="modal-body"
+        style="padding: 16px 24px !important; flex: 1 1 auto; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; background: #f8fafc;">
         <!-- Card 1: Add Due Entry Form -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-            <span style="font-weight: 800; font-size: 0.92rem; color: var(--text-heading);">➕ નવો હિસાબ ઉમેરો</span>
+        <div
+          style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; box-shadow: 0 2px 5px rgba(0,0,0,0.02);">
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.1rem;">✍️</span>
+              <span style="font-weight: 800; font-size: 0.96rem; color: #0f172a;">નવો હિસાબ ઉમેરો</span>
+            </div>
             <!-- Toggle Type Pills: 🟢 લેવાના / 🔴 આપવાના -->
             <div style="display: flex; align-items: center; gap: 8px;">
               <label id="due-type-lbl-receivable"
-                style="padding: 3px 10px; cursor: pointer; border-radius: 6px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; border: 1.5px solid #10b981; background: #ecfdf5; color: #065f46;">
+                style="padding: 5px 14px; cursor: pointer; border-radius: 8px; font-size: 0.84rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid #10b981; background: #ecfdf5; color: #065f46; transition: all 0.2s;">
                 <input type="radio" name="due-type-choice" value="receivable" id="due-type-receivable" checked
                   onchange="App.onDueTypeRadioChange()">
                 <span>🟢 લેવાના (Receivable)</span>
               </label>
               <label id="due-type-lbl-payable"
-                style="padding: 3px 10px; cursor: pointer; border-radius: 6px; font-size: 0.82rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #64748b;">
+                style="padding: 5px 14px; cursor: pointer; border-radius: 8px; font-size: 0.84rem; font-weight: 800; display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #64748b; transition: all 0.2s;">
                 <input type="radio" name="due-type-choice" value="payable" id="due-type-payable"
                   onchange="App.onDueTypeRadioChange()">
                 <span>🔴 આપવાના (Payable)</span>
@@ -3799,75 +4135,85 @@
             </div>
           </div>
 
-          <div style="display: grid; grid-template-columns: 130px 1.4fr 120px 1.6fr auto; gap: 8px; align-items: end;">
+          <div style="display: grid; grid-template-columns: 145px 1.5fr 140px 1.8fr auto; gap: 10px; align-items: end;">
             <div class="form-group-item" style="margin: 0;">
-              <label for="due-input-date" style="font-size: 0.78rem; font-weight: 700; margin-bottom: 3px; display: block;">તારીખ *</label>
-              <input type="date" id="due-input-date" class="input-text" style="font-weight: 700; height: 35px; font-size: 0.85rem;" required>
+              <label for="due-input-date"
+                style="font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; display: block; color: #475569;">તારીખ *</label>
+              <input type="date" id="due-input-date" class="input-text"
+                style="font-weight: 700; height: 38px; font-size: 0.88rem; border-radius: 8px;" required>
             </div>
 
             <div class="form-group-item" style="margin: 0;">
-              <label for="due-input-name" id="lbl-due-name" style="font-size: 0.78rem; font-weight: 700; margin-bottom: 3px; display: block;">વ્યક્તિ કે વેપારીનું નામ *</label>
+              <label for="due-input-name" id="lbl-due-name"
+                style="font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; display: block; color: #475569;">વ્યક્તિ કે વેપારીનું નામ *</label>
               <input type="text" id="due-input-name" class="input-text auto-gujarati" placeholder="નામ લખો..." required
-                style="height: 35px; font-size: 0.88rem;"
+                style="height: 38px; font-size: 0.9rem; border-radius: 8px;"
                 onkeydown="if(event.key==='Enter') document.getElementById('due-input-amount').focus()">
             </div>
 
             <div class="form-group-item" style="margin: 0;">
-              <label for="due-input-amount" style="font-size: 0.78rem; font-weight: 700; margin-bottom: 3px; display: block;">બાકી રકમ (₹) *</label>
+              <label for="due-input-amount"
+                style="font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; display: block; color: #475569;">બાકી રકમ (₹) *</label>
               <input type="number" id="due-input-amount" class="input-text" placeholder="₹ રકમ..." min="1" step="1"
-                required style="font-weight: 800; font-size: 0.95rem; color: #059669; height: 35px;"
+                required style="font-weight: 800; font-size: 1rem; color: #059669; height: 38px; border-radius: 8px;"
                 onkeydown="if(event.key==='Enter') document.getElementById('due-input-desc').focus()">
             </div>
 
             <div class="form-group-item" style="margin: 0;">
-              <label for="due-input-desc" style="font-size: 0.78rem; font-weight: 700; margin-bottom: 3px; display: block;">વિગત / કારણ *</label>
+              <label for="due-input-desc"
+                style="font-size: 0.8rem; font-weight: 700; margin-bottom: 4px; display: block; color: #475569;">વિગત / કારણ *</label>
               <input type="text" id="due-input-desc" class="input-text auto-gujarati"
-                placeholder="શા માટે બાકી છે તે વિગત..." required style="height: 35px; font-size: 0.88rem;"
+                placeholder="શા માટે બાકી છે તે વિગત..." required style="height: 38px; font-size: 0.9rem; border-radius: 8px;"
                 onkeydown="if(event.key==='Enter') App.submitAddDue()">
             </div>
 
             <div>
               <button class="btn-primary" id="btn-due-submit" onclick="App.submitAddDue()"
-                style="height: 35px; padding: 0 16px; font-size: 0.88rem; font-weight: 800; background: linear-gradient(135deg, #059669, #10b981); white-space: nowrap; display: inline-flex; align-items: center; gap: 5px;">
+                style="height: 38px; padding: 0 18px; font-size: 0.9rem; font-weight: 800; border-radius: 8px; background: linear-gradient(135deg, #059669, #10b981); white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);">
                 <span>➕</span> <span id="lbl-due-btn-text">લેવાના ઉમેરો</span>
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Card 2: Dues List Section -->
-        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px 14px; flex: 1; display: flex; flex-direction: column;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span style="font-weight: 800; font-size: 0.92rem; color: var(--text-heading);">📋 બાકી હિસાબ યાદી</span>
-              <span id="dues-items-count-badge" class="badge-count" style="font-size: 0.75rem; padding: 2px 7px;">0 એન્ટ્રી</span>
+        <!-- Card 2: Dues List Section (Fullscreen Expandable Table) -->
+        <div
+          style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 14px 18px; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; box-shadow: 0 2px 6px rgba(0,0,0,0.02);">
+          <div
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-weight: 800; font-size: 1rem; color: #0f172a;">📋 બાકી હિસાબ યાદી</span>
+              <span id="dues-items-count-badge" class="badge-count" style="font-size: 0.78rem; padding: 3px 10px; border-radius: 14px; background: #f1f5f9; color: #475569; font-weight: 800;">0 એન્ટ્રી</span>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <!-- 3-Way Filter Tabs -->
-              <div style="display: inline-flex; gap: 2px; background: #e2e8f0; padding: 2px; border-radius: 6px;">
+              <div style="display: inline-flex; gap: 3px; background: #e2e8f0; padding: 3px; border-radius: 8px;">
                 <button type="button" id="tab-due-all" onclick="App.switchDuesTab('all')"
-                  style="padding: 3px 10px; font-size: 0.78rem; font-weight: 800; border-radius: 5px; border: none; cursor: pointer; background: #0f172a; color: #ffffff;">
-                  બધા <span id="badge-tab-all" style="background: rgba(255,255,255,0.25); border-radius: 10px; padding: 1px 5px; font-size: 0.7rem;">0</span>
+                  style="padding: 5px 12px; font-size: 0.8rem; font-weight: 800; border-radius: 6px; border: none; cursor: pointer; background: #0f172a; color: #ffffff; transition: all 0.2s;">
+                  <span data-i18n="duesTabAll">બધા</span> <span id="badge-tab-all"
+                    style="background: rgba(255,255,255,0.25); border-radius: 10px; padding: 1px 6px; font-size: 0.72rem; margin-left: 2px;">0</span>
                 </button>
                 <button type="button" id="tab-due-receivable" onclick="App.switchDuesTab('receivable')"
-                  style="padding: 3px 10px; font-size: 0.78rem; font-weight: 700; border-radius: 5px; border: none; cursor: pointer; background: transparent; color: #334155;">
-                  🟢 લેવાના <span id="badge-tab-receivable" style="background: #cbd5e1; border-radius: 10px; padding: 1px 5px; font-size: 0.7rem;">0</span>
+                  style="padding: 5px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: transparent; color: #334155; transition: all 0.2s;">
+                  <span data-i18n="duesTabReceivable">🟢 લેવાના</span> <span id="badge-tab-receivable"
+                    style="background: #cbd5e1; border-radius: 10px; padding: 1px 6px; font-size: 0.72rem; margin-left: 2px;">0</span>
                 </button>
                 <button type="button" id="tab-due-payable" onclick="App.switchDuesTab('payable')"
-                  style="padding: 3px 10px; font-size: 0.78rem; font-weight: 700; border-radius: 5px; border: none; cursor: pointer; background: transparent; color: #334155;">
-                  🔴 આપવાના <span id="badge-tab-payable" style="background: #cbd5e1; border-radius: 10px; padding: 1px 5px; font-size: 0.7rem;">0</span>
+                  style="padding: 5px 12px; font-size: 0.8rem; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; background: transparent; color: #334155; transition: all 0.2s;">
+                  <span data-i18n="duesTabPayable">🔴 આપવાના</span> <span id="badge-tab-payable"
+                    style="background: #cbd5e1; border-radius: 10px; padding: 1px 6px; font-size: 0.72rem; margin-left: 2px;">0</span>
                 </button>
               </div>
 
               <!-- Search -->
               <input type="text" id="due-search-input" oninput="App.filterDuesList()" class="input-text auto-gujarati"
-                placeholder="નામ / વિગત શોધો..."
-                style="height: 30px; width: 145px; font-size: 0.8rem; padding: 3px 8px;">
+                placeholder="🔍 નામ / વિગત શોધો..."
+                style="height: 34px; width: 170px; font-size: 0.84rem; padding: 4px 10px; border-radius: 8px;">
 
               <!-- Status Filter -->
               <select id="due-filter-status" onchange="App.filterDuesList()" class="input-text"
-                style="height: 30px; width: 100px; font-size: 0.8rem; padding: 2px 6px; font-weight: 700;">
+                style="height: 34px; width: 115px; font-size: 0.84rem; padding: 4px 8px; font-weight: 700; border-radius: 8px;">
                 <option value="pending" selected>માત્ર બાકી</option>
                 <option value="all">બધા</option>
                 <option value="settled">પૂર્ણ થયેલ</option>
@@ -3875,18 +4221,20 @@
             </div>
           </div>
 
-          <div class="table-scroll-wrap" style="max-height: 380px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+          <!-- Fullscreen Scrollable Table Container -->
+          <div class="table-scroll-wrap"
+            style="flex: 1 1 auto; min-height: 0; overflow-y: auto; border: 1.5px solid #e2e8f0; border-radius: 8px;">
             <table class="table-hisab" id="table-dues" style="width: 100%; border-collapse: collapse;">
-              <thead>
-                <tr style="background: #f1f5f9;">
-                  <th style="width: 40px; text-align: center; padding: 7px 4px; font-size: 0.8rem;">#</th>
-                  <th style="width: 85px; text-align: center; padding: 7px 6px; font-size: 0.8rem;">તારીખ</th>
-                  <th style="width: 90px; text-align: center; padding: 7px 6px; font-size: 0.8rem;">પ્રકાર</th>
-                  <th style="padding: 7px 8px; font-size: 0.8rem;">નામ</th>
-                  <th style="padding: 7px 8px; font-size: 0.8rem;">વિગત / કારણ</th>
-                  <th style="width: 120px; text-align: right; padding: 7px 8px; font-size: 0.8rem;">બાકી રકમ (₹)</th>
-                  <th style="width: 75px; text-align: center; padding: 7px 4px; font-size: 0.8rem;">સ્થિતિ</th>
-                  <th style="width: 125px; text-align: center; padding: 7px 6px; font-size: 0.8rem;">ઍક્શન</th>
+              <thead style="position: sticky; top: 0; z-index: 2;">
+                <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+                  <th style="width: 45px; text-align: center; padding: 10px 6px; font-size: 0.82rem; color: #475569; font-weight: 800;">#</th>
+                  <th style="width: 95px; text-align: center; padding: 10px 8px; font-size: 0.82rem; color: #475569; font-weight: 800;">તારીખ</th>
+                  <th style="width: 105px; text-align: center; padding: 10px 8px; font-size: 0.82rem; color: #475569; font-weight: 800;">પ્રકાર</th>
+                  <th style="padding: 10px 12px; font-size: 0.82rem; color: #475569; font-weight: 800;">નામ</th>
+                  <th style="padding: 10px 12px; font-size: 0.82rem; color: #475569; font-weight: 800;">વિગત / કારણ</th>
+                  <th style="width: 140px; text-align: right; padding: 10px 12px; font-size: 0.82rem; color: #475569; font-weight: 800;">બાકી રકમ (₹)</th>
+                  <th style="width: 85px; text-align: center; padding: 10px 6px; font-size: 0.82rem; color: #475569; font-weight: 800;">સ્થિતિ</th>
+                  <th style="width: 140px; text-align: center; padding: 10px 8px; font-size: 0.82rem; color: #475569; font-weight: 800;">ઍક્શન</th>
                 </tr>
               </thead>
               <tbody id="dues-table-tbody">
@@ -3901,22 +4249,24 @@
       </div>
 
       <!-- Modal Footer -->
-      <div class="modal-footer" style="padding: 10px 18px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--bg-card);">
-        <div style="font-family: var(--font-heading); font-size: 1.05rem; font-weight: 700; color: var(--text-main);">
-          <span style="color: #64748b; font-size: 0.88rem;">કુલ બાકી: </span>
-          <span id="dues-footer-total" style="color: var(--primary); font-weight: 900;">₹ 0</span>
+      <div class="modal-footer"
+        style="padding: 12px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; background: #ffffff;">
+        <div style="font-family: var(--font-heading); font-size: 1.1rem; font-weight: 800; color: #0f172a;">
+          <span style="color: #64748b; font-size: 0.9rem; font-weight: 700;">કુલ બાકી: </span>
+          <span id="dues-footer-total" style="color: #059669; font-weight: 900; font-size: 1.25rem;">₹ 0</span>
         </div>
 
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 10px;">
           <button class="btn-icon" onclick="App.shareDuesWhatsApp()" title="વોટ્સએપ યાદી મોકલો"
-            style="background: #16a34a; color: #ffffff; border-color: #15803d; font-weight: 700; font-size: 0.82rem; padding: 5px 12px;">
+            style="background: #16a34a; color: #ffffff; border-color: #15803d; font-weight: 800; font-size: 0.86rem; padding: 6px 16px; border-radius: 8px;">
             <span>💬</span> <span>વોટ્સએપ</span>
           </button>
           <button class="btn-icon" onclick="App.printDuesReport()" title="યાદી પ્રિન્ટ કરો"
-            style="font-size: 0.82rem; padding: 5px 12px;">
+            style="font-size: 0.86rem; font-weight: 800; padding: 6px 16px; border-radius: 8px;">
             <span>🖨️</span> <span>પ્રિન્ટ</span>
           </button>
-          <button class="btn-secondary" onclick="App.closeModal('modal-dues')" style="font-size: 0.82rem; padding: 5px 14px;">બંધ કરો</button>
+          <button class="btn-secondary" onclick="App.closeModal('modal-dues')"
+            style="font-size: 0.86rem; font-weight: 700; padding: 6px 18px; border-radius: 8px;">બંધ કરો</button>
         </div>
       </div>
     </div>
@@ -4017,67 +4367,6 @@
     </div>
   </div>
 
-  <!-- ========================================================================= -->
-  <!-- MODAL: AI REPORT ASSISTANT (STRICT READ-ONLY Q&A & PDF EXPORT)             -->
-  <!-- ========================================================================= -->
-  <div class="modal-overlay" id="modal-ai-report" style="z-index: 10000;">
-    <div class="modal-box modal-lg ai-report-modal-box">
-      <!-- Modal Header -->
-      <div class="modal-header ai-modal-header" style="padding: 12px 20px;">
-        <div class="ai-modal-header-left">
-          <div class="ai-header-avatar">✨</div>
-          <h3 id="ai-modal-title" style="margin: 0; font-size: 1.12rem; font-weight: 900;"
-            data-i18n="aiAssistantHeader">AI હિસાબ સહાયક</h3>
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <button type="button" class="btn-icon" id="btn-ai-fullscreen" onclick="App.toggleAiFullscreen()"
-            title="પૂર્ણ સ્ક્રીન (F11)" data-shortcut="F11" data-shortcut-pos="bottom"
-            style="background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 8px; padding: 6px 12px; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-weight: 700;">
-            <span>⛶</span> <span id="lbl-ai-fullscreen">મોટું કરો</span>
-          </button>
-          <button type="button" class="btn-icon" onclick="App.clearAiChat()" title="ચેટ સાફ કરો"
-            style="background: rgba(255,255,255,0.12); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: 8px; padding: 6px 10px; font-size: 0.82rem; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-weight: 700;">
-            <span>🧹</span> <span>સાફ કરો</span>
-          </button>
-          <button class="modal-close-btn" data-shortcut="Esc" data-shortcut-pos="left" title="બંધ કરો (Esc)"
-            style="color: white; margin-left: 4px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer;"
-            onclick="App.closeAiReportModal()">✕</button>
-        </div>
-      </div>
-
-      <!-- Quick Prompt Pills Bar -->
-      <div class="ai-quick-pills-bar">
-        <span class="ai-quick-pills-label">ઝડપી પ્રશ્નો:</span>
-        <div class="ai-quick-pills-scroll">
-          <button type="button" class="ai-quick-pill"
-            onclick="App.askQuickPrompt('બેંકમાં ભરવા માટે કઈ નોટો કેટલી છે? બેંક ડિપોઝીટ સ્લિપ હિસાબ આપો.')">💵 બેંક
-            સ્લિપ (નોટોની ગણતરી)</button>
-          <button type="button" class="ai-quick-pill" onclick="App.askQuickPrompt('કોની પાસે ઉચક રકમ બાકી છે?')">💼 ઉચક
-            બાકી લિસ્ટ</button>
-        </div>
-      </div>
-
-      <!-- Modal Body (Chat / Report Thread) -->
-      <div class="modal-body ai-modal-body" id="ai-chat-thread">
-      </div>
-
-      <!-- Modal Footer (Input Bar) -->
-      <div class="modal-footer ai-modal-footer">
-        <div class="ai-input-wrap">
-          <button type="button" id="btn-ai-voice-mic" class="ai-mic-btn" onclick="App.toggleSpeechRecognition()"
-            title="માઇકથી બોલીને પૂછો">
-            🎙️
-          </button>
-          <input type="text" id="ai-report-input" class="ai-text-input" placeholder="પ્રશ્ન પૂછો..."
-            onkeydown="if(event.key==='Enter') App.sendAiQuery();">
-          <button type="button" id="btn-ai-send" class="ai-send-btn" onclick="App.sendAiQuery()"
-            title="પ્રશ્ન પૂછો (Enter)" data-shortcut="Enter" data-shortcut-pos="top">
-            <span>મોકલો</span> ➤
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- ==========================================================================
        MODAL: ADMIN DATA BACKUP & RESTORE (હિસાબ ડેટા બેકઅપ અને રિસ્ટોર)
@@ -4394,92 +4683,13 @@
       <button type="button" class="calc-key key-num" onclick="App.calcInputDigit('.')">.</button>
       <button type="button" class="calc-key key-equal" onclick="App.calcEquals()" title="Equals (= or Enter)">=</button>
     </div>
-  <!-- ========================================================================= -->
-  <!-- FULL SCREEN AUTHENTICATION GATEKEEPER & AUTO-LOGIN OVERLAY -->
-  <!-- ========================================================================= -->
-  <div id="auth-login-overlay" style="display: none; position: fixed; inset: 0; z-index: 999999; background: radial-gradient(circle at center, rgba(15, 23, 42, 0.95), rgba(2, 6, 23, 0.98)); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 20px;">
-    <div style="background: linear-gradient(145deg, #ffffff, #fdfbf7); border: 2px solid #e2d9c8; border-radius: 20px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4), 0 0 40px rgba(217, 119, 6, 0.2); width: 100%; max-width: 440px; padding: 36px 32px; text-align: center; position: relative; animation: authFadeIn 0.35s ease-out;">
-      
-      <!-- Sacred Header Logo -->
-      <div style="margin-bottom: 16px;">
-        <img src="images/logo.png" alt="શ્રી ગાદીસ્થાન જેતપુર" style="width: 82px; height: 82px; object-fit: contain; filter: drop-shadow(0 6px 12px rgba(217, 119, 6, 0.35)); margin: 0 auto;">
-      </div>
 
-      <h2 style="font-family: var(--font-heading); font-size: 1.45rem; font-weight: 800; color: #92400e; margin: 0 0 4px 0; letter-spacing: -0.3px;">
-        શ્રી ગાદીસ્થાન જેતપુર
-      </h2>
-      <p style="font-size: 0.88rem; color: #78350f; font-weight: 600; margin: 0 0 24px 0; opacity: 0.9;">
-        🔒 અધિકૃત એકાઉન્ટ પ્રવેશ (Authorized Login)
-      </p>
-
-      <!-- Error Banner -->
-      <div id="auth-error-msg" style="display: none; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 10px 14px; border-radius: 8px; font-size: 0.84rem; margin-bottom: 18px; text-align: left; line-height: 1.4;">
-        ⚠️ <span id="auth-error-text">અમાન્ય ઇમેઇલ અથવા પાસવર્ડ!</span>
-      </div>
-
-      <!-- Login Form -->
-      <form id="form-auth-login" onsubmit="event.preventDefault(); App.handleAuthLogin();" style="text-align: left;">
-        
-        <!-- Email Input -->
-        <div style="margin-bottom: 16px;">
-          <label for="auth-input-email" style="display: block; font-size: 0.82rem; font-weight: 700; color: #475569; margin-bottom: 6px;">
-            📧 ઇમેઇલ એડ્રેસ (Email):
-          </label>
-          <input type="email" id="auth-input-email" required class="input-text"
-            placeholder="Teraiya.Kaushik24@gmail.com" value="Teraiya.Kaushik24@gmail.com"
-            style="width: 100%; padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; font-weight: 600; box-sizing: border-box; outline: none; transition: all 0.2s;"
-            onfocus="this.style.borderColor='#d97706'; this.style.boxShadow='0 0 0 3px rgba(217, 119, 6, 0.15)';"
-            onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none';">
-        </div>
-
-        <!-- Password Input -->
-        <div style="margin-bottom: 18px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <label for="auth-input-password" style="font-size: 0.82rem; font-weight: 700; color: #475569;">
-              🔑 પાસવર્ડ (Password):
-            </label>
-            <span style="font-size: 0.75rem; color: #94a3b8; cursor: pointer; user-select: none;" onclick="App.toggleAuthPasswordVisibility()">
-              👁️ બતાવો / છુપાવો
-            </span>
-          </div>
-          <div style="position: relative;">
-            <input type="password" id="auth-input-password" required class="input-text"
-              placeholder="તમારો પાસવર્ડ દાખલ કરો"
-              style="width: 100%; padding: 11px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; font-weight: 600; box-sizing: border-box; outline: none; transition: all 0.2s;"
-              onfocus="this.style.borderColor='#d97706'; this.style.boxShadow='0 0 0 3px rgba(217, 119, 6, 0.15)';"
-              onblur="this.style.borderColor='#cbd5e1'; this.style.boxShadow='none';">
-          </div>
-        </div>
-
-        <!-- Remember Me Checkbox (Checked by default for Auto-Login) -->
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 22px; cursor: pointer; user-select: none;" onclick="document.getElementById('auth-remember-me').click(); event.stopPropagation();">
-          <input type="checkbox" id="auth-remember-me" checked onclick="event.stopPropagation();"
-            style="width: 18px; height: 18px; cursor: pointer; accent-color: #d97706;">
-          <label for="auth-remember-me" style="font-size: 0.86rem; font-weight: 600; color: #334155; cursor: pointer; margin: 0;">
-            આ કમ્પ્યુટર યાદ રાખો (કાયમ લોગિન રહો)
-          </label>
-        </div>
-
-        <!-- Submit Button -->
-        <button type="submit" id="btn-auth-submit"
-          style="width: 100%; padding: 13px; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #ffffff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 800; cursor: pointer; box-shadow: 0 6px 16px rgba(180, 83, 9, 0.35); transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <span>🔓 પ્રવેશ કરો (Login)</span>
-        </button>
-
-      </form>
-
-      <div style="margin-top: 20px; font-size: 0.78rem; color: #94a3b8; line-height: 1.4;">
-        🔒 ૨૫૬-બીટ SSL સુરક્ષિત ક્લાઉડ નેટવર્ક • શ્રી ગાદીસ્થાન ટ્રસ્ટ
-      </div>
-    </div>
-  </div>
-
-  <!-- Load Client Scripts -->
-  <script src="js/html2pdf.bundle.min.js"></script>
-  <script src="js/numberToWords.js?v=20261016_gemini_v8"></script>
-  <script src="js/i18n.js?v=20261019_single_plus_v6"></script>
-  <script src="js/gujaratiTyping.js?v=20261016_gemini_v8"></script>
-  <script src="js/app.js?v=20261020_auth_v3"></script>
+    <!-- Load Client Scripts -->
+    <script src="js/html2pdf.bundle.min.js"></script>
+    <script src="js/numberToWords.js?v=20261016_gemini_v8"></script>
+    <script src="js/i18n.js?v=20261019_single_plus_v6"></script>
+    <script src="js/gujaratiTyping.js?v=20261016_gemini_v8"></script>
+    <script src="js/app.js?v=20261020_auth_v3"></script>
 </body>
 
 </html>
