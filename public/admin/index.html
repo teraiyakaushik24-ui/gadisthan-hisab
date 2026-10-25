@@ -4932,7 +4932,10 @@
             window.App.adminToken = token;
             window.App.adminAuthenticated = true;
             // Switch directly to admin dashboard
-            setTimeout(() => {
+            setTimeout(async () => {
+              if (typeof window.App.initAppData === 'function' && !window.App.settings) {
+                await window.App.initAppData();
+              }
               if (typeof window.App.openAdminModal === 'function') {
                 window.App.openAdminModal();
               } else if (typeof window.App.switchMainView === 'function') {
@@ -5012,12 +5015,15 @@
             }
 
             showAdminAlert('✅ Admin login successful! Loading...', 'success');
-            setTimeout(() => {
+            setTimeout(async () => {
               document.getElementById('admin-login-screen').style.display = 'none';
               if (window.App) {
                 window.App.authToken = data.token;
                 window.App.adminToken = data.token;
                 window.App.adminAuthenticated = true;
+                if (typeof window.App.initAppData === 'function' && !window.App.settings) {
+                  await window.App.initAppData();
+                }
                 window.App.openAdminModal();
               }
             }, 300);
@@ -5077,12 +5083,15 @@
             }
 
             showAdminAlert('✅ Admin 2-Step verification successful!', 'success');
-            setTimeout(() => {
+            setTimeout(async () => {
               document.getElementById('admin-login-screen').style.display = 'none';
               if (window.App) {
                 window.App.authToken = data.token;
                 window.App.adminToken = data.token;
                 window.App.adminAuthenticated = true;
+                if (typeof window.App.initAppData === 'function' && !window.App.settings) {
+                  await window.App.initAppData();
+                }
                 window.App.openAdminModal();
               }
             }, 300);

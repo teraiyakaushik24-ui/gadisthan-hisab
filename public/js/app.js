@@ -2084,41 +2084,42 @@ const App = {
       i18n.updateDOM();
     }
 
+    const s = this.settings || {};
     try {
       const res = await fetch('/api/admin/config');
       const cfg = await res.json();
       this.adminData.notes = [...(cfg.notes || this.activeNotes)];
       this.adminData.banks = [...(cfg.banks || this.fixedBanks)];
-      this.adminData.inactiveBanks = [...(cfg.inactiveBanks || this.settings.inactiveBanks || [])];
+      this.adminData.inactiveBanks = [...(cfg.inactiveBanks || s.inactiveBanks || [])];
       this.adminData.vouchers = [...(cfg.vouchers || this.fixedVouchers)];
-      this.adminData.inactiveVouchers = [...(cfg.inactiveVouchers || this.settings.inactiveVouchers || [])];
+      this.adminData.inactiveVouchers = [...(cfg.inactiveVouchers || s.inactiveVouchers || [])];
 
       const orgInp = document.getElementById('admin-setting-org-name');
-      if (orgInp) orgInp.value = cfg.orgName || this.settings.orgName || '';
+      if (orgInp) orgInp.value = cfg.orgName || s.orgName || '';
       const subInp = document.getElementById('admin-setting-org-sub');
-      if (subInp) subInp.value = cfg.orgSubtitle || this.settings.orgSubtitle || '';
+      if (subInp) subInp.value = cfg.orgSubtitle || s.orgSubtitle || '';
       const phoneInp = document.getElementById('admin-setting-phone');
-      if (phoneInp) phoneInp.value = cfg.phone || this.settings.phone || '';
+      if (phoneInp) phoneInp.value = cfg.phone || s.phone || '';
       const folderInp = document.getElementById('admin-setting-folder');
-      if (folderInp) folderInp.value = cfg.exportFolder || this.settings.exportFolder || 'D:\\Account Report';
+      if (folderInp) folderInp.value = cfg.exportFolder || s.exportFolder || 'D:\\Account Report';
 
       // Signatures
       const signPrep = document.getElementById('admin-setting-sign-prep');
-      if (signPrep) signPrep.value = cfg.signPrepared || this.settings.signPrepared || 'હિસાબનીશ / એકાઉન્ટન્ટ';
+      if (signPrep) signPrep.value = cfg.signPrepared || s.signPrepared || 'હિસાબનીશ / એકાઉન્ટન્ટ';
       const signChk = document.getElementById('admin-setting-sign-chk');
-      if (signChk) signChk.value = cfg.signChecked || this.settings.signChecked || 'તપાસનાર / સેક્રેટરી';
+      if (signChk) signChk.value = cfg.signChecked || s.signChecked || 'તપાસનાર / સેક્રેટરી';
       const signPres = document.getElementById('admin-setting-sign-pres');
-      if (signPres) signPres.value = cfg.signPresident || this.settings.signPresident || 'પ્રમુખ / ટ્રસ્ટી';
+      if (signPres) signPres.value = cfg.signPresident || s.signPresident || 'પ્રમુખ / ટ્રસ્ટી';
       const alertEmailInp = document.getElementById('admin-setting-alert-email');
-      if (alertEmailInp) alertEmailInp.value = cfg.adminAlertEmail || this.settings.adminAlertEmail || 'Teraiya.Kaushik24@gmail.com';
+      if (alertEmailInp) alertEmailInp.value = cfg.adminAlertEmail || s.adminAlertEmail || 'Teraiya.Kaushik24@gmail.com';
 
       this.renderAdminLists();
     } catch (e) {
       this.adminData.notes = [...this.activeNotes];
       this.adminData.banks = [...this.fixedBanks];
-      this.adminData.inactiveBanks = [...(this.settings.inactiveBanks || [])];
+      this.adminData.inactiveBanks = [...(s.inactiveBanks || [])];
       this.adminData.vouchers = [...this.fixedVouchers];
-      this.adminData.inactiveVouchers = [...(this.settings.inactiveVouchers || [])];
+      this.adminData.inactiveVouchers = [...(s.inactiveVouchers || [])];
       this.renderAdminLists();
     }
 
