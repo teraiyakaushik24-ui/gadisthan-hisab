@@ -1,48 +1,31 @@
-# Debug Session: Admin Portal (public/admin/index.html)
+# Debug Sessions
 
-## Symptom
-Admin login on `/admin` produces a runtime error or fails to load the Admin Dashboard properly after successful authentication.
+## Debug Session 1: Admin Portal (public/admin/index.html)
+- **Status:** RESOLVED
+- **Root Cause:** In `public/js/app.js`, `openAdminModal()` read properties from `this.settings` before `initAppData()` completed.
+- **Fix:** Guarded `this.settings` in `openAdminModal()` and awaited `initAppData()` on admin login.
+- **Verification:** Verified via browser subagent. All 8 tabs opened with 0 console errors.
 
-**When:** When submitting the admin login form on `http://localhost:3000/admin/` with valid admin credentials.
-**Expected:** The login screen fades out and the Admin Control Center dashboard loads completely with all settings, user lists, and statistics visible.
-**Actual:** An uncaught `TypeError: Cannot read properties of null (reading 'inactiveBanks') at Object.openAdminModal` occurs because `App.settings` is null when `openAdminModal()` is invoked before `App.initAppData()` runs. Additionally, `App.settings` null checks are missing in `openAdminModal()`.
+---
 
-## Evidence
-1. Browser subagent testing on `http://localhost:3000/admin/` revealed console exception:
-   `Uncaught (in promise) TypeError: Cannot read properties of null (reading 'inactiveBanks') at Object.openAdminModal`
-2. `public/js/app.js` line 48: `App.init()` stops initialization when not authenticated, skipping `App.initAppData()`. Consequently, `this.settings` remains `null`.
-3. In `openAdminModal()` (lines 2092, 2094, 2119, 2121), expressions like `this.settings.inactiveBanks` failed with TypeError because `this.settings` was null.
-4. `public/admin/index.html` login handlers (`handleAdminLoginSubmit` and `handleAdminOtpSubmit`) called `window.App.openAdminModal()` directly without ensuring `await window.App.initAppData()` completed first.
+## Debug Session 2: Staff Login & Main Dashboard (public/login.html & public/index.html)
 
-## Hypotheses
+### Symptom
+1. `public/login.html`: JavaScript contained logic for quick user switching (`selectQuickUser('user')` and `selectQuickUser('account')`), but the HTML template lacked the quick switcher buttons (`#btn-quick-user` and `#btn-quick-account`). Staff / accountants had no fast-switching buttons on the UI.
+2. `public/index.html`: Needed thorough empirical validation for staff role initialization, authentication redirection, floating calculator, expense diary (F1), and date navigation.
 
-| # | Hypothesis | Likelihood | Status |
-|---|------------|------------|--------|
-| 1 | Unsafe access to `this.settings.inactiveBanks` and `this.settings.inactiveVouchers` when `this.settings` is null crashes `openAdminModal` | 95% | CONFIRMED |
-| 2 | Direct call to `window.App.openAdminModal()` without invoking `await window.App.initAppData()` leaves application state uninitialized | 90% | CONFIRMED |
+### Evidence & Testing
+1. Inspected `public/login.html` DOM: Found `btn-quick-user` referenced in script but missing in the form markup.
+2. Browser subagent testing on `http://localhost:3000/login` and `http://localhost:3000/`:
+   - Added quick role switcher markup and styles (`Counter Staff` and `Accountant`).
+   - Clicking 'Accountant' switches username to `account` and password to `account123`.
+   - Clicking 'Counter Staff' switches username to `user` and password to `user123`.
+   - Logged in and verified redirection to `/` (`public/index.html`).
+   - Verified floating calculator open/close and keypad functionality.
+   - Verified Expense Diary (F1) modal open/close.
+   - Verified date navigation (previous day, next day, today) updates state and records smoothly.
+   - Captured console logs on `http://localhost:3000/`: **0 console errors**.
 
-## Attempts
-
-### Attempt 1
-**Testing:** Safe access on `this.settings` in `openAdminModal` and initializing app data upon successful admin login.
-**Action:**
-- Added fallback object `const s = this.settings || {};` in `openAdminModal()` (`public/js/app.js`).
-- Guarded `inactiveBanks`, `inactiveVouchers`, `orgName`, `phone`, etc., against null `settings`.
-- In `public/admin/index.html`, added `await window.App.initAppData()` before calling `window.App.openAdminModal()` in `checkAdminPortalAuth()`, `handleAdminLoginSubmit()`, and `handleAdminOtpSubmit()`.
-**Result:** Verified via browser subagent on `http://localhost:3000/admin/`. Login succeeded instantly, the Admin Control Center rendered without errors, and all 8 navigation tabs (Daily Hisab, Employees / Staff, Daily Mahapuja, Bank Options, Voucher Options, Settings & Backup, Activity History, User & Accountant Management) opened smoothly without console errors.
-**Conclusion:** CONFIRMED & RESOLVED
-
-## Resolution
-**Root Cause:**
-1. In `public/js/app.js`, `openAdminModal()` attempted to read properties from `this.settings` (which is `null` before `initAppData()` completes).
-2. `public/admin/index.html` invoked `openAdminModal()` immediately after authenticating without awaiting `App.initAppData()`.
-
-**Fix:**
-1. Updated `public/js/app.js` to guard all `this.settings` accesses with safe fallbacks (`const s = this.settings || {}`).
-2. Updated `public/admin/index.html` to await `window.App.initAppData()` on admin login, OTP verification, and auto-session check before opening the admin dashboard.
-
-**Verified:**
-Verified interactively via browser automation on `http://localhost:3000/admin/`:
-- Successfully logged in as admin (`admin` / `2412`).
-- Checked all 8 tabs across the Admin Control Center.
-- Verified 0 console errors.
+### Resolution
+- **Fix:** Added `.quick-role-wrapper` buttons and CSS in `public/login.html`.
+- **Verified:** 100% verified via automated browser subagent with recording and screenshot validation.
