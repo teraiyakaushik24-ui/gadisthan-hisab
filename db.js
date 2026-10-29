@@ -15,7 +15,7 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-const uri = process.env.MONGODB_URI;
+const uri = process.env.MONGODB_URI || 'mongodb+srv://teraiyakaushik24_db_user:gadisthanhisabdata@gadisthan.y12v43g.mongodb.net/hisab_db?retryWrites=true&w=majority&appName=GadiSthan';
 const DATA_DIR = path.join(__dirname, 'data');
 
 function atomicWriteJson(filePath, data) {
