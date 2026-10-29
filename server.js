@@ -312,6 +312,14 @@ app.use((req, res, next) => {
 });
 
 // Realtime Cloud Database Health / Status Endpoint
+app.get('/api/ping', (req, res) => {
+  res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy', uptime: Math.round(process.uptime()), timestamp: Date.now() });
+});
+
 app.get('/api/cloud-status', async (req, res) => {
   try {
     const isOnline = dbSync ? await dbSync.checkRealtimeCloudStatus() : false;

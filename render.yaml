@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: gadisthan-hisab
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: SMTP_EMAIL
+        value: Teraiya.Kaushik24@gmail.com
+      - key: SMTP_APP_PASSWORD
+        sync: false
+      - key: ADMIN_ALERT_EMAIL
+        value: Teraiya.Kaushik24@gmail.com
