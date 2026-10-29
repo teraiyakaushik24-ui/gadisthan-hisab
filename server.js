@@ -1039,4 +1039,14 @@ app.listen(PORT, async () => {
   
   // Initialize MongoDB Atlas Cloud Connection
   await dbSync.initMongoDB();
+  // 24/7 Keep-Alive Self-Ping on Cloud Hosting (e.g. Render)
+  if (process.env.RENDER || process.env.NODE_ENV === 'production') {
+    const https = require('https');
+    const PING_URL = 'https://gadisthan-hisab.onrender.com/api/ping';
+    setInterval(() => {
+      https.get(PING_URL, (res) => {}).on('error', () => {});
+    }, 10 * 60 * 1000);
+    console.log('[Auto-Ping] 24/7 Keep-alive self-ping active every 10 mins.');
+  }
+
 });
