@@ -140,9 +140,6 @@ async function syncFromCloudToLocal() {
         if (rest.password && !rest.passwordHash) {
           const bcrypt = require('bcryptjs');
           rest.passwordHash = bcrypt.hashSync(rest.password, 10);
-          delete rest.password;
-        } else if (rest.password) {
-          delete rest.password;
         }
         return rest;
       });
@@ -176,9 +173,9 @@ async function syncFromCloudToLocal() {
 // Background Cloud Upserts (Fire-and-forget safe async)
 function syncSettingsToCloud(settings) {
   if (!isConnected || !db) return;
-  db.collection('settings').updateOne(
+  db.collection('settings').replaceOne(
     { _id: 'global_settings' },
-    { $set: { _id: 'global_settings', ...settings } },
+    { _id: 'global_settings', ...settings },
     { upsert: true }
   ).catch(e => console.error('Cloud save settings error:', e.message));
 }

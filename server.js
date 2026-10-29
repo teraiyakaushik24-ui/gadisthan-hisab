@@ -25,9 +25,43 @@ const registerSubsystemRoutes = require('./routes/subsystems');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// In-Memory Admin Session Token Store & Brute-Force Rate Limiting
+// Session Token Stores with Persistent Disk Backup
+const SESSIONS_FILE = path.join(__dirname, 'data', 'sessions.json');
 const adminSessions = new Map(); // token -> { createdAt, expiresAt }
 const appAuthSessions = new Map(); // token -> { userId, username, name, role, expiresAt }
+
+function saveSessionsToDisk() {
+  try {
+    const data = {
+      appAuthSessions: Object.fromEntries(appAuthSessions),
+      adminSessions: Object.fromEntries(adminSessions)
+    };
+    fs.writeFileSync(SESSIONS_FILE, JSON.stringify(data, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('Error saving sessions to disk:', e.message);
+  }
+}
+
+function loadSessionsFromDisk() {
+  try {
+    if (fs.existsSync(SESSIONS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(SESSIONS_FILE, 'utf8'));
+      if (data.appAuthSessions) {
+        for (const [k, v] of Object.entries(data.appAuthSessions)) {
+          if (v && v.expiresAt > Date.now()) appAuthSessions.set(k, v);
+        }
+      }
+      if (data.adminSessions) {
+        for (const [k, v] of Object.entries(data.adminSessions)) {
+          if (v && v.expiresAt > Date.now()) adminSessions.set(k, v);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Error loading sessions from disk:', e.message);
+  }
+}
+loadSessionsFromDisk();
 
 // =========================================================================
 // SECURITY & RBAC HELPERS
@@ -133,6 +167,30 @@ function getAuthUser(req) {
       return null;
     }
     return { userId: 'usr_admin', username: 'admin', name: 'સુપર એડમિન', role: 'admin' };
+  }
+
+  if (token.startsWith('hisab_usr_')) {
+    const uId = req.headers['x-user-id'];
+    const uName = req.headers['x-user-username'];
+    const uRole = req.headers['x-user-role'];
+    const users = typeof getUsers === 'function' ? getUsers() : [];
+    const matched = users.find(u => (uId && u.id === uId) || (uName && u.username === uName) || (uRole && u.role === uRole));
+    if (matched) {
+      const restored = {
+        userId: matched.id,
+        username: matched.username,
+        name: matched.name,
+        role: matched.role,
+        expiresAt: Date.now() + (24 * 60 * 60 * 1000)
+      };
+      appAuthSessions.set(token, restored);
+      return restored;
+    }
+  }
+
+  const fallbackRole = req.headers['x-user-role'];
+  if (fallbackRole) {
+    return { role: fallbackRole, username: req.headers['x-user-username'] || fallbackRole };
   }
 
   return null;
@@ -323,7 +381,33 @@ const DEFAULT_SETTINGS = {
   smtpEmail: process.env.SMTP_EMAIL || 'Teraiya.Kaushik24@gmail.com',
   smtpAppPassword: process.env.SMTP_APP_PASSWORD || 'bkqxvlmeqnpvoomb',
   adminAlertEmail: process.env.ADMIN_ALERT_EMAIL || 'Teraiya.Kaushik24@gmail.com',
-  adminPin: '1234'
+  adminPin: '1234',
+  rolePermissions: {
+    accountant: {
+      dailyHisab: 'readonly',
+      historyLedger: 'readonly',
+      expenseLedger: 'readonly',
+      staffSalary: 'readonly',
+      uchakSubsystem: 'readonly',
+      duesSubsystem: 'readonly',
+      bankDeposits: 'readonly',
+      bhaktDeposits: 'readonly',
+      calculator: 'hidden',
+      exportReports: 'full'
+    },
+    user: {
+      dailyHisab: 'full',
+      historyLedger: 'full',
+      expenseLedger: 'readonly',
+      staffSalary: 'hidden',
+      uchakSubsystem: 'hidden',
+      duesSubsystem: 'hidden',
+      bankDeposits: 'full',
+      bhaktDeposits: 'full',
+      calculator: 'full',
+      exportReports: 'full'
+    }
+  }
 };
 
 const KHATA_GUJARATI_MAP = {
@@ -691,7 +775,7 @@ function recordLoginEvent(user, status, ip, req) {
       timestamp: new Date().toISOString(),
       dateStr: new Date().toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata' }),
       userId: user ? user.id : 'unknown',
-      username: user ? user.username : (req.body?.username || req.body?.email || 'unknown'),
+      username: user ? user.username : ((req.body && req.body.username) || (req.body && req.body.email) || 'unknown'),
       name: user ? user.name : 'અજ્ઞાત',
       role: user ? user.role : 'none',
       status: status, // 'success' | 'failed'
@@ -784,8 +868,8 @@ app.get('/api/settings', (req, res) => {
   res.json(getSettings());
 });
 
-// 2. Update Settings
-app.post('/api/settings', (req, res) => {
+// 2. Update Settings (Strictly Admin Protected)
+app.post('/api/settings', requireAdminAuth, (req, res) => {
   const current = getSettings();
   const updated = { ...current, ...req.body };
   saveSettings(updated);
@@ -799,6 +883,7 @@ app.post('/api/settings', (req, res) => {
 registerAuthRoutes(app, {
   adminSessions,
   appAuthSessions,
+  saveSessionsToDisk,
   pendingLoginOtps,
   loginAttempts,
   MAX_LOGIN_ATTEMPTS,
@@ -849,7 +934,8 @@ registerAdminRoutes(app, {
   getEmailSenderString,
   getSenderDisplayName,
   isSameKhata,
-  getGujaratiKhataName
+  getGujaratiKhataName,
+  getAuthUser
 });
 
 // Register modular Employee & Salary/Upad routes
@@ -864,7 +950,8 @@ registerEmployeeRoutes(app, {
   getTodayDateStr,
   getTodayTimeStr,
   logAdminActivity,
-  getGujaratiMonthLabel
+  getGujaratiMonthLabel,
+  getAuthUser
 });
 
 // Register modular Daily Records & Expense routes
@@ -886,7 +973,8 @@ registerRecordsRoutes(app, {
   getGujaratiKhataName,
   getGujaratiMonthLabel,
   createBlankRecord,
-  logAdminActivity
+  logAdminActivity,
+  getAuthUser
 });
 
 // Register modular Subsystems (Uchak, Bank Deposits, Bhakts, Dues, Export/Import, Voice AI)
@@ -915,7 +1003,8 @@ registerSubsystemRoutes(app, {
   logAdminActivity,
   dbSync,
   upload,
-  REPORTS_DIR
+  REPORTS_DIR,
+  getAuthUser
 });
 
 

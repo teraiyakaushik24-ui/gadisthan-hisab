@@ -10,8 +10,27 @@ module.exports = function registerEmployeeRoutes(app, deps) {
     getTodayDateStr,
     getTodayTimeStr,
     logAdminActivity,
-    getGujaratiMonthLabel
+    getGujaratiMonthLabel,
+    getAuthUser
   } = deps;
+
+  function checkStaffSalaryPermission(req, res) {
+    const authUser = (typeof getAuthUser === 'function') ? getAuthUser(req) : null;
+    const userRole = (authUser && authUser.role) || req.headers['x-user-role'];
+    const settings = getSettings();
+    const rolePerms = (settings && settings.rolePermissions) || {};
+    if (userRole && rolePerms[userRole]) {
+      const perm = rolePerms[userRole].staffSalary;
+      if (perm === 'readonly' || perm === 'hidden') {
+        res.status(403).json({
+          success: false,
+          error: 'ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે સ્ટાફ પગાર ફક્ત વાંચવા માટે (Read-Only Mode) છે.'
+        });
+        return false;
+      }
+    }
+    return true;
+  }
 
 function getDefaultSalaryMonth(dateStr = null) {
   const dStr = dateStr || getTodayDateStr();
@@ -21,7 +40,8 @@ function getDefaultSalaryMonth(dateStr = null) {
 // Robust Staff Salary & Upad Balance Engine (With opening balance carry-forward, absent deduction, unclamped balance)
 function calculateEmployeeBalances(emp, targetMonth = null) {
   const currentMonth = targetMonth || getDefaultSalaryMonth();
-  const salary = Number(emp.salary) || 0;
+  const configuredSalary = Number(emp.salary) || 0;
+  const isInactive = (emp.status === 'inactive');
   const upads = emp.upads || [];
   const pagars = emp.pagars || [];
 
@@ -70,7 +90,7 @@ function calculateEmployeeBalances(emp, targetMonth = null) {
 
   let runningOpeningBalance = Number(emp.initialBalance) || 0;
   let targetOpeningBalance = 0;
-  let targetEarnedSalary = salary;
+  let targetEarnedSalary = (isInactive ? 0 : configuredSalary);
   let targetMonthUpad = 0;
   let targetMonthPagarPaid = 0;
   let targetAbsentDays = 0;
@@ -95,7 +115,8 @@ function calculateEmployeeBalances(emp, targetMonth = null) {
       if (p.totalMonthDays) mTotalDays = Number(p.totalMonthDays) || 30;
     });
 
-    const mEarnedSalary = Math.max(0, salary - mAbsentDeduction);
+    const mSalary = (isInactive && m >= currentMonth) ? 0 : configuredSalary;
+    const mEarnedSalary = Math.max(0, mSalary - mAbsentDeduction);
     const mOpening = runningOpeningBalance;
     // Closing = Opening + Earned Salary - Upads - Pagars Paid
     const mClosing = mOpening + mEarnedSalary - mUpadTotal - mPagarTotal;
@@ -104,7 +125,7 @@ function calculateEmployeeBalances(emp, targetMonth = null) {
       month: m,
       monthLabel: getGujaratiMonthLabel(m),
       openingBalance: mOpening,
-      salary,
+      salary: mSalary,
       totalMonthDays: mTotalDays,
       absentDays: mAbsentDays,
       absentDeduction: mAbsentDeduction,
@@ -144,7 +165,7 @@ function calculateEmployeeBalances(emp, targetMonth = null) {
     ...emp,
     paymentType: emp.paymentType || 'monthly',
     paymentMode: emp.paymentMode === 'bank' ? 'bank' : 'cash',
-    salary,
+    salary: configuredSalary,
     currentMonth,
     currentMonthLabel: getGujaratiMonthLabel(currentMonth),
     openingBalance: targetOpeningBalance, // અગાઉના મહિનાઓની બાકી (+ એટલે ચૂકવવાપાત્ર, - એટલે એડવાન્સ/ઉપાડ જમા)
@@ -174,17 +195,20 @@ app.get('/api/employees', (req, res) => {
 
   const enriched = employees.map(emp => calculateEmployeeBalances(emp, currentMonth));
 
-  const cashEmployees = enriched.filter(e => (e.paymentMode || 'cash') !== 'bank');
-  const bankEmployees = enriched.filter(e => e.paymentMode === 'bank');
+  const activeEmployees = enriched.filter(e => e.status !== 'inactive');
+  const inactiveEmployees = enriched.filter(e => e.status === 'inactive');
+  const cashEmployees = activeEmployees.filter(e => (e.paymentMode || 'cash') !== 'bank');
+  const bankEmployees = activeEmployees.filter(e => e.paymentMode === 'bank');
 
-  const totalPayroll = enriched.reduce((s, e) => s + (e.salary || 0), 0);
+  const totalPayroll = activeEmployees.reduce((s, e) => s + (e.salary || 0), 0);
   const totalCashPayroll = cashEmployees.reduce((s, e) => s + (e.salary || 0), 0);
   const totalBankPayroll = bankEmployees.reduce((s, e) => s + (e.salary || 0), 0);
 
   const totalOpeningBalance = cashEmployees.reduce((s, e) => s + (e.openingBalance || 0), 0);
-  const totalMonthUpad = enriched.reduce((s, e) => s + (e.currentMonthUpad || 0), 0);
   const totalCashMonthUpad = cashEmployees.reduce((s, e) => s + (e.currentMonthUpad || 0), 0);
   const totalBankMonthUpad = bankEmployees.reduce((s, e) => s + (e.currentMonthUpad || 0), 0);
+  const totalMonthUpad = totalCashMonthUpad;
+  const totalAllMonthUpad = activeEmployees.reduce((s, e) => s + (e.currentMonthUpad || 0), 0);
   const totalMonthPagarPaid = cashEmployees.reduce((s, e) => s + (e.currentMonthPagarPaid || 0), 0);
   const totalNetPayable = cashEmployees.reduce((s, e) => s + (e.netBalance > 0 ? e.netBalance : 0), 0);
   const totalNetAdvance = cashEmployees.reduce((s, e) => s + (e.netBalance < 0 ? Math.abs(e.netBalance) : 0), 0);
@@ -194,7 +218,9 @@ app.get('/api/employees', (req, res) => {
     currentMonth,
     currentMonthLabel: getGujaratiMonthLabel(currentMonth),
     summary: {
-      totalEmployees: enriched.length,
+      totalEmployees: activeEmployees.length,
+      totalActiveEmployees: activeEmployees.length,
+      totalInactiveEmployees: inactiveEmployees.length,
       totalCashEmployees: cashEmployees.length,
       totalBankEmployees: bankEmployees.length,
       totalPayroll,
@@ -204,6 +230,7 @@ app.get('/api/employees', (req, res) => {
       totalMonthUpad,
       totalCashMonthUpad,
       totalBankMonthUpad,
+      totalAllMonthUpad,
       totalMonthPagarPaid,
       totalNetPayable,
       totalNetAdvance
@@ -214,6 +241,7 @@ app.get('/api/employees', (req, res) => {
 
 // 9e. Add New Employee
 app.post('/api/employees', (req, res) => {
+  if (!checkStaffSalaryPermission(req, res)) return;
   const { name, role, phone, salary, joiningDate, paymentType, paymentMode } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'કર્મચારીનું નામ જરૂરી છે (Employee name is required)' });
@@ -253,6 +281,7 @@ app.post('/api/employees', (req, res) => {
 
 // 9f. Update Employee
 app.put('/api/employees/:id', (req, res) => {
+  if (!checkStaffSalaryPermission(req, res)) return;
   const { id } = req.params;
   const { name, role, phone, salary, paymentType, paymentMode, joiningDate, status, pagars, upads, monthlyHistory } = req.body;
   const employees = getEmployees();
@@ -348,6 +377,7 @@ app.put('/api/employees/:id', (req, res) => {
 
 // 9g. Delete Employee
 app.delete('/api/employees/:id', (req, res) => {
+  if (!checkStaffSalaryPermission(req, res)) return;
   const { id } = req.params;
   let employees = getEmployees();
   const initialLen = employees.length;
@@ -374,6 +404,7 @@ app.delete('/api/employees/:id', (req, res) => {
 
 // 9h. Add Upad (Advance) to Employee and sync with Daily Expense & UPAD voucher
 app.post('/api/employees/:id/upad', (req, res) => {
+  if (!checkStaffSalaryPermission(req, res)) return;
   const { id } = req.params;
   const { amount, title, remarks, date, time, forMonth, addToHisab } = req.body;
 
@@ -526,6 +557,7 @@ app.delete('/api/employees/:id/upad/:upadId', (req, res) => {
 
 // 9j. Add Pagar (Salary Payment) to Employee and sync with Daily Expense & PAGAR voucher
 app.post('/api/employees/:id/pagar', (req, res) => {
+  if (!checkStaffSalaryPermission(req, res)) return;
   const { id } = req.params;
   const { 
     amount, 
@@ -662,6 +694,7 @@ app.post('/api/employees/:id/pagar', (req, res) => {
 
 // 9j-2. Bulk Pagar Payout (Selected or All employees pagar charged to kharch)
 app.post('/api/employees/bulk-pagar', (req, res) => {
+  if (!checkStaffSalaryPermission(req, res)) return;
   const { items, date, time, forMonth, addToHisab } = req.body;
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'કોઈ કર્મચારી પસંદ કરેલ નથી' });

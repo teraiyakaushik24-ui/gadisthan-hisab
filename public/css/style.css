@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&display=swap');
 
+@font-face {
+  font-family: 'Segoe UI Emoji';
+  src: url('../fonts/seguiemj.ttf') format('truetype');
+  font-display: swap;
+}
+
 :root {
   /* Permanent White Skin Theme */
   --bg-main: #f8fafc;
@@ -223,7 +229,7 @@ body {
   border-radius: 10px !important;
   padding: 0 16px !important;
   box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25) !important;
-  display: inline-flex !important;
+  display: inline-flex;
   align-items: center !important;
   gap: 7px !important;
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -239,6 +245,26 @@ body {
 .header-menu-container {
   position: relative;
   display: inline-block;
+}
+
+.logo-profile-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  min-width: 300px;
+  max-width: 340px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  z-index: 1060;
+  animation: menuDropdownAnim 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.logo-profile-dropdown.show {
+  display: block;
 }
 
 .btn-header-menu {
@@ -5876,9 +5902,13 @@ body.modal-open .floating-uchak-btn {
 body.admin-mode-active .top-header,
 body.admin-mode-active .main-view-switcher,
 body.admin-mode-active #floating-uchak-toggle,
+body.admin-mode-active #view-daily-hisab,
+body.admin-mode-active #view-expense-ledger,
 body:has(#view-admin-dashboard:not([style*="display: none"])) .top-header,
 body:has(#view-admin-dashboard:not([style*="display: none"])) .main-view-switcher,
-body:has(#view-admin-dashboard:not([style*="display: none"])) #floating-uchak-toggle {
+body:has(#view-admin-dashboard:not([style*="display: none"])) #floating-uchak-toggle,
+body:has(#view-admin-dashboard:not([style*="display: none"])) #view-daily-hisab,
+body:has(#view-admin-dashboard:not([style*="display: none"])) #view-expense-ledger {
   display: none !important;
 }
 
@@ -6970,4 +7000,806 @@ body:has(#view-admin-dashboard:not([style*="display: none"])) #floating-uchak-to
   text-align: center;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(2, 6, 23, 0.3);
+}
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE FIXES (SCREEN FIT & ALIGNMENT OVERHAUL)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .app-container {
+    padding: 12px 14px 60px;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .hisab-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Prevent horizontal screen overflow */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+    width: 100%;
+  }
+
+  .app-container {
+    padding: 8px 10px 50px;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  /* 1. Header Responsive */
+  .top-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .brand-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .brand-logo-icon {
+    width: 44px;
+    height: 44px;
+    padding: 2px;
+  }
+
+  .brand-info h1.org-title-fixed,
+  .brand-info .org-title-fixed {
+    font-size: 1.15rem !important;
+    word-spacing: 2px !important;
+    letter-spacing: 0px !important;
+    white-space: normal !important;
+    line-height: 1.25;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .header-actions .btn-icon,
+  .header-actions .btn-bank-accum-header {
+    height: 36px;
+    font-size: 0.82rem;
+    padding: 0 10px;
+  }
+
+  /* 2. Main View Switcher Tabs */
+  .main-view-switcher {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 6px;
+    margin-bottom: 12px;
+  }
+
+  .view-tab-btn {
+    padding: 8px 6px;
+    font-size: 0.84rem;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+    min-height: 42px;
+    line-height: 1.2;
+  }
+
+  /* 3. Date & Grand Summary Ribbon */
+  .date-summary-ribbon {
+    padding: 12px 10px;
+    margin-bottom: 12px;
+    gap: 10px;
+  }
+
+  .date-ribbon-top-center {
+    width: 100%;
+  }
+
+  .date-center-badge {
+    padding: 4px 12px;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .date-center-badge .date-display-friendly {
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .date-ribbon-bottom-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .date-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .date-picker-wrap {
+    min-width: 135px;
+    padding: 6px 12px;
+    gap: 6px;
+  }
+
+  .date-picker-text {
+    font-size: 0.9rem;
+  }
+
+  .date-controls .btn-icon {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+  }
+
+  .date-pill-btn {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+  }
+
+  .grand-total-hero {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 100%;
+  }
+
+  .summary-pill {
+    min-width: 0 !important;
+    width: 100%;
+    padding: 8px 4px;
+    align-items: center;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .summary-pill .label {
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .summary-pill .val {
+    font-size: 0.95rem;
+  }
+
+  .grand-total-card {
+    grid-column: 1 / -1;
+    min-width: 0 !important;
+    width: 100%;
+    padding: 10px 14px;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .grand-total-card .grand-label {
+    font-size: 0.72rem;
+  }
+
+  .grand-total-card .grand-amount {
+    font-size: 1.7rem;
+  }
+
+  /* 4. Accounting Cards & Tables */
+  .hisab-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .accounting-card {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .card-header-bar {
+    padding: 10px 12px;
+  }
+
+  .card-header-bar h2 {
+    font-size: 1.05rem;
+  }
+
+  .table-scroll-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-height: 400px;
+  }
+
+  .table-hisab {
+    width: 100%;
+    min-width: 300px;
+  }
+
+  .table-hisab th {
+    padding: 8px 8px;
+    font-size: 0.75rem;
+  }
+
+  .table-hisab td {
+    padding: 8px 8px;
+  }
+
+  .fixed-label-name {
+    font-size: 0.92rem;
+  }
+
+  .input-amount-field {
+    width: 95px !important;
+    font-size: 1rem !important;
+    padding: 5px 6px !important;
+  }
+
+  .input-count-field {
+    width: 65px !important;
+    font-size: 1rem !important;
+    padding: 5px 6px !important;
+  }
+
+  .denom-badge {
+    min-width: 48px;
+    font-size: 0.82rem;
+    padding: 3px 6px;
+  }
+
+  .card-total-footer {
+    padding: 10px 12px;
+  }
+
+  .card-total-footer .total-title {
+    font-size: 0.92rem;
+  }
+
+  .card-total-footer .total-val {
+    font-size: 1.15rem;
+  }
+
+  /* 5. Bottom Controls Bar */
+  .bottom-controls-bar {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
+  .btn-daily-print {
+    padding: 8px 14px;
+    font-size: 0.88rem;
+  }
+
+  .print-shortcut-badge {
+    display: none !important;
+  }
+
+  /* 6. Floating Uchak Banner */
+  .uchak-floating-banner {
+    padding: 10px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .uchak-banner-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .uchak-banner-actions button {
+    justify-content: center;
+  }
+
+  /* 7. Modals */
+  .modal-box,
+  .modal-box-large,
+  .modal-xl,
+  .modal-lg {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: 90vh !important;
+    margin: 8px !important;
+    border-radius: 12px !important;
+  }
+
+  .modal-fullscreen {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  .custom-calendar-popover {
+    width: calc(100vw - 32px) !important;
+    max-width: 320px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .main-view-switcher {
+    grid-template-columns: 1fr;
+  }
+
+  .grand-total-hero {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .summary-pill {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 6px 12px;
+  }
+}
+
+/* ==========================================================================
+   POPUP & MODAL FIT-TO-SCREEN SYSTEM (MOBILE & SMALL SCREENS)
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* 1. Modal Overlay Screen Fit */
+  .modal-overlay {
+    padding: 8px 6px !important;
+    align-items: flex-start !important;
+    justify-content: center !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 2. All Modal Boxes Strict Screen Constraint */
+  .modal-box,
+  .modal-box-large,
+  .modal-xl,
+  .modal-lg,
+  .modal-md,
+  .modal-fullscreen,
+  div[class*="modal-box"],
+  .modal-overlay > div {
+    width: 100% !important;
+    max-width: calc(100vw - 12px) !important;
+    min-width: 0 !important;
+    margin: 6px auto !important;
+    max-height: calc(100vh - 16px) !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+    border-radius: 12px !important;
+  }
+
+  /* 3. Modal Headers Strict Fit */
+  .modal-header,
+  div[class*="modal-header"] {
+    padding: 10px 12px !important;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .modal-header h2,
+  .modal-header h3,
+  .modal-header h4 {
+    font-size: 1rem !important;
+    line-height: 1.3 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    margin: 0 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+
+  .modal-header p {
+    font-size: 0.72rem !important;
+    line-height: 1.25 !important;
+    margin: 2px 0 0 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .modal-close-btn,
+  button[class*="modal-close"] {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    font-size: 1.1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+  }
+
+  /* 4. Modal Bodies Fit & Safe Scroll */
+  .modal-body,
+  div[class*="modal-body"],
+  #history-table-wrapper,
+  .preview-modal-body,
+  .admin-modal-body {
+    padding: 10px 8px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+
+  /* 5. Modal Footers Fit & Button Stacking */
+  .modal-footer,
+  div[class*="modal-footer"] {
+    padding: 10px 10px !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .modal-footer button,
+  .modal-footer .btn-icon,
+  .modal-footer .btn-danger,
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary {
+    flex: 1 1 auto !important;
+    min-width: 100px !important;
+    font-size: 0.82rem !important;
+    padding: 8px 12px !important;
+    text-align: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 6. Form Groups, Rows & Inline Grids inside Modals */
+  .modal-box .form-row,
+  .modal-box .grid,
+  .modal-box .form-grid,
+  .modal-box [style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Allow 2-column for small binary radio pills or short fields */
+  .modal-box [style*="grid-template-columns: 1fr 1fr"],
+  .modal-box [style*="grid-template-columns:1fr 1fr"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .modal-box .form-group-item,
+  .modal-box .form-group,
+  .modal-box div[style*="flex-direction: column"] {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .modal-box input[type="text"],
+  .modal-box input[type="number"],
+  .modal-box input[type="date"],
+  .modal-box input[type="password"],
+  .modal-box select,
+  .modal-box textarea {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    font-size: 16px !important; /* Prevents auto-zoom on mobile focus */
+    min-height: 40px !important;
+    border-radius: 8px !important;
+  }
+
+  /* 7. Tables Inside Modals: Contained Scroll */
+  .modal-box table {
+    width: 100% !important;
+    min-width: 320px;
+  }
+
+  .modal-box .table-scroll-wrap,
+  .modal-box div:has(> table) {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-sizing: border-box !important;
+    display: block !important;
+  }
+
+  .modal-box th,
+  .modal-box td {
+    padding: 6px 8px !important;
+    font-size: 0.8rem !important;
+    white-space: normal !important;
+  }
+
+  /* 8. Dues Register Modal Specifics (#modal-dues) */
+  #modal-dues .dues-kpi-bar {
+    grid-template-columns: 1fr !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 8px 10px !important;
+    gap: 8px !important;
+  }
+
+  #modal-dues .dues-kpi-bar > div {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 9. Uchak Drawer & Popover */
+  .quick-uchak-drawer {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  .quick-drawer-body {
+    padding: 10px !important;
+  }
+
+  /* 10. Calculator Fit */
+  .floating-calc-card {
+    position: fixed !important;
+    top: 45px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: calc(100vw - 20px) !important;
+    max-width: 320px !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+  }
+
+  /* 11. Calendar Popover Fit */
+  .custom-calendar-popover {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: calc(100vw - 24px) !important;
+    max-width: 310px !important;
+    box-sizing: border-box !important;
+    z-index: 999999 !important;
+  }
+
+  /* 12. Dropdowns Fit (Menu & Profile) */
+  .header-dropdown-menu,
+  .logo-profile-dropdown {
+    position: fixed !important;
+    top: 60px !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: calc(100vw - 20px) !important;
+    max-width: 320px !important;
+    box-sizing: border-box !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    z-index: 99999 !important;
+  }
+
+  /* 13. Print Preview Modal Fit */
+  .preview-modal-body {
+    flex-direction: column !important;
+    padding: 8px !important;
+    gap: 12px !important;
+  }
+
+  .preview-controls-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* 14. Admin Control Center in Dashboard */
+  .admin-main-wrap,
+  .admin-dashboard-wrap,
+  .admin-layout {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .admin-sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+    box-sizing: border-box !important;
+  }
+
+  .admin-content-area {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* ==========================================================================
+   MOBILE SECTION SWITCHER (CASH / BANK / VOUCHER TABS)
+   ========================================================================== */
+.mobile-section-switcher {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-section-switcher {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    background: #ffffff !important;
+    padding: 6px !important;
+    border-radius: 14px !important;
+    border: 1.5px solid var(--border-color) !important;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+    margin-bottom: 16px !important;
+    position: sticky !important;
+    top: 6px !important;
+    z-index: 99 !important;
+  }
+
+  .mobile-sec-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    padding: 10px 4px !important;
+    font-size: 0.90rem !important;
+    font-weight: 800 !important;
+    font-family: var(--font-heading) !important;
+    color: #475569 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    white-space: nowrap !important;
+  }
+
+  .mobile-sec-btn.active {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35) !important;
+  }
+
+  /* Default when no attribute set -> show Cash card only */
+  .hisab-grid:not([data-active-section]) .accounting-card.card-cash { display: flex !important; }
+  .hisab-grid:not([data-active-section]) .accounting-card.card-bank,
+  .hisab-grid:not([data-active-section]) .accounting-card.card-voucher { display: none !important; }
+
+  /* Active section filtering on mobile */
+  .hisab-grid[data-active-section="cash"] .accounting-card.card-cash { display: flex !important; }
+  .hisab-grid[data-active-section="cash"] .accounting-card.card-bank,
+  .hisab-grid[data-active-section="cash"] .accounting-card.card-voucher { display: none !important; }
+
+  .hisab-grid[data-active-section="bank"] .accounting-card.card-bank { display: flex !important; }
+  .hisab-grid[data-active-section="bank"] .accounting-card.card-cash,
+  .hisab-grid[data-active-section="bank"] .accounting-card.card-voucher { display: none !important; }
+
+  .hisab-grid[data-active-section="voucher"] .accounting-card.card-voucher { display: flex !important; }
+  .hisab-grid[data-active-section="voucher"] .accounting-card.card-cash,
+  .hisab-grid[data-active-section="voucher"] .accounting-card.card-bank { display: none !important; }
+
+  /* BOTTOM SHEET FOR SMALL / MEDIUM POPUPS */
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 !important;
+    background: rgba(15, 23, 42, 0.65) !important;
+    backdrop-filter: blur(4px) !important;
+  }
+
+  /* Bottom sheet appearance for small/medium popups */
+  .modal-box:not(.modal-fullscreen) {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 100vw !important;
+    max-height: 85vh !important;
+    margin: 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.25) !important;
+    animation: bottomSheetUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    position: relative !important;
+  }
+
+  /* Decorative drag handle on bottom sheets */
+  .modal-box:not(.modal-fullscreen)::before {
+    content: '' !important;
+    display: block !important;
+    width: 44px !important;
+    height: 5px !important;
+    background: #cbd5e1 !important;
+    border-radius: 10px !important;
+    margin: 10px auto 4px !important;
+  }
+
+  @keyframes bottomSheetUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0.5;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  /* FULL-SCREEN WORKSPACES FOR LARGE MODALS */
+  .modal-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: #f8fafc !important;
+  }
+
+  .modal-fullscreen .modal-header {
+    border-radius: 0 !important;
+    padding: 14px 16px !important;
+  }
+
+  /* Row spacing in hisab tables for touch targets */
+  .table-hisab tr td {
+    padding: 12px 10px !important;
+    height: 48px !important;
+  }
+
+  .table-hisab .input-amount-field,
+  .table-hisab .input-count-field {
+    height: 40px !important;
+    min-height: 40px !important;
+    border-radius: 8px !important;
+  }
 }

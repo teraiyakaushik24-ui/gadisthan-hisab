@@ -8,6 +8,9 @@ window.AppDuesModule = {
   duesSummary: null,
 
   async openDuesModal() {
+    if (window.App && window.App.hasFeatureAccess && !window.App.hasFeatureAccess('duesSubsystem', 'visible')) {
+      return;
+    }
     this.openModal('modal-dues');
     const dateInp = document.getElementById('due-input-date');
     if (dateInp) dateInp.value = this.currentDate || new Date().toISOString().split('T')[0];
@@ -386,6 +389,9 @@ window.AppDuesModule = {
   },
 
   async submitAddDue() {
+    if (window.App && window.App.hasFeatureAccess && !window.App.hasFeatureAccess('duesSubsystem', 'full')) {
+      return;
+    }
     const date = document.getElementById('due-input-date')?.value;
     const name = (document.getElementById('due-input-name')?.value || '').trim();
     const amount = Number(document.getElementById('due-input-amount')?.value);
@@ -393,17 +399,17 @@ window.AppDuesModule = {
     const type = document.querySelector('input[name="due-type-choice"]:checked')?.value || (this.currentDuesTab === 'payable' ? 'payable' : 'receivable');
 
     if (!name) {
-      this.showToast('⚠️ કૃપા કરીને નામ લખો', 'warning');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '⚠️ Please enter name' : '⚠️ કૃપા કરીને નામ લખો', 'warning');
       document.getElementById('due-input-name')?.focus();
       return;
     }
     if (isNaN(amount) || amount <= 0) {
-      this.showToast('⚠️ કૃપા કરીને માન્ય રકમ લખો', 'warning');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '⚠️ Please enter valid amount' : '⚠️ કૃપા કરીને માન્ય રકમ લખો', 'warning');
       document.getElementById('due-input-amount')?.focus();
       return;
     }
     if (!description) {
-      this.showToast('⚠️ કૃપા કરીને વિગત લખો', 'warning');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '⚠️ Please enter description / note' : '⚠️ કૃપા કરીને વિગત લખો', 'warning');
       document.getElementById('due-input-desc')?.focus();
       return;
     }
@@ -425,18 +431,21 @@ window.AppDuesModule = {
       document.getElementById('due-input-amount').value = '';
       document.getElementById('due-input-desc').value = '';
 
-      this.showToast(`✅ ${type === 'receivable' ? 'લેવાના બાકી' : 'આપવાના બાકી'} સફળતાપૂર્વક ઉમેરાયા!`, 'success');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? `✅ ${type === 'receivable' ? 'Receivable due' : 'Payable due'} added successfully!` : `✅ ${type === 'receivable' ? 'લેવાના બાકી' : 'આપવાના બાકી'} સફળતાપૂર્વક ઉમેરાયા!`, 'success');
       await this.loadDues();
       if (this.currentDuesTab !== 'all' && this.currentDuesTab !== type) {
         this.switchDuesTab(type);
       }
     } catch (err) {
       console.error('Error submitting due:', err);
-      this.showToast('❌ સર્વર કનેક્શનમાં ક્ષતિ થઈ', 'danger');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '❌ Server connection error' : '❌ સર્વર કનેક્શનમાં ક્ષતિ થઈ', 'danger');
     }
   },
 
   openDueSettleModal(dueId) {
+    if (window.App && window.App.hasFeatureAccess && !window.App.hasFeatureAccess('duesSubsystem', 'full')) {
+      return;
+    }
     const due = (this.duesList || []).find(d => d.id === dueId);
     if (!due) return;
 
@@ -544,7 +553,7 @@ window.AppDuesModule = {
         return;
       }
 
-      this.showToast('✅ રકમ સફળતાપૂર્વક સાચવાઈ ગઈ!', 'success');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '✅ Amount saved successfully!' : '✅ રકમ સફળતાપૂર્વક સાચવાઈ ગઈ!', 'success');
       this.closeModal('modal-due-settle');
       await this.loadDues();
     } catch (err) {
@@ -564,7 +573,7 @@ window.AppDuesModule = {
         return;
       }
 
-      this.showToast('✅ હપ્તો રદ કરવામાં આવ્યો.', 'success');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '✅ Installment canceled.' : '✅ હપ્તો રદ કરવામાં આવ્યો.', 'success');
       await this.loadDues();
       const updatedDue = (this.duesList || []).find(d => d.id === dueId);
       if (updatedDue) {
@@ -578,6 +587,9 @@ window.AppDuesModule = {
   },
 
   async deleteDue(dueId, dueName) {
+    if (window.App && window.App.hasFeatureAccess && !window.App.hasFeatureAccess('duesSubsystem', 'full')) {
+      return;
+    }
     if (!confirm(`શું તમે "${dueName || 'આ રેકોર્ડ'}" કાઢી નાખવા માંગો છો?`)) return;
 
     try {
@@ -588,7 +600,7 @@ window.AppDuesModule = {
         return;
       }
 
-      this.showToast('✅ રેકોર્ડ સફળતાપૂર્વક કાઢી નાખવામાં આવ્યો.', 'success');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '✅ Record deleted successfully.' : '✅ રેકોર્ડ સફળતાપૂર્વક કાઢી નાખવામાં આવ્યો.', 'success');
       await this.loadDues();
     } catch (err) {
       console.error('Error deleting due:', err);
@@ -720,7 +732,7 @@ window.AppDuesModule = {
     else if (activeTab === 'payable') items = items.filter(d => d.type === 'payable');
 
     if (items.length === 0) {
-      this.showToast('કોઈ બાકી રકમની એન્ટ્રી નથી', 'info');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'No pending dues entries.' : 'કોઈ બાકી રકમની એન્ટ્રી નથી', 'info');
       return;
     }
 

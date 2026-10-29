@@ -19,122 +19,424 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <script src="js/html2pdf.bundle.min.js"></script>
+  <style>
+    /* Dedicated Admin Portal Strict View Isolation */
+    .top-header,
+    .main-view-switcher,
+    #floating-uchak-toggle,
+    #view-daily-hisab,
+    #view-expense-ledger {
+      display: none !important;
+    }
+    #view-admin-dashboard {
+      display: block !important;
+    }
+
+    /* Clean Fullscreen Admin Login Screen Styles */
+    #admin-login-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background-color: #0f172a;
+      background-image: radial-gradient(at 50% 0%, #1e293b 0%, #0f172a 75%);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      overflow-y: auto;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .admin-login-card {
+      width: 100%;
+      max-width: 410px;
+      margin: auto;
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 40px 32px;
+      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      text-align: center;
+      animation: adminCardFade 0.35s ease-out;
+    }
+
+    @keyframes adminCardFade {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .admin-alert-box {
+      display: none;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-align: left;
+      line-height: 1.4;
+      animation: adminAlertFade 0.2s ease-out;
+    }
+
+    @keyframes adminAlertFade {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .admin-alert-error {
+      background: #fef2f2;
+      border: 1px solid #fee2e2;
+      color: #dc2626;
+    }
+
+    .admin-alert-success {
+      background: #f0fdf4;
+      border: 1px solid #dcfce7;
+      color: #16a34a;
+    }
+
+    .admin-form-group {
+      text-align: left;
+      margin-bottom: 18px;
+    }
+
+    .admin-form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 6px;
+    }
+
+    .admin-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .admin-input-icon {
+      position: absolute;
+      left: 14px;
+      color: #94a3b8;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .admin-input-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .admin-form-control {
+      width: 100%;
+      height: 44px;
+      padding: 0 42px 0 42px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.94rem;
+      color: #0f172a;
+      background: #f8fafc;
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .admin-form-control:focus {
+      background: #ffffff;
+      border-color: #d97706;
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+    }
+
+    .admin-form-control::placeholder {
+      color: #94a3b8;
+      font-size: 0.9rem;
+    }
+
+    .admin-toggle-pass-btn {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+
+    .admin-toggle-pass-btn:hover {
+      color: #475569;
+    }
+
+    .admin-toggle-pass-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .admin-form-options {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      font-size: 0.85rem;
+    }
+
+    .admin-remember-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: #475569;
+      font-weight: 500;
+      user-select: none;
+    }
+
+    .admin-remember-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #d97706;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .admin-forgot-link {
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.85rem;
+      transition: color 0.15s;
+    }
+
+    .admin-forgot-link:hover {
+      color: #d97706;
+    }
+
+    .admin-btn-login {
+      width: 100%;
+      height: 46px;
+      background: #d97706;
+      color: #ffffff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.96rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .admin-btn-login:hover {
+      background: #b45309;
+    }
+
+    .admin-btn-login:active {
+      transform: scale(0.99);
+    }
+
+    .admin-btn-login:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .admin-text-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.84rem;
+      color: #64748b;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .admin-text-btn:hover {
+      color: #0f172a;
+    }
+  </style>
 </head>
 
-<body>
+<body class="admin-mode-active">
   <!-- Dedicated Fullscreen Admin Login Screen -->
-  <div id="admin-login-screen"
-    style="position: fixed; inset: 0; z-index: 999999; background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 50%, #020617 100%); display: none; align-items: center; justify-content: center; padding: 20px; overflow-y: auto;">
-    <div style="width: 100%; max-width: 440px; margin: auto;">
-      <div
-        style="background: linear-gradient(160deg, #ffffff 0%, #fffdfa 100%); border: 2px solid #e8dec8; border-radius: 24px; padding: 36px 32px; box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(217, 119, 6, 0.2); text-align: center; position: relative;">
-        <!-- Sacred Logo -->
-        <div
-          style="width: 88px; height: 88px; margin: 0 auto 16px; background: radial-gradient(circle, #fffdf5 0%, #fef3c7 100%); border: 2px solid #fde68a; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(217, 119, 6, 0.22);">
-          <img src="images/logo.png" alt="Gadisthan Jetpur" style="width: 66px; height: 66px; object-fit: contain;">
+  <div id="admin-login-screen">
+    <div class="admin-login-card">
+      <!-- Sacred Logo -->
+      <div style="width: 72px; height: 72px; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; background: #fffbeb; border-radius: 50%; border: 1px solid #fef3c7; padding: 10px;">
+        <img src="images/logo.png" alt="Shree Gadisthan Jetpur" style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+
+      <h1 style="font-size: 1.35rem; font-weight: 700; color: #0f172a; letter-spacing: -0.3px; margin-bottom: 4px;">Shree Gadisthan Jetpur</h1>
+      <p style="font-size: 0.88rem; color: #64748b; font-weight: 500; margin-bottom: 24px;">Admin Control Center</p>
+
+      <!-- Alert Box -->
+      <div id="admin-login-alert" class="admin-alert-box"></div>
+
+      <!-- 1. Admin Login Form -->
+      <form id="admin-login-form" onsubmit="handleAdminLoginSubmit(event)" autocomplete="on">
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="admin-login-username">Admin ID or Email</label>
+          <div class="admin-input-wrapper">
+            <span class="admin-input-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            </span>
+            <input type="text" id="admin-login-username" class="admin-form-control" placeholder="Enter Admin ID or email" required autocomplete="username" autofocus>
+          </div>
         </div>
 
-        <div
-          style="display: inline-flex; align-items: center; gap: 6px; background: #fef3c7; color: #92400e; padding: 4px 14px; border-radius: 9999px; font-size: 0.8rem; font-weight: 800; border: 1px solid #fde68a; margin-bottom: 10px;">
-          <span>👑</span> <span>Super Admin & Trustee Portal</span>
-        </div>
-
-        <h1 style="font-size: 1.35rem; font-weight: 900; color: #0f172a; margin-bottom: 4px;">Shree Gadisthan Jetpur
-        </h1>
-        <p style="color: #64748b; font-size: 0.88rem; margin-bottom: 20px;">Administrator / Trustee Access</p>
-
-        <!-- Alert Notification Box -->
-        <div id="admin-login-alert"
-          style="display: none; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; margin-bottom: 18px; text-align: left; line-height: 1.4;">
-        </div>
-
-        <!-- 1. Admin Login Form -->
-        <form id="admin-login-form" onsubmit="handleAdminLoginSubmit(event)">
-          <div style="margin-bottom: 16px; text-align: left;">
-            <label for="admin-login-username"
-              style="display: block; font-size: 0.82rem; font-weight: 800; color: #475569; margin-bottom: 6px;">
-              Admin ID or Mobile Number:
-            </label>
-            <input type="text" id="admin-login-username" class="input-text" placeholder="e.g. admin or 9574527642"
-              required autocomplete="username"
-              style="width: 100%; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; font-weight: 600; box-sizing: border-box;">
-          </div>
-
-          <div style="margin-bottom: 16px; text-align: left;">
-            <label for="admin-login-password"
-              style="display: block; font-size: 0.82rem; font-weight: 800; color: #475569; margin-bottom: 6px;">
-              Admin Password:
-            </label>
-            <div style="position: relative;">
-              <input type="password" id="admin-login-password" class="input-text" placeholder="Enter password" required
-                autocomplete="current-password"
-                style="width: 100%; padding: 12px 42px 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 0.95rem; font-weight: 600; box-sizing: border-box;">
-              <button type="button" onclick="toggleAdminPasswordVisibility()" title="Show/Hide password"
-                style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1rem; color: #64748b;">
-                👁️
-              </button>
-            </div>
-          </div>
-
-          <div
-            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; font-size: 0.82rem; color: #64748b;">
-            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-              <input type="checkbox" id="admin-remember-me" checked style="cursor: pointer; width: 16px; height: 16px;">
-              <span>Remember Me</span>
-            </label>
-          </div>
-
-          <button type="submit" id="btn-admin-login-submit" class="btn-primary"
-            style="width: 100%; padding: 12px; font-size: 1rem; font-weight: 800; border-radius: 10px; background: linear-gradient(135deg, #d97706 0%, #b45309 100%); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(217, 119, 6, 0.35);">
-            <span id="admin-login-spinner" style="display: none; margin-right: 6px;">⏳</span>
-            <span id="btn-admin-login-text">🔒 Sign In to Admin Portal</span>
-          </button>
-        </form>
-
-        <!-- 2. Admin 2-Step OTP Verification Form -->
-        <form id="admin-otp-form" style="display: none;" onsubmit="handleAdminOtpSubmit(event)">
-          <div
-            style="background: #fef3c7; border: 1.5px dashed #d97706; border-radius: 12px; padding: 14px; margin-bottom: 20px; text-align: center;">
-            <span style="font-size: 1.8rem;">📧</span>
-            <h4 style="margin: 6px 0 2px 0; color: #92400e; font-size: 0.95rem; font-weight: 800;">2-Step OTP Security
-              Code</h4>
-            <p id="admin-otp-info-text" style="color: #78350f; font-size: 0.8rem; margin: 0; line-height: 1.4;">
-              A 6-digit security code has been sent to your registered email.
-            </p>
-          </div>
-
-          <div style="margin-bottom: 20px;">
-            <input type="text" id="admin-login-otp" class="input-text" maxlength="6" placeholder="000000"
-              autocomplete="one-time-code"
-              style="width: 100%; text-align: center; font-size: 1.8rem; font-weight: 900; letter-spacing: 10px; padding: 10px; border: 2px solid #d97706; border-radius: 12px; background: #fffdf5; color: #1e293b; box-sizing: border-box;">
-          </div>
-
-          <button type="submit" id="btn-admin-otp-submit" class="btn-primary"
-            style="width: 100%; padding: 12px; font-size: 1rem; font-weight: 800; border-radius: 10px; background: linear-gradient(135deg, #16a34a 0%, #15803d 100%); color: #fff; border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35); margin-bottom: 12px;">
-            <span id="admin-otp-spinner" style="display: none; margin-right: 6px;">⏳</span>
-            <span id="btn-admin-otp-text">✅ Verify OTP & Enter</span>
-          </button>
-
-          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
-            <button type="button" onclick="cancelAdminOtpMode()"
-              style="background: none; border: none; color: #64748b; cursor: pointer; font-weight: 600; text-decoration: underline;">
-              ← Go Back
-            </button>
-            <button type="button" id="btn-admin-resend-otp" onclick="resendAdminOtp()"
-              style="background: none; border: none; color: #d97706; cursor: pointer; font-weight: 700;">
-              🔄 Resend OTP
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="admin-login-password">Admin Password</label>
+          <div class="admin-input-wrapper">
+            <span class="admin-input-icon">
+              <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </span>
+            <input type="password" id="admin-login-password" class="admin-form-control" placeholder="Enter password" required autocomplete="current-password">
+            <button type="button" class="admin-toggle-pass-btn" onclick="toggleAdminPasswordVisibility()" title="Show/Hide password" aria-label="Toggle password visibility">
+              <span id="admin-eye-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </span>
             </button>
           </div>
-        </form>
-
-        <div style="margin-top: 24px; padding-top: 14px; border-top: 1px dashed #e2e8f0; font-size: 0.82rem;">
-          <a href="/login"
-            style="color: #64748b; text-decoration: none; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"
-            onmouseover="this.style.color='#1e40af'" onmouseout="this.style.color='#64748b'">
-            <span>←</span> <span>Go to Staff Counter Login</span>
-          </a>
         </div>
+
+        <div class="admin-form-options">
+          <label class="admin-remember-label">
+            <input type="checkbox" id="admin-remember-me" checked>
+            <span>Remember me</span>
+          </label>
+          <a href="#" class="admin-forgot-link" onclick="showAdminForgotForm(event)">Forgot password?</a>
+        </div>
+
+        <button type="submit" id="btn-admin-login-submit" class="admin-btn-login">
+          <span class="spinner" id="admin-login-spinner" style="display:none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;"></span>
+          <span id="btn-admin-login-text">Sign In to Admin Portal</span>
+        </button>
+      </form>
+
+      <!-- 2. Admin Forgot Password Step 1: Request Code Form -->
+      <form id="admin-forgot-form" style="display: none;" onsubmit="handleAdminForgotSubmit(event)">
+        <div style="font-size: 1.15rem; font-weight: 700; color: #0f172a; margin-bottom: 4px; text-align: left;">Reset Password</div>
+        <p style="font-size: 0.84rem; color: #64748b; line-height: 1.45; margin-bottom: 20px; text-align: left;">Enter your Admin ID or email to receive a 6-digit verification code.</p>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="admin-forgot-identifier">Admin ID or Email</label>
+          <div class="admin-input-wrapper">
+            <span class="admin-input-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            </span>
+            <input type="text" id="admin-forgot-identifier" class="admin-form-control" placeholder="Enter Admin ID or email" required>
+          </div>
+        </div>
+
+        <button type="submit" id="btn-admin-forgot-submit" class="admin-btn-login" style="margin-top: 6px;">
+          <span class="spinner" id="admin-forgot-spinner" style="display:none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;"></span>
+          <span id="btn-admin-forgot-text">Send Verification Code</span>
+        </button>
+
+        <div style="display: flex; justify-content: center; margin-top: 18px;">
+          <button type="button" class="admin-text-btn" onclick="showAdminLoginForm()">
+            &larr; Back to login
+          </button>
+        </div>
+      </form>
+
+      <!-- 3. Admin Forgot Password Step 2: Set New Password Form -->
+      <form id="admin-reset-form" style="display: none;" onsubmit="handleAdminResetSubmit(event)">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 20px; text-align: left;">
+          <div style="font-weight: 600; color: #0f172a; font-size: 0.9rem; margin-bottom: 4px;">Set New Password</div>
+          <div id="admin-reset-info-text" style="font-size: 0.82rem; color: #64748b; line-height: 1.4;">
+            A 6-digit verification code has been sent to your email (valid for 2 minutes).
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="admin-reset-otp">6-Digit Code (OTP)</label>
+          <div class="admin-input-wrapper">
+            <input type="text" id="admin-reset-otp" class="admin-form-control" style="letter-spacing: 6px; font-size: 1.25rem; font-weight: 700; text-align: center;" placeholder="••••••" maxlength="6" required autocomplete="one-time-code">
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="admin-reset-new-password">New Password</label>
+          <div class="admin-input-wrapper">
+            <span class="admin-input-icon">
+              <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </span>
+            <input type="password" id="admin-reset-new-password" class="admin-form-control" placeholder="Enter new password (min. 4 chars)" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="admin-reset-confirm-password">Confirm New Password</label>
+          <div class="admin-input-wrapper">
+            <span class="admin-input-icon">
+              <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </span>
+            <input type="password" id="admin-reset-confirm-password" class="admin-form-control" placeholder="Re-enter new password" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-admin-reset-submit" class="admin-btn-login" style="margin-top: 6px;">
+          <span class="spinner" id="admin-reset-spinner" style="display:none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;"></span>
+          <span id="btn-admin-reset-text">Update Password</span>
+        </button>
+
+        <div style="display: flex; justify-content: center; margin-top: 18px;">
+          <button type="button" class="admin-text-btn" onclick="showAdminLoginForm()">
+            &larr; Cancel & back to login
+          </button>
+        </div>
+      </form>
+
+      <!-- 4. Admin 2-Step OTP Verification Form -->
+      <form id="admin-otp-form" style="display: none;" onsubmit="handleAdminOtpSubmit(event)">
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 20px; text-align: left;">
+          <div style="font-weight: 600; color: #0f172a; font-size: 0.9rem; margin-bottom: 4px;">Two-Step Verification</div>
+          <div id="admin-otp-info-text" style="font-size: 0.82rem; color: #64748b; line-height: 1.4;">
+            A 6-digit security code has been sent to your registered email (valid for 2 minutes).
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label class="admin-form-label" for="admin-login-otp">Security Code (OTP)</label>
+          <div class="admin-input-wrapper">
+            <input type="text" id="admin-login-otp" class="admin-form-control" style="letter-spacing: 6px; font-size: 1.25rem; font-weight: 700; text-align: center;" maxlength="6" placeholder="••••••" autocomplete="one-time-code">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-admin-otp-submit" class="admin-btn-login">
+          <span class="spinner" id="admin-otp-spinner" style="display:none; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;"></span>
+          <span id="btn-admin-otp-text">Verify & Enter</span>
+        </button>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; font-size: 0.84rem;">
+          <button type="button" class="admin-text-btn" onclick="cancelAdminOtpMode()">
+            &larr; Back to login
+          </button>
+          <button type="button" id="btn-admin-resend-otp" class="admin-text-btn" style="color: #d97706; font-weight: 600;" onclick="resendAdminOtp()">
+            Resend code
+          </button>
+        </div>
+      </form>
+
+      <!-- Footer Info -->
+      <div style="margin-top: 28px; padding-top: 18px; border-top: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 8px; align-items: center; font-size: 0.8rem; color: #94a3b8;">
+        <a href="/login" style="color: #64748b; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;" onmouseover="this.style.color='#d97706'" onmouseout="this.style.color='#64748b'">
+          &larr; Staff Counter Login
+        </a>
+        <span>Secure Access &bull; Authorized Personnel Only</span>
       </div>
     </div>
   </div>
@@ -150,12 +452,45 @@
   <div class="app-container">
     <!-- Top Header -->
     <header class="top-header">
-      <div class="brand-wrapper">
-        <div class="brand-logo-icon" id="header-brand-logo" style="cursor: default;">
+      <div class="brand-wrapper" id="brand-profile-container" style="position: relative;">
+        <div class="brand-logo-icon" id="header-brand-logo" onclick="App.toggleLogoProfileDropdown(event)" style="cursor: pointer;" title="👤 મારી પ્રોફાઇલ (વિગતો & પાસવર્ડ)">
           <img src="images/logo.png" alt="Gadisthan Jetpur" class="brand-logo-img">
         </div>
-        <div class="brand-info">
+        <div class="brand-info" onclick="App.toggleLogoProfileDropdown(event)" style="cursor: pointer;" title="👤 મારી પ્રોફાઇલ">
           <h1 id="org-title-display" class="org-title-fixed">Gadisthan Jetpur</h1>
+        </div>
+        <!-- Logo Profile Dropdown Menu (opens directly under logo / brand) -->
+        <div class="logo-profile-dropdown" id="logo-profile-dropdown">
+          <!-- User Details Card -->
+          <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1.5px solid #f1f5f9;">
+            <div id="logo-drop-avatar" style="font-size: 2rem; width: 46px; height: 46px; border-radius: 50%; background: #f8fafc; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">👤</div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 2px;">
+                <span id="logo-drop-name" style="font-size: 0.95rem; font-weight: 800; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">User</span>
+                <span id="logo-drop-role-badge" style="font-size: 0.72rem; font-weight: 800; background: #e0e7ff; color: #3730a3; padding: 2px 7px; border-radius: 10px; white-space: nowrap;">👤 User</span>
+              </div>
+              <div style="font-size: 0.78rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                <strong>ID:</strong> <span id="logo-drop-username" style="color: #0284c7; font-weight: 700;">-</span>
+              </div>
+              <div id="logo-drop-email" style="font-size: 0.75rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 1px;">-</div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <button type="button" class="menu-item-btn" onclick="App.openChangePasswordModal()"
+            style="width: 100%; border-radius: 8px; font-weight: 700; color: #1e293b; background: #f8fafc; border: 1px solid #e2e8f0; padding: 8px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left; transition: all 0.2s;">
+            <span style="font-size: 1.15rem;">🔐</span>
+            <div style="flex: 1;">
+              <div style="font-size: 0.84rem; font-weight: 800;">પાસવર્ડ બદલો</div>
+              <div style="font-size: 0.72rem; color: #64748b;">Change Password</div>
+            </div>
+          </button>
+
+          <button type="button" class="menu-item-btn" onclick="App.handleAuthLogout(); App.closeLogoProfileDropdown();"
+            style="width: 100%; border-radius: 8px; font-weight: 700; color: #dc2626; background: #fff1f2; border: 1px solid #fecdd3; padding: 8px 12px; display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left; transition: all 0.2s;">
+            <span style="font-size: 1.15rem;">🚪</span>
+            <span style="font-size: 0.85rem; font-weight: 800;">લૉગઆઉટ (Logout)</span>
+          </button>
         </div>
       </div>
 
@@ -251,16 +586,6 @@
               </div>
             </button>
 
-            <!-- Shortcuts Guide (F12) -->
-            <button id="btn-shortcuts-help-menu" class="menu-item-btn"
-              onclick="App.openShortcutsHelpModal(); App.closeHeaderMenu();"
-              title="કીબોર્ડ શોર્ટકટ્સ માર્ગદર્શિકા (F12)" data-shortcut="F12" data-shortcut-pos="left"
-              data-i18n-title="shortcutsHelpTitle">
-              <span class="menu-item-icon">⌨️</span>
-              <div class="menu-item-content">
-                <span class="menu-item-title" data-i18n="shortcutsHelpMenu">શોર્ટકટ્સ હેલ્પ</span>
-              </div>
-            </button>
 
             <!-- Admin Control Center (Admin Only) -->
             <button id="btn-admin-panel-menu" class="menu-item-btn"
@@ -270,15 +595,6 @@
               <div class="menu-item-content">
                 <span class="menu-item-title" style="color: #b45309;" data-i18n="adminControlCenter">એડમિન કંટ્રોલ
                   સેન્ટર</span>
-              </div>
-            </button>
-
-            <!-- Secure Logout Option -->
-            <button id="btn-logout-menu" class="menu-item-btn" onclick="App.handleAuthLogout(); App.closeHeaderMenu();"
-              title="સોફ્ટવેરમાંથી લૉગઆઉટ કરો" style="border-top: 1px dashed #e2e8f0; margin-top: 4px; color: #dc2626;">
-              <span class="menu-item-icon">🚪</span>
-              <div class="menu-item-content">
-                <span class="menu-item-title" style="color: #dc2626; font-weight: 700;">લૉગઆઉટ (Logout)</span>
               </div>
             </button>
           </div>
@@ -302,7 +618,7 @@
     </nav>
 
     <!-- VIEW 1: DAILY ACCOUNTING SCREEN -->
-    <div id="view-daily-hisab" class="main-view active">
+    <div id="view-daily-hisab" class="main-view" style="display: none;">
       <!-- Date Navigation & Grand Summary Ribbon -->
       <section class="date-summary-ribbon">
         <!-- Top Centered Friendly Date Display -->
@@ -740,7 +1056,7 @@
     <!-- ======================================================================
        VIEW 3: DEDICATED FULL-PAGE ADMIN CONTROL CENTER & SIDEBAR MENU
        ====================================================================== -->
-    <div id="view-admin-dashboard" class="main-view" style="display: none;">
+    <div id="view-admin-dashboard" class="main-view active" style="display: block;">
       <!-- Top Admin Header Bar -->
       <div class="admin-page-header">
         <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
@@ -1540,6 +1856,10 @@
                 </div>
 
                 <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+                  <button type="button" class="btn-primary" onclick="App.openRolePermissionsModal()"
+                    style="background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); padding: 7px 16px; font-weight: 800; border-radius: 8px; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: none; color: #ffffff; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);">
+                    <span>🔐</span> <span>રોલ પરમિશન સેટિંગ્સ (Permissions)</span>
+                  </button>
                   <button type="button" class="btn-primary" onclick="App.toggleAddUserForm(true)"
                     style="background: #2563eb; padding: 7px 16px; font-weight: 800; border-radius: 8px; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
                     <span>➕</span> <span data-i18n="adminAddUserBtn">નવો યુઝર ઉમેરો</span>
@@ -1590,8 +1910,15 @@
                       style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;" data-i18n="adminUserFormPasswordLbl">
                       પાસવર્ડ *:
                     </label>
-                    <input type="password" id="user-form-password" class="input-text" placeholder="પાસવર્ડ દાખલ કરો" data-i18n-ph="adminUserFormPasswordPh"
-                      autocomplete="new-password">
+                    <div style="position: relative;">
+                      <input type="password" id="user-form-password" class="input-text" placeholder="પાસવર્ડ દાખલ કરો" data-i18n-ph="adminUserFormPasswordPh"
+                        autocomplete="new-password" style="width: 100%; padding-right: 40px; box-sizing: border-box;">
+                      <button type="button" id="btn-toggle-user-password" onclick="App.toggleUserFormPassword()"
+                        style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 1.05rem; padding: 2px 4px; line-height: 1; color: #64748b;"
+                        title="Show/Hide Password" aria-label="Toggle Password Visibility">
+                        <span id="user-password-eye-icon">👁️</span>
+                      </button>
+                    </div>
                   </div>
 
                   <div>
@@ -1600,25 +1927,20 @@
                       હોદ્દો / રોલ *:
                     </label>
                     <select id="user-form-role" class="input-text" style="font-weight: 700; cursor: pointer;">
-                      <option value="user" data-i18n="adminUserRoleUserOpt">👤 User (કાઉન્ટર સ્ટાફ / દૈનિક પાવતી)</option>
-                      <option value="accountant" data-i18n="adminUserRoleAccountantOpt">💼 Accountant (મુખ્ય હિસાબનીશ)</option>
+                      <option value="user" data-i18n="adminUserRoleUserOpt">👤 User</option>
+                      <option value="accountant" data-i18n="adminUserRoleAccountantOpt">💼 Accountant</option>
+                      <option value="admin" data-i18n="adminUserRoleAdminOpt">🛡️ Admin</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label for="user-form-phone"
-                      style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;" data-i18n="adminUserFormPhoneLbl">
-                      મોબાઈલ નંબર:
-                    </label>
-                    <input type="text" id="user-form-phone" class="input-text" placeholder="૧૦ અંકનો નંબર" data-i18n-ph="adminUserFormPhonePh">
-                  </div>
+
 
                   <div>
                     <label for="user-form-email"
                       style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 4px;" data-i18n="adminUserFormEmailLbl">
-                      ઈમેલ (OTP મેળવવા માટે):
+                      ઈમેલ (Login & OTP) *:
                     </label>
-                    <input type="email" id="user-form-email" class="input-text" placeholder="user@gmail.com" data-i18n-ph="adminUserFormEmailPh">
+                    <input type="email" id="user-form-email" class="input-text" placeholder="user@gmail.com" data-i18n-ph="adminUserFormEmailPh" required>
                   </div>
 
                   <div>
@@ -1666,7 +1988,7 @@
                       <th style="padding: 10px 14px;" data-i18n="colName">નામ</th>
                       <th style="padding: 10px 14px;" data-i18n="colUsername">યુઝરનેમ</th>
                       <th style="padding: 10px 14px; width: 140px;" data-i18n="colRole">રોલ</th>
-                      <th style="padding: 10px 14px; width: 120px;" data-i18n="colMobile">મોબાઈલ</th>
+                      <th style="padding: 10px 14px; width: 180px;" data-i18n="colEmail">ઈમેલ</th>
                       <th style="padding: 10px 14px; width: 150px;" data-i18n="colLastLogin">છેલ્લું લૉગિન</th>
                       <th style="padding: 10px 14px; width: 100px; text-align: center;" data-i18n="colStatus">સ્થિતિ</th>
                       <th style="padding: 10px 14px; width: 130px; text-align: center;" data-i18n="colAction">ઍક્શન</th>
@@ -1678,6 +2000,7 @@
                 </table>
               </div>
             </div>
+              
 
             <!-- Login History Section -->
             <div class="admin-card-section"
@@ -2491,6 +2814,71 @@
             <span>🖨️</span> <span data-i18n="historyPrintBtn">પત્રક પ્રિન્ટ</span>
           </button>
           <button class="btn-icon" onclick="App.closeModal('modal-history')" data-i18n="close">બંધ કરો</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================================
+       MODAL: ROLE & FEATURE PERMISSIONS MANAGER (POP-UP)
+       ====================================================================== -->
+  <div class="modal-overlay" id="modal-role-permissions" style="z-index: 10500;">
+    <div class="modal-box" style="max-width: 920px; width: 95%; max-height: 90vh; display: flex; flex-direction: column; border-radius: 14px; overflow: hidden; box-shadow: 0 25px 60px rgba(15, 23, 42, 0.4); border: 1.5px solid #c7d2fe; padding: 0; background: #ffffff;">
+      <!-- Modal Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%); color: #ffffff; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #4f46e5;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.4rem;">
+            🔐
+          </div>
+          <div>
+            <h3 style="color: #ffffff; margin: 0; font-size: 1.15rem; font-weight: 800;">
+              રોલ અને ફીચર પરમિશન મેનેજર (Role Permissions Manager)
+            </h3>
+            <p style="margin: 2px 0 0 0; font-size: 0.82rem; color: #c7d2fe;">
+              એકાઉન્ટન્ટ અને કાઉન્ટર સ્ટાફ માટે મોડ્યુલ પરવાનગીઓ (Full, Read-only, Hidden) ગોઠવો
+            </p>
+          </div>
+        </div>
+        <button class="modal-close-btn" style="color: #ffffff; font-size: 1.2rem; background: rgba(255,255,255,0.12); border: none; border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onclick="App.closeRolePermissionsModal()">✕</button>
+      </div>
+
+      <!-- Role Selector Bar -->
+      <div style="padding: 12px 24px; background: #f8fafc; border-bottom: 1.5px solid #e2e8f0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <span style="font-weight: 800; font-size: 0.88rem; color: #334155;">રોલ પસંદ કરો:</span>
+        <button type="button" id="perm-role-btn-accountant" onclick="App.switchPermRoleView('accountant')"
+          style="padding: 7px 18px; font-weight: 800; font-size: 0.85rem; border-radius: 8px; border: 1.5px solid #2563eb; background: #2563eb; color: #ffffff; cursor: pointer; transition: all 0.2s;">
+          📑 Accountant (હિસાબનીશ)
+        </button>
+        <button type="button" id="perm-role-btn-user" onclick="App.switchPermRoleView('user')"
+          style="padding: 7px 18px; font-weight: 800; font-size: 0.85rem; border-radius: 8px; border: 1.5px solid #cbd5e1; background: #ffffff; color: #475569; cursor: pointer; transition: all 0.2s;">
+          👥 Counter Staff (કાઉન્ટર સ્ટાફ)
+        </button>
+        <span id="perm-current-role-badge" style="margin-left: auto; font-size: 0.8rem; font-weight: 700; color: #1e40af; background: #dbeafe; padding: 4px 12px; border-radius: 6px;">
+          હાલમાં પસંદ કરેલ: Accountant
+        </span>
+      </div>
+
+      <!-- Modal Body: Permissions Grid -->
+      <div class="modal-body" style="padding: 20px 24px; flex: 1; overflow-y: auto; background: #ffffff;">
+        <div id="permissions-matrix-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
+          <!-- Populated via App.renderPermissionsMatrix() -->
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer" style="padding: 14px 24px; background: #f8fafc; border-top: 1.5px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div style="font-size: 0.82rem; color: #64748b; font-weight: 600;">
+          💡 સેવ કર્યા પછી યુઝર્સ માટે નવી પરમિશન તરત જ સક્રિય થશે.
+        </div>
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <button type="button" class="btn-icon" onclick="App.closeRolePermissionsModal()" style="padding: 8px 18px; font-weight: 700; font-size: 0.88rem; border-radius: 8px; background: #ffffff; border: 1.5px solid #cbd5e1; cursor: pointer;">
+            રદ કરો (Cancel)
+          </button>
+          <button type="button" class="btn-primary" onclick="App.saveRolePermissionsFromUI()"
+            style="background: #16a34a; padding: 8px 22px; font-weight: 800; border-radius: 8px; font-size: 0.88rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; border: none; color: #ffffff; box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);">
+            <span>💾</span> <span>પરમિશન સાચવો (Save Permissions)</span>
+          </button>
         </div>
       </div>
     </div>
@@ -4811,6 +5199,76 @@
     </div>
   </div>
 
+
+  <!-- MODAL: CLEAR ADMIN ACTIVITY HISTORY -->
+  <div class="modal-overlay" id="modal-admin-history-clear" style="z-index: 10002;">
+    <div class="modal-box" style="max-width: 540px; text-align: left; border-radius: 14px; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.25);">
+      <div class="modal-header" style="justify-content: space-between; background: linear-gradient(135deg, #b91c1c 0%, #dc2626 100%); color: white; padding: 14px 22px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.3rem;">🗑️</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: white;" data-i18n="adminClearModalTitle">એડમિન હિસ્ટ્રી સાફ કરવાના વિકલ્પો</h3>
+          </div>
+        </div>
+        <button class="modal-close-btn" style="color: white; opacity: 0.9;" onclick="App.closeModal('modal-admin-history-clear')">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px 24px; background: #ffffff;">
+        <p style="margin: 0 0 16px 0; font-size: 0.9rem; color: #475569;" data-i18n="adminClearModalSubtitle">
+          તમે કઈ પ્રવૃત્તિ હિસ્ટ્રી દૂર કરવા માંગો છો તે વિકલ્પ પસંદ કરો:
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Option 1: 30 days -->
+          <label id="clear-opt-label-30days" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 2px solid #6366f1; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #f8fafc;" onclick="App.selectClearOption('30days')">
+            <input type="radio" id="clear-mode-30days" name="admin-clear-mode" value="30days" checked style="accent-color: #6366f1; width: 18px; height: 18px; cursor: pointer;">
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 0.92rem; color: #1e293b;" data-i18n="adminClear30Days">૩૦ દિવસથી જૂની હિસ્ટ્રી સાફ કરો</span>
+                <span id="clear-count-30days" style="font-size: 0.8rem; font-weight: 700; color: #6366f1;"></span>
+              </div>
+              <div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;" data-i18n="adminClear30DaysSub">છેલ્લા ૩૦ દિવસના તમામ રેકોર્ડ્સ સુરક્ષિત રહેશે</div>
+            </div>
+          </label>
+
+          <!-- Option 2: 7 days -->
+          <label id="clear-opt-label-7days" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #f8fafc;" onclick="App.selectClearOption('7days')">
+            <input type="radio" id="clear-mode-7days" name="admin-clear-mode" value="7days" style="accent-color: #6366f1; width: 18px; height: 18px; cursor: pointer;">
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 0.92rem; color: #1e293b;" data-i18n="adminClear7Days">૭ દિવસથી જૂની હિસ્ટ્રી સાફ કરો</span>
+                <span id="clear-count-7days" style="font-size: 0.8rem; font-weight: 700; color: #6366f1;"></span>
+              </div>
+              <div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;" data-i18n="adminClear7DaysSub">માત્ર છેલ્લા ૭ દિવસના તાજા રેકોર્ડ્સ જળવાશે</div>
+            </div>
+          </label>
+
+          <!-- Option 3: All -->
+          <label id="clear-opt-label-all" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1.5px solid #fecdd3; border-radius: 10px; cursor: pointer; transition: all 0.2s; background: #fff5f5;" onclick="App.selectClearOption('all')">
+            <input type="radio" id="clear-mode-all" name="admin-clear-mode" value="all" style="accent-color: #dc2626; width: 18px; height: 18px; cursor: pointer;">
+            <div style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 800; font-size: 0.92rem; color: #b91c1c;" data-i18n="adminClearAll">તમામ હિસ્ટ્રી સંપૂર્ણ સાફ કરો (Clear All)</span>
+                <span id="clear-count-all" style="font-size: 0.8rem; font-weight: 700; color: #dc2626;"></span>
+              </div>
+              <div style="font-size: 0.78rem; color: #e11d48; margin-top: 2px;" data-i18n="adminClearAllSub">⚠️ તમામ જૂની પ્રવૃત્તિઓ અને ઓડિટ લોગ કાયમ માટે સાફ થશે</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="padding: 12px 24px; border-top: 1px solid #e2e8f0; display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc;">
+        <button type="button" class="btn-secondary" onclick="App.closeModal('modal-admin-history-clear')" style="padding: 8px 18px; font-weight: 700;">
+          <span data-i18n="cancel">રદ કરો</span>
+        </button>
+        <button type="button" class="btn-primary" id="btn-admin-confirm-clear" onclick="App.confirmExecuteAdminHistoryClear()" style="background: #dc2626; border-color: #dc2626; padding: 8px 20px; font-weight: 800; color: white;">
+          <span>🗑️</span> <span data-i18n="confirmClearBtn">સાફ કરો (Confirm Clear)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
   <!-- Hidden Printable A4 Container for Direct PDF Export -->
   <div id="ai-pdf-export-template" style="display: none;"></div>
 
@@ -4876,34 +5334,112 @@
       <button type="button" class="calc-key key-num" onclick="App.calcInputDigit('.')">.</button>
       <button type="button" class="calc-key key-equal" onclick="App.calcEquals()" title="Equals (= or Enter)">=</button>
     </div>
+  </div>
+
+
+  <!-- MODAL: CHANGE PASSWORD -->
+  <div class="modal-overlay" id="modal-change-password" style="z-index: 10005;">
+    <div class="modal-box" style="max-width: 440px; text-align: left; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 45px rgba(0,0,0,0.25);">
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; padding: 18px 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #e2e8f0;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 1.6rem; background: rgba(255,255,255,0.15); border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">🔐</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #ffffff;">પાસવર્ડ બદલો (Change Password)</h3>
+            <span style="font-size: 0.78rem; color: #cbd5e1;">તમારો નવો લૉગિન પાસવર્ડ સેટ કરો</span>
+          </div>
+        </div>
+        <button type="button" class="btn-icon" onclick="App.closeModal('modal-change-password')"
+          style="font-size: 1.2rem; color: #cbd5e1; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; padding: 6px 10px; cursor: pointer;"
+          title="બંધ કરો (Close)">✕</button>
+      </div>
+
+      <div class="modal-body" style="padding: 22px 24px; background: #ffffff;">
+        <form onsubmit="App.submitChangePassword(event)" style="margin: 0;">
+          <!-- Current / Old Password -->
+          <div style="margin-bottom: 14px;">
+            <label for="profile-old-password" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 5px;">
+              હાલનો / જૂનો પાસવર્ડ *:
+            </label>
+            <div style="position: relative;">
+              <input type="password" id="profile-old-password" class="input-text" placeholder="હાલનો પાસવર્ડ દાખલ કરો" required
+                autocomplete="current-password" style="width: 100%; padding-right: 40px; box-sizing: border-box;">
+              <button type="button" onclick="App.togglePasswordVisibility('profile-old-password', 'profile-old-pwd-icon')"
+                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 1.05rem; padding: 2px 4px; line-height: 1; color: #64748b;"
+                title="Show/Hide Password">
+                <span id="profile-old-pwd-icon">👁️</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- New Password -->
+          <div style="margin-bottom: 14px;">
+            <label for="profile-new-password" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 5px;">
+              નવો પાસવર્ડ *:
+            </label>
+            <div style="position: relative;">
+              <input type="password" id="profile-new-password" class="input-text" placeholder="નવો પાસવર્ડ (મિનિમમ 6 અક્ષર)" required minlength="6"
+                autocomplete="new-password" style="width: 100%; padding-right: 40px; box-sizing: border-box;">
+              <button type="button" onclick="App.togglePasswordVisibility('profile-new-password', 'profile-new-pwd-icon')"
+                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 1.05rem; padding: 2px 4px; line-height: 1; color: #64748b;"
+                title="Show/Hide Password">
+                <span id="profile-new-pwd-icon">👁️</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Confirm New Password -->
+          <div style="margin-bottom: 20px;">
+            <label for="profile-confirm-password" style="font-size: 0.82rem; font-weight: 800; color: #334155; display: block; margin-bottom: 5px;">
+              નવો પાસવર્ડ કન્ફર્મ કરો *:
+            </label>
+            <div style="position: relative;">
+              <input type="password" id="profile-confirm-password" class="input-text" placeholder="નવો પાસવર્ડ ફરીથી દાખલ કરો" required minlength="6"
+                autocomplete="new-password" style="width: 100%; padding-right: 40px; box-sizing: border-box;">
+              <button type="button" onclick="App.togglePasswordVisibility('profile-confirm-password', 'profile-confirm-pwd-icon')"
+                style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; cursor: pointer; font-size: 1.05rem; padding: 2px 4px; line-height: 1; color: #64748b;"
+                title="Show/Hide Password">
+                <span id="profile-confirm-pwd-icon">👁️</span>
+              </button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" class="btn-icon" onclick="App.closeModal('modal-change-password')"
+              style="padding: 9px 16px; border: 1.5px solid #cbd5e1; border-radius: 8px; font-weight: 700; color: #475569; background: #ffffff; cursor: pointer;">
+              રદ કરો (Cancel)
+            </button>
+            <button type="submit" id="btn-save-profile-password" class="btn-primary"
+              style="padding: 9px 20px; font-weight: 800; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 12px rgba(37,99,235,0.25);">
+              💾 પાસવર્ડ સાચવો (Update Password)
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
     <!-- Load Client Scripts -->
     <script src="js/html2pdf.bundle.min.js"></script>
     <script src="js/numberToWords.js?v=20261016_gemini_v8"></script>
     <script src="js/i18n.js?v=20261019_single_plus_v6"></script>
-    <script src="js/modules/calculator.js?v=20261025_mod_v1"></script>
-    <script src="js/modules/dues.js?v=20261025_mod_v1"></script>
-    <script src="js/app.js?v=20261025_mod_v1"></script>
+    <script src="js/modules/calculator.js?v=20261028_clean_roles_v6"></script>
+    <script src="js/modules/dues.js?v=20261028_clean_roles_v6"></script>
+    <script src="js/app.js?v=20261029_perm_fix_v1"></script>
 
     <!-- Dedicated Admin Portal Logic -->
     <script>
       let adminActiveTempToken = null;
       let adminActiveRememberMe = true;
 
+      let adminActiveResetToken = null;
+
       function showAdminAlert(msg, type = 'error') {
         const alertBox = document.getElementById('admin-login-alert');
         if (!alertBox) return;
-        alertBox.innerHTML = msg;
+        alertBox.textContent = msg;
+        alertBox.className = 'admin-alert-box ' + (type === 'success' ? 'admin-alert-success' : 'admin-alert-error');
         alertBox.style.display = 'block';
-        if (type === 'success') {
-          alertBox.style.background = '#f0fdf4';
-          alertBox.style.color = '#15803d';
-          alertBox.style.border = '1.5px solid #bbf7d0';
-        } else {
-          alertBox.style.background = '#fef2f2';
-          alertBox.style.color = '#b91c1c';
-          alertBox.style.border = '1.5px solid #fecaca';
-        }
       }
 
       function hideAdminAlert() {
@@ -4912,8 +5448,146 @@
       }
 
       function toggleAdminPasswordVisibility() {
-        const inp = document.getElementById('admin-login-password');
-        if (inp) inp.type = inp.type === 'password' ? 'text' : 'password';
+        const passInput = document.getElementById('admin-login-password');
+        const eyeIcon = document.getElementById('admin-eye-icon');
+        if (!passInput) return;
+        if (passInput.type === 'password') {
+          passInput.type = 'text';
+          if (eyeIcon) eyeIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>`;
+        } else {
+          passInput.type = 'password';
+          if (eyeIcon) eyeIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+        }
+      }
+
+      function showAdminLoginForm() {
+        hideAdminAlert();
+        document.getElementById('admin-otp-form').style.display = 'none';
+        document.getElementById('admin-forgot-form').style.display = 'none';
+        document.getElementById('admin-reset-form').style.display = 'none';
+        document.getElementById('admin-login-form').style.display = 'block';
+        setTimeout(() => {
+          const uInp = document.getElementById('admin-login-username');
+          if (uInp) uInp.focus();
+        }, 50);
+      }
+
+      function showAdminForgotForm(e) {
+        if (e) e.preventDefault();
+        hideAdminAlert();
+        document.getElementById('admin-login-form').style.display = 'none';
+        document.getElementById('admin-otp-form').style.display = 'none';
+        document.getElementById('admin-reset-form').style.display = 'none';
+        document.getElementById('admin-forgot-form').style.display = 'block';
+        setTimeout(() => {
+          const fInp = document.getElementById('admin-forgot-identifier');
+          if (fInp) fInp.focus();
+        }, 50);
+      }
+
+      async function handleAdminForgotSubmit(e) {
+        e.preventDefault();
+        hideAdminAlert();
+        const identifier = document.getElementById('admin-forgot-identifier').value.trim();
+        const btn = document.getElementById('btn-admin-forgot-submit');
+        const spinner = document.getElementById('admin-forgot-spinner');
+        const btnText = document.getElementById('btn-admin-forgot-text');
+
+        if (!identifier) {
+          showAdminAlert('Please enter your Admin ID or email.');
+          return;
+        }
+
+        btn.disabled = true;
+        if (spinner) spinner.style.display = 'inline-block';
+        btnText.textContent = 'Sending code...';
+
+        try {
+          const res = await fetch('/api/auth/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ identifier })
+          });
+          const data = await res.json();
+          if (res.ok && data.success && data.resetToken) {
+            adminActiveResetToken = data.resetToken;
+            document.getElementById('admin-forgot-form').style.display = 'none';
+            document.getElementById('admin-reset-form').style.display = 'block';
+            if (data.maskedEmail) {
+              document.getElementById('admin-reset-info-text').textContent = `A 6-digit verification code has been sent to your registered email (${data.maskedEmail}). Valid for 2 minutes.`;
+            }
+            showAdminAlert('Verification code sent! Please check your inbox.', 'success');
+            setTimeout(() => document.getElementById('admin-reset-otp').focus(), 100);
+          } else {
+            showAdminAlert(data.error || 'Could not find account. Please verify ID or email.');
+          }
+        } catch (err) {
+          showAdminAlert('Unable to connect to server. Please try again.');
+        } finally {
+          btn.disabled = false;
+          if (spinner) spinner.style.display = 'none';
+          btnText.textContent = 'Send Verification Code';
+        }
+      }
+
+      async function handleAdminResetSubmit(e) {
+        e.preventDefault();
+        hideAdminAlert();
+
+        const otp = document.getElementById('admin-reset-otp').value.trim();
+        const newPassword = document.getElementById('admin-reset-new-password').value.trim();
+        const confirmPassword = document.getElementById('admin-reset-confirm-password').value.trim();
+        const btn = document.getElementById('btn-admin-reset-submit');
+        const spinner = document.getElementById('admin-reset-spinner');
+        const btnText = document.getElementById('btn-admin-reset-text');
+
+        if (!otp || otp.length < 6) {
+          showAdminAlert('Please enter the full 6-digit verification code.');
+          return;
+        }
+        if (!newPassword || newPassword.length < 4) {
+          showAdminAlert('Password must be at least 4 characters long.');
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          showAdminAlert('New passwords do not match. Please verify.');
+          return;
+        }
+
+        btn.disabled = true;
+        if (spinner) spinner.style.display = 'inline-block';
+        btnText.textContent = 'Updating password...';
+
+        try {
+          const res = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              resetToken: adminActiveResetToken,
+              otp,
+              newPassword
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            adminActiveResetToken = null;
+            showAdminLoginForm();
+            showAdminAlert('Password reset successful! You can now sign in with your new password.', 'success');
+            const identifier = document.getElementById('admin-forgot-identifier').value.trim();
+            if (identifier) {
+              document.getElementById('admin-login-username').value = identifier;
+              setTimeout(() => document.getElementById('admin-login-password').focus(), 150);
+            }
+          } else {
+            showAdminAlert(data.error || 'Failed to reset password. Please check your code.');
+          }
+        } catch (err) {
+          showAdminAlert('Unable to connect to server.');
+        } finally {
+          btn.disabled = false;
+          if (spinner) spinner.style.display = 'none';
+          btnText.textContent = 'Update Password';
+        }
       }
 
       function checkAdminPortalAuth() {
@@ -4991,13 +5665,13 @@
             document.getElementById('admin-login-form').style.display = 'none';
             document.getElementById('admin-otp-form').style.display = 'block';
             if (data.maskedEmail) {
-              document.getElementById('admin-otp-info-text').textContent = `A 6-digit security code has been sent to your registered email (${data.maskedEmail}).`;
+              document.getElementById('admin-otp-info-text').textContent = `A 6-digit security code has been sent to your registered email (${data.maskedEmail}). Valid for 2 minutes.`;
             }
-            showAdminAlert('📧 Security OTP has been sent!', 'success');
+            showAdminAlert('Security code sent! Please check your email.', 'success');
             setTimeout(() => document.getElementById('admin-login-otp').focus(), 150);
             btn.disabled = false;
             spinner.style.display = 'none';
-            btnText.textContent = '🔒 Sign In to Admin Portal';
+            btnText.textContent = 'Sign In to Admin Portal';
             return;
           }
 
@@ -5028,17 +5702,17 @@
               }
             }, 300);
           } else {
-            showAdminAlert(data.error || 'Invalid Admin ID or password!');
+            showAdminAlert(data.error || 'Invalid Admin ID or password. Please try again.');
             btn.disabled = false;
             spinner.style.display = 'none';
-            btnText.textContent = '🔒 Sign In to Admin Portal';
+            btnText.textContent = 'Sign In to Admin Portal';
             document.getElementById('admin-login-password').select();
           }
         } catch (err) {
-          showAdminAlert('Unable to connect to server.');
+          showAdminAlert('Unable to connect to server. Please try again in a moment.');
           btn.disabled = false;
           spinner.style.display = 'none';
-          btnText.textContent = '🔒 Sign In to Admin Portal';
+          btnText.textContent = 'Sign In to Admin Portal';
         }
       }
 
@@ -5082,7 +5756,7 @@
               localStorage.setItem('hisab_user_info', JSON.stringify(data.user));
             }
 
-            showAdminAlert('✅ Admin 2-Step verification successful!', 'success');
+            showAdminAlert('Verification successful! Entering Admin Portal...', 'success');
             setTimeout(async () => {
               document.getElementById('admin-login-screen').style.display = 'none';
               if (window.App) {
@@ -5096,24 +5770,24 @@
               }
             }, 300);
           } else {
-            showAdminAlert(data.error || 'Invalid OTP code!');
+            showAdminAlert(data.error || 'Invalid verification code. Please check and try again.');
             btn.disabled = false;
             spinner.style.display = 'none';
-            btnText.textContent = '✅ Verify OTP & Enter';
+            btnText.textContent = 'Verify & Enter';
             document.getElementById('admin-login-otp').select();
           }
         } catch (err) {
           showAdminAlert('Unable to connect to server.');
           btn.disabled = false;
           spinner.style.display = 'none';
-          btnText.textContent = '✅ Verify OTP & Enter';
+          btnText.textContent = 'Verify & Enter';
         }
       }
 
       async function resendAdminOtp() {
         const btn = document.getElementById('btn-admin-resend-otp');
         btn.disabled = true;
-        btn.textContent = '⏳ Sending...';
+        btn.textContent = 'Sending...';
         try {
           const res = await fetch('/api/auth/resend-login-otp', {
             method: 'POST',
@@ -5122,24 +5796,22 @@
           });
           const data = await res.json();
           if (res.ok && data.success) {
-            showAdminAlert('✅ New OTP sent successfully!', 'success');
+            showAdminAlert('A new security code has been sent to your email.', 'success');
           } else {
-            showAdminAlert(data.error || 'Failed to send OTP.');
+            showAdminAlert(data.error || 'Failed to resend code.');
           }
         } catch (e) {
           showAdminAlert('Unable to connect to server.');
         }
         setTimeout(() => {
           btn.disabled = false;
-          btn.textContent = '🔄 Resend OTP';
+          btn.textContent = 'Resend code';
         }, 5000);
       }
 
       function cancelAdminOtpMode() {
         adminActiveTempToken = null;
-        document.getElementById('admin-otp-form').style.display = 'none';
-        document.getElementById('admin-login-form').style.display = 'block';
-        hideAdminAlert();
+        showAdminLoginForm();
       }
 
       function adminPortalLogout() {

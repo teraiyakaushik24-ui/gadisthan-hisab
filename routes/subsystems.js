@@ -28,8 +28,27 @@ module.exports = function registerSubsystemRoutes(app, deps) {
     logAdminActivity,
     dbSync,
     upload,
-    REPORTS_DIR
+    REPORTS_DIR,
+    getAuthUser
   } = deps;
+
+  function checkSubsystemPermission(req, res, featureKey, featureNameGuj) {
+    const authUser = (typeof getAuthUser === 'function') ? getAuthUser(req) : null;
+    const userRole = (authUser && authUser.role) || req.headers['x-user-role'];
+    const settings = getSettings();
+    const rolePerms = (settings && settings.rolePermissions) || {};
+    if (userRole && rolePerms[userRole]) {
+      const perm = rolePerms[userRole][featureKey];
+      if (perm === 'readonly' || perm === 'hidden') {
+        res.status(403).json({
+          success: false,
+          error: `ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ${featureNameGuj} ફક્ત વાંચવા માટે (Read-Only Mode) છે.`
+        });
+        return false;
+      }
+    }
+    return true;
+  }
 
 // UCHAK / ADVANCE & VOUCHER SETTLEMENT MANAGEMENT APIs
 // =========================================================================
@@ -90,6 +109,7 @@ app.get('/api/uchak', (req, res) => {
 
 // 2. Add new uchak entry (Does NOT add to expense! Remains pure Uchak advance)
 app.post('/api/uchak', (req, res) => {
+  if (!checkSubsystemPermission(req, res, 'uchakSubsystem', 'ઉચક નોંધણી')) return;
   const { personName, phone, purpose, givenDate, givenTime, givenAmount, remarks, employeeId } = req.body;
 
   if (!personName || !personName.trim()) {
@@ -160,6 +180,7 @@ app.post('/api/uchak', (req, res) => {
 
 // 3. Settle uchak (Partial or full settlement: cash returned OR voucher bill submitted)
 app.post('/api/uchak/:id/settle', (req, res) => {
+  if (!checkSubsystemPermission(req, res, 'uchakSubsystem', 'ઉચક નોંધણી')) return;
   const { id } = req.params;
   const {
     settledDate,
@@ -344,6 +365,7 @@ app.post('/api/uchak/:id/settle', (req, res) => {
 
 // 4. Unsettle / Re-open uchak (Reverts the last installment or full settlement)
 app.post('/api/uchak/:id/unsettle', (req, res) => {
+  if (!checkSubsystemPermission(req, res, 'uchakSubsystem', 'ઉચક હિસાબ')) return;
   const { id } = req.params;
   const items = getUchakRecords();
   const entry = items.find(x => x.id === id);
@@ -406,6 +428,7 @@ app.post('/api/uchak/:id/unsettle', (req, res) => {
 
 // 5. Delete uchak entry
 app.delete('/api/uchak/:id', (req, res) => {
+  if (!checkSubsystemPermission(req, res, 'uchakSubsystem', 'ઉચક હિસાબ')) return;
   const { id } = req.params;
   const items = getUchakRecords();
   const idx = items.findIndex(x => x.id === id);
@@ -475,9 +498,16 @@ function addDaysToStr(dateStr, days) {
 
 // 1. Get Bank Deposits & Multi-Bank Accumulation Summary
 app.get('/api/bank-deposits', (req, res) => {
+  const authUser = (typeof getAuthUser === 'function') ? getAuthUser(req) : null;
+  const userRole = (authUser && authUser.role) || req.headers['x-user-role'];
+  const settings = getSettings();
+  const rolePerms = (settings && settings.rolePermissions) || {};
+  if (userRole && rolePerms[userRole] && rolePerms[userRole].bankDeposits === 'hidden') {
+    return res.status(403).json({ success: false, error: 'ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે બેંક રોકડ જમા વિગતો જોવાની પરવાનગી નથી.' });
+  }
+
   const activeDate = req.query.date || getTodayDateStr();
   const deposits = getBankDeposits();
-  const settings = getSettings();
   const records = getRecords();
 
   const allRecordDates = Object.keys(records).sort();
@@ -614,6 +644,7 @@ app.get('/api/bank-deposits', (req, res) => {
 
 // 2. Save new Bank Cash Deposit
 app.post('/api/bank-deposits', (req, res) => {
+  if (!checkSubsystemPermission(req, res, 'bankDeposits', 'બેંક જમા')) return;
   const { depositDate, bankName, amount, slipNo, remarks, fromDate, toDate, daysCount } = req.body;
 
   if (!bankName || !bankName.trim()) {
@@ -1412,6 +1443,7 @@ app.get('/api/bhakts/:id/deposits', (req, res) => {
 
 // 14f. Record Deposit & Generate Receipt
 app.post('/api/bhakts/:id/deposit', (req, res) => {
+  if (!checkSubsystemPermission(req, res, 'bhaktDeposits', 'ભક્ત અનામત')) return;
   const { id } = req.params;
   const { date, periodStart, periodEnd, days, dailyAmount, totalAmount, paymentMode, remarks } = req.body;
 
@@ -1545,6 +1577,7 @@ app.get('/api/dues', (req, res) => {
 
 // 2. Add new due entry
 app.post('/api/dues', (req, res) => {
+  if (!checkSubsystemPermission(req, res, 'duesSubsystem', 'બાકી રકમ')) return;
   try {
     const { type, date, name, amount, description } = req.body;
     if (!name || !name.trim()) {
@@ -1596,6 +1629,7 @@ app.post('/api/dues', (req, res) => {
 // 3. Update due entry
 app.put('/api/dues/:id', (req, res) => {
   try {
+    if (!checkSubsystemPermission(req, res, 'duesSubsystem', 'લેણાં અને દેવાં')) return;
     const { id } = req.params;
     const { date, name, amount, description } = req.body;
     const dues = getDues();
@@ -1633,6 +1667,7 @@ app.put('/api/dues/:id', (req, res) => {
 // 4. Settle / Partial repayment or payment
 app.post('/api/dues/:id/settle', (req, res) => {
   try {
+    if (!checkSubsystemPermission(req, res, 'duesSubsystem', 'લેણાં અને દેવાં')) return;
     const { id } = req.params;
     const { date, amount, note } = req.body;
 
@@ -1695,6 +1730,7 @@ app.post('/api/dues/:id/settle', (req, res) => {
 // 5. Delete specific settlement entry from history
 app.delete('/api/dues/:id/settle/:settleId', (req, res) => {
   try {
+    if (!checkSubsystemPermission(req, res, 'duesSubsystem', 'લેણાં અને દેવાં')) return;
     const { id, settleId } = req.params;
     const dues = getDues();
     const idx = dues.findIndex(d => d.id === id);
@@ -1728,6 +1764,7 @@ app.delete('/api/dues/:id/settle/:settleId', (req, res) => {
 // 6. Delete entire due record
 app.delete('/api/dues/:id', (req, res) => {
   try {
+    if (!checkSubsystemPermission(req, res, 'duesSubsystem', 'લેણાં અને દેવાં')) return;
     const { id } = req.params;
     let dues = getDues();
     const target = dues.find(d => d.id === id);

@@ -217,6 +217,7 @@ const i18n = {
       uchakModalSubtitle: 'દૈનિક એડવાન્સ રોકડ અને પતાવટ હિસાબ',
       uchakKpiGiven: 'કુલ આપેલ ઉચક',
       uchakKpiPending: 'ચાલુ પેન્ડિંગ બાકી',
+      uchakKpiSettled: 'કુલ પતાવટ થયેલ',
       uchakKpiPendingAmt: 'કુલ બાકી:',
       uchakPendingPersonsCount: '0 વ્યક્તિ બાકી',
       uchakKpiCashReturned: 'રોકડા પરત:',
@@ -651,7 +652,14 @@ const i18n = {
       adminHistDetailTitle: 'પ્રવૃત્તિ વિગત & ફેરફાર ઓડિટ',
       adminHistDetailSubtitle: '',
       adminClearModalTitle: 'એડમિન હિસ્ટ્રી સાફ કરવાના વિકલ્પો',
-      adminClearModalSubtitle: '',
+      adminClearModalSubtitle: 'તમે કઈ પ્રવૃત્તિ હિસ્ટ્રી દૂર કરવા માંગો છો તે વિકલ્પ પસંદ કરો:',
+      adminClear30Days: '૩૦ દિવસથી જૂની હિસ્ટ્રી સાફ કરો',
+      adminClear30DaysSub: 'છેલ્લા ૩૦ દિવસના તમામ રેકોર્ડ્સ સુરક્ષિત રહેશે',
+      adminClear7Days: '૭ દિવસથી જૂની હિસ્ટ્રી સાફ કરો',
+      adminClear7DaysSub: 'માત્ર છેલ્લા ૭ દિવસના તાજા રેકોર્ડ્સ જળવાશે',
+      adminClearAll: 'તમામ હિસ્ટ્રી સંપૂર્ણ સાફ કરો (Clear All)',
+      adminClearAllSub: '⚠️ તમામ જૂની પ્રવૃત્તિઓ અને ઓડિટ લોગ કાયમ માટે સાફ થશે',
+      confirmClearBtn: 'સાફ કરો (Confirm Clear)',
       // Tab 8: Users & Login
       adminUserManagementTitle: '👥 વપરાશકર્તા સંચાલન (User & Accountant Management)',
       adminUserManagementSubtitle: 'સિસ્ટમના એકાઉન્ટન્ટ અને વપરાશકર્તા ખાતાઓ, પાસવર્ડ રીસેટ અને સુરક્ષિત લૉગિન નિયંત્રણ',
@@ -665,11 +673,12 @@ const i18n = {
       adminUserFormPasswordLbl: 'પાસવર્ડ *:',
       adminUserFormPasswordPh: 'પાસવર્ડ દાખલ કરો',
       adminUserFormRoleLbl: 'હોદ્દો / રોલ *:',
-      adminUserRoleUserOpt: '👤 User (કાઉન્ટર સ્ટાફ / દૈનિક પાવતી)',
-      adminUserRoleAccountantOpt: '💼 Accountant (મુખ્ય હિસાબનીશ)',
+      adminUserRoleUserOpt: '👤 User',
+      adminUserRoleAccountantOpt: '💼 Accountant',
+      adminUserRoleAdminOpt: '🛡️ Admin',
       adminUserFormPhoneLbl: 'મોબાઈલ નંબર:',
       adminUserFormPhonePh: '૧૦ અંકનો નંબર',
-      adminUserFormEmailLbl: 'ઈમેલ (OTP મેળવવા માટે):',
+      adminUserFormEmailLbl: 'ઈમેલ (Login & OTP) *:',
       adminUserFormEmailPh: 'user@gmail.com',
       adminUserFormStatusLbl: 'સ્ટેટસ:',
       adminUserStatusActiveOpt: '🟢 સક્રિય (Active)',
@@ -694,6 +703,7 @@ const i18n = {
       colUsername: 'યુઝરનેમ',
       colRole: 'રોલ',
       colMobile: 'મોબાઈલ',
+      colEmail: 'ઈમેલ',
       colLastLogin: 'છેલ્લું લૉગિન',
       colStatus: 'સ્થિતિ',
       colAction: 'ઍક્શન',
@@ -1326,6 +1336,8 @@ const i18n = {
       adminNavBanks: 'Bank Options',
       adminNavVouchers: 'Voucher Options',
       adminNavGeneral: 'Settings & Backup',
+      adminNavUsers: 'Users & Login',
+      adminBackToDaily: 'Daily Counter Accounts',
 
       // Tab 1: Master Hisab
       adminMasterHeading: 'Daily Hisab',
@@ -1480,7 +1492,14 @@ const i18n = {
       adminHistDetailTitle: 'Activity Details & Change Audit',
       adminHistDetailSubtitle: '',
       adminClearModalTitle: 'Clear Admin History Options',
-      adminClearModalSubtitle: '',
+      adminClearModalSubtitle: 'Select which activity logs you want to clear:',
+      adminClear30Days: 'Clear logs older than 30 days',
+      adminClear30DaysSub: 'All records from the past 30 days will be preserved',
+      adminClear7Days: 'Clear logs older than 7 days',
+      adminClear7DaysSub: 'Only records from the past 7 days will be kept',
+      adminClearAll: 'Clear All History',
+      adminClearAllSub: '⚠️ All past activities and audit logs will be permanently deleted',
+      confirmClearBtn: 'Confirm Clear',
       // Tab 8: Users & Login
       adminUserManagementTitle: '👥 User & Accountant Management',
       adminUserManagementSubtitle: 'Accountant & user credentials, password resets, and secure login control',
@@ -1495,10 +1514,12 @@ const i18n = {
       adminUserFormPasswordPh: 'Enter password',
       adminUserFormRoleLbl: 'Role / Designation *:',
       adminUserRoleUserOpt: '👤 User (Counter Staff)',
-      adminUserRoleAccountantOpt: '💼 Accountant (Chief)',
+      adminUserRoleUserOpt: '👤 User',
+      adminUserRoleAccountantOpt: '💼 Accountant',
+      adminUserRoleAdminOpt: '🛡️ Admin',
       adminUserFormPhoneLbl: 'Mobile Number:',
       adminUserFormPhonePh: '10-digit number',
-      adminUserFormEmailLbl: 'Email (For OTP):',
+      adminUserFormEmailLbl: 'Email (Login & OTP) *:',
       adminUserFormEmailPh: 'user@gmail.com',
       adminUserFormStatusLbl: 'Status:',
       adminUserStatusActiveOpt: '🟢 Active',
@@ -1534,6 +1555,7 @@ const i18n = {
       colUsername: 'Username',
       colRole: 'Role',
       colMobile: 'Mobile',
+      colEmail: 'Email',
       colLastLogin: 'Last Login',
       colStatus: 'Status',
       colAction: 'Actions',
@@ -2215,21 +2237,73 @@ const i18n = {
       { sel: '#admin-user-form-card button[type="submit"] span:last-child', val: isEn ? 'Save User' : 'સાચવો' },
       { sel: '#admin-user-form-card button[onclick*="toggleAddUserForm(false)"]', val: isEn ? 'Cancel' : 'રદ કરો' },
       { sel: 'div[style*="margin-bottom: 24px"] h4', val: isEn ? '📋 Authorized System Users List' : '📋 સિસ્ટમના અધિકૃત વપરાશકર્તાઓ (Users List)' },
-      { sel: '#modal-admin div[style*="max-height: 400px"] h4 span:last-child', val: isEn ? 'Recent Login Activity Logs' : 'તાજેતરની લૉગિન પ્રવૃત્તિ (Login History Logs)' }
+      { sel: '#modal-admin div[style*="max-height: 400px"] h4 span:last-child', val: isEn ? 'Recent Login Activity Logs' : 'તાજેતરની લૉગિન પ્રવૃત્તિ (Login History Logs)' },
+
+      // Profile & Logo Dropdown
+      { sel: '#logo-profile-dropdown button[onclick*="openChangePasswordModal"]', val: isEn ? '<span>🔐</span> <span>Change Password</span>' : '<span>🔐</span> <span>પાસવર્ડ બદલો</span>', isHtml: true },
+      { sel: '#logo-profile-dropdown button[onclick*="logoutUser"]', val: isEn ? '<span>🚪</span> <span>Logout</span>' : '<span>🚪</span> <span>લૉગઆઉટ</span>', isHtml: true },
+
+      // Modal: Change Password
+      { sel: '#modal-change-password .modal-header h3', val: isEn ? '🔐 Change Password' : '🔐 પાસવર્ડ બદલો' },
+      { sel: '#modal-change-password label[for="profile-old-password"]', val: isEn ? 'Current / Old Password *:' : 'હાલનો / જૂનો પાસવર્ડ *:' },
+      { sel: '#profile-old-password', ph: isEn ? 'Enter current password' : 'હાલનો પાસવર્ડ દાખલ કરો' },
+      { sel: '#modal-change-password label[for="profile-new-password"]', val: isEn ? 'New Password *:' : 'નવો પાસવર્ડ *:' },
+      { sel: '#profile-new-password', ph: isEn ? 'New password (min 6 characters)' : 'નવો પાસવર્ડ (મિનિમમ 6 અક્ષર)' },
+      { sel: '#modal-change-password label[for="profile-confirm-password"]', val: isEn ? 'Confirm New Password *:' : 'નવો પાસવર્ડ કન્ફર્મ કરો *:' },
+      { sel: '#profile-confirm-password', ph: isEn ? 'Re-enter new password' : 'નવો પાસવર્ડ ફરીથી દાખલ કરો' },
+      { sel: '#modal-change-password button[onclick*="modal-change-password"]', val: isEn ? 'Cancel' : 'રદ કરો (Cancel)' },
+      { sel: '#btn-save-profile-password', val: isEn ? '💾 Update Password' : '💾 પાસવર્ડ સાચવો (Update Password)' },
+
+      // User Management Form & Badges
+      { sel: 'button[onclick*="openRolePermissionsModal"]', val: isEn ? '<span>🔐</span> <span>Role Permissions</span>' : '<span>🔐</span> <span>રોલ પરમિશન સેટિંગ્સ (Permissions)</span>', isHtml: true },
+      { sel: '#admin-user-management-section p', val: isEn ? 'User accounts, role access and recent login history' : 'યુઝર અને એકાઉન્ટન્ટ એકાઉન્ટ્સ, પાસવર્ડ રીસેટ અને તાજેતરના લૉગિન લૉગ્સ' },
+      { sel: '#user-form-name', ph: isEn ? 'e.g. Ramesh Patel' : 'દા.ત. રમેશભાઈ પટેલ' },
+      { sel: '#user-form-username', ph: isEn ? 'e.g. ramesh_clerk' : 'દા.ત. ramesh_clerk' },
+      { sel: '#user-form-password', ph: isEn ? 'Enter password' : 'પાસવર્ડ દાખલ કરો' },
+      { sel: '#user-form-status option[value="active"]', val: isEn ? '🟢 Active' : '🟢 સક્રિય (Active)' },
+      { sel: '#user-form-status option[value="inactive"]', val: isEn ? '🔴 Inactive' : '🔴 નિષ્ક્રિય (Inactive)' },
+      { sel: 'button[onclick*="toggleAddUserForm(false)"]', val: isEn ? '✕ Close' : '✕ બંધ કરો' },
+      { sel: '#admin-user-form-card button[onclick*="toggleAddUserForm(false)"]', val: isEn ? 'Cancel' : 'રદ કરો' },
+      { sel: '#admin-user-form-card button[type="submit"] span:last-child', val: isEn ? 'Save User' : 'સાચવો' },
+
+      // Role Permissions Modal
+      { sel: '#modal-role-permissions .modal-header h3', val: isEn ? '🔐 Role & Feature Permissions Manager' : '🔐 રોલ અને ફીચર પરમિશન મેનેજર (Role Permissions Manager)' },
+      { sel: '#modal-role-permissions .modal-header p', val: isEn ? 'Configure module access (Full, Read-Only or Hidden) for accountant and counter staff' : 'એકાઉન્ટન્ટ અને કાઉન્ટર સ્ટાફ માટે મોડ્યુલ એક્સેસ (પૂર્ણ, ફક્ત વાંચવા અથવા છુપાવો) નિયંત્રિત કરો' },
+      { sel: '#perm-role-btn-accountant', val: isEn ? '💼 Accountant' : '💼 Accountant (હિસાબનીશ)' },
+      { sel: '#perm-role-btn-user', val: isEn ? '👤 Counter Staff' : '👤 Counter Staff (કાઉન્ટર સ્ટાફ)' },
+      { sel: '#modal-role-permissions .modal-footer button.btn-icon', val: isEn ? 'Cancel' : 'રદ કરો (Cancel)' },
+      { sel: '#modal-role-permissions button[onclick*="saveRolePermissionsFromUI"]', val: isEn ? '<span>💾</span> <span>Save Permissions</span>' : '<span>💾</span> <span>પરમિશન સાચવો (Save Permissions)</span>', isHtml: true },
+
+      // Forgot Admin PIN Modal
+      { sel: 'button[onclick*="openForgotPinModal"] span', val: isEn ? 'Forgot PIN? (Reset via Email OTP)' : 'પિન ભૂલી ગયા? (Email OTP વડે નવો પિન બનાવો)' },
+      { sel: '#modal-forgot-admin-pin .modal-header h3', val: isEn ? 'Admin PIN Reset' : 'એડમિન પિન રીસેટ' },
+      { sel: '#modal-forgot-admin-pin .modal-header p', val: isEn ? 'Receive 6-digit OTP on registered email to set a new PIN' : 'તમારા રજિસ્ટર્ડ ઈમેલ પર OTP મેળવીને નવો પિન સેટ કરો' },
+      { sel: '#modal-forgot-admin-pin div[style*="font-weight: 800"]', val: isEn ? 'Registered Email:' : 'રજિસ્ટર્ડ ઈમેલ:' },
+      { sel: '#modal-forgot-admin-pin button[onclick*="closeModal(\'modal-forgot-admin-pin\')"]', val: isEn ? 'Cancel' : 'રદ કરો' },
+      { sel: '#btn-send-admin-otp span', val: isEn ? 'Send OTP' : 'OTP મોકલો' },
+      { sel: '#modal-forgot-admin-pin label[for="forgot-pin-otp"]', val: isEn ? '6-digit OTP from Email:' : 'ઈમેલમાં આવેલો 6-અંક OTP:' },
+      { sel: '#modal-forgot-admin-pin label[for="forgot-pin-new-pin"]', val: isEn ? 'New 4-digit PIN:' : 'નવો 4-અંક PIN:' },
+      { sel: '#modal-forgot-admin-pin label[for="forgot-pin-confirm-pin"]', val: isEn ? 'Confirm New PIN:' : 'નવો 4-અંક PIN કન્ફર્મ કરો:' },
+      { sel: '#btn-verify-reset-pin span', val: isEn ? 'Set New PIN' : 'નવો પિન સાચવો' },
+
+      // Popover Calendar Footer
+      { sel: '#popcal-leg-today', val: isEn ? 'Today' : 'આજે' }
     ];
 
     directMap.forEach(item => {
       try {
-        const el = document.querySelector(item.sel);
-        if (el) {
+        const els = document.querySelectorAll(item.sel);
+        els.forEach(el => {
           if (item.ph) {
             el.setAttribute('placeholder', item.ph);
           } else if (item.title) {
             el.setAttribute('title', item.title);
+          } else if (item.isHtml && item.val !== undefined) {
+            el.innerHTML = item.val;
           } else if (item.val !== undefined) {
             el.textContent = item.val;
           }
-        }
+        });
       } catch (err) {
         // Continue safely if selector not present on active page
       }

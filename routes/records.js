@@ -19,11 +19,22 @@ module.exports = function registerRecordsRoutes(app, deps) {
     getGujaratiKhataName,
     getGujaratiMonthLabel,
     createBlankRecord,
-    logAdminActivity
+    logAdminActivity,
+    getAuthUser
   } = deps;
 
 // 6. Get all records summary
 app.get('/api/records', (req, res) => {
+  const authUser = (typeof getAuthUser === 'function') ? getAuthUser(req) : null;
+  const userRole = (authUser && authUser.role) || req.headers['x-user-role'];
+  const settings = getSettings();
+  const rolePerms = (settings && settings.rolePermissions) || {};
+  const userPerms = (userRole && rolePerms[userRole]) || {};
+  const histPerm = userPerms.historyLedger || (userPerms.dailyHisab === 'hidden' ? 'hidden' : 'full');
+  if (userRole && userRole !== 'admin' && histPerm === 'hidden') {
+    return res.status(403).json({ success: false, error: 'ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે પાછલા હિસાબનો ઇતિહાસ જોવાની પરવાનગી નથી.' });
+  }
+
   const records = getRecords();
   const summaryList = Object.keys(records).map(date => {
     const r = records[date];
@@ -262,6 +273,27 @@ app.post('/api/records/:date', (req, res) => {
   const today = getTodayDateStr();
 
   const isPast = (date < today);
+  if (isPast) {
+    return res.status(403).json({
+      success: false,
+      error: 'પાછલી તારીખનો હિસાબ લૉક થયેલ છે! તેમાં ફેરફાર કરી શકાતો નથી.'
+    });
+  }
+
+  // Role Permissions Enforcement Check
+  const authUser = (typeof getAuthUser === 'function') ? getAuthUser(req) : null;
+  const userRole = (authUser && authUser.role) || req.headers['x-user-role'];
+  const settings = getSettings();
+  const rolePerms = (settings && settings.rolePermissions) || {};
+  if (userRole && rolePerms[userRole]) {
+    const perm = rolePerms[userRole].dailyHisab;
+    if (perm === 'readonly' || perm === 'hidden') {
+      return res.status(403).json({
+        success: false,
+        error: 'ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે દૈનિક હિસાબ ફક્ત વાંચવા માટે (Read-Only Mode) છે.'
+      });
+    }
+  }
 
   const data = req.body;
   const records = getRecords();
@@ -432,16 +464,45 @@ app.delete('/api/records/:date', (req, res) => {
   });
 });
 
+function getCanonicalExpenseCategory(name) {
+  if (!name) return 'પરચૂરણ ખર્ચ';
+  const trimmed = String(name).trim();
+  const upper = trimmed.toUpperCase();
+  if (['MANDIRKHARCH', 'MANDIR KHARCH', 'MANDIR_KHARCH', 'MANDIR', 'TEMPLE', 'મંદિર ખર્ચ', 'મંદિર'].includes(upper) || trimmed === 'મંદિર ખર્ચ') return 'મંદિર ખર્ચ';
+  if (['RASODAKHARCH', 'RASODA KHARCH', 'RASODA_KHARCH', 'RASODA', 'KITCHEN', 'રસોડા ખર્ચ', 'રસોડું'].includes(upper) || trimmed === 'રસોડા ખર્ચ') return 'રસોડા ખર્ચ';
+  if (['PAGAR', 'PAGARKHARCH', 'PAGAR KHARCH', 'SALARY', 'પગાર', 'પગાર ખર્ચ'].includes(upper) || trimmed === 'પગાર') return 'પગાર';
+  if (['UPAD', 'ADVANCE', 'ઉપાડ'].includes(upper) || trimmed === 'ઉપાડ') return 'ઉપાડ';
+  if (['GAUSHALA', 'GAUSALA', 'GOSHALA', 'ગૌશાળા', 'ગૌશાળા ખર્ચ'].includes(upper) || trimmed.includes('ગૌશાળા')) return 'ગૌશાળા ખર્ચ';
+  if (['HINDOLA KHARCH', 'HINDOLAKHARCH', 'HILDOLAKHARCH', 'HINDOLA', 'હિંડોળા ખર્ચ', 'હિંડોળા'].includes(upper) || trimmed.includes('હિંડોળા')) return 'હિંડોળા ખર્ચ';
+  if (['BIJLI BILL', 'BIJLIBILL', 'LIGHT BILL', 'LIGHTBILL', 'ELECTRICITY', 'વીજળી બિલ', 'લાઈટ બિલ'].includes(upper) || trimmed.includes('વીજળી') || trimmed.includes('લાઈટ')) return 'વીજળી બિલ';
+  if (['PETROL', 'PETROL KHARCH', 'પેટ્રોલ ખર્ચ', 'પેટ્રોલ'].includes(upper)) return 'પેટ્રોલ ખર્ચ';
+  if (['DUDH', 'DUDH KHARCH', 'દૂધ', 'દૂધ ખર્ચ'].includes(upper)) return 'દૂધ ખર્ચ';
+  if (['CHAI', 'CHAI NASTA', 'ચા', 'ચા-નાસ્તો'].includes(upper)) return 'ચા-નાસ્તો';
+  if (typeof getGujaratiKhataName === 'function') {
+    const gName = getGujaratiKhataName(trimmed);
+    if (gName) return gName;
+  }
+  return trimmed;
+}
+
 // 9b. Get Expenses Report (Date to Date Filter & Analytics)
 app.get('/api/expenses/report', (req, res) => {
   const { from, to, category } = req.query;
   const records = getRecords();
   const allDates = Object.keys(records).sort();
 
-  const fromDate = from || (allDates.length > 0 ? allDates[0] : getTodayDateStr());
-  const toDate = to || getTodayDateStr();
+  let fromDate = from || (allDates.length > 0 ? allDates[0] : getTodayDateStr());
+  let toDate = to || getTodayDateStr();
+
+  // Edge case: if fromDate > toDate, swap them
+  if (fromDate > toDate) {
+    const temp = fromDate;
+    fromDate = toDate;
+    toDate = temp;
+  }
 
   const filteredDates = allDates.filter(d => d >= fromDate && d <= toDate);
+  const selectedCanonCat = (!category || category === 'all') ? null : getCanonicalExpenseCategory(category);
 
   let allExpenses = [];
   const categoryTotals = {};
@@ -449,42 +510,51 @@ app.get('/api/expenses/report', (req, res) => {
   filteredDates.forEach(date => {
     const rec = records[date];
     const diaryItems = rec.expenseItems || [];
+    const diaryCategories = new Set(diaryItems.map(item => getCanonicalExpenseCategory(item.category)));
 
-    // If day has itemized diary entries
-    if (diaryItems.length > 0) {
-      diaryItems.forEach(item => {
-        if (!category || category === 'all' || item.category.trim() === category.trim()) {
+    // 1. Process all granular diary items
+    diaryItems.forEach(item => {
+      const amt = Number(item.amount) || 0;
+      if (amt > 0) {
+        const canonCat = getCanonicalExpenseCategory(item.category);
+        if (!selectedCanonCat || canonCat === selectedCanonCat) {
           allExpenses.push({
             id: item.id || `exp_${date}_${Math.random()}`,
             date,
             time: item.time || '',
             title: item.title,
-            category: item.category,
+            category: canonCat,
             categoryType: item.categoryType || 'voucher',
-            amount: Number(item.amount) || 0,
+            amount: amt,
             remarks: item.remarks || ''
           });
-          categoryTotals[item.category] = (categoryTotals[item.category] || 0) + (Number(item.amount) || 0);
+          categoryTotals[canonCat] = (categoryTotals[canonCat] || 0) + amt;
         }
-      });
-    } else {
-      // If no granular diary items, use the day's vouchers
-      (rec.vouchers || []).forEach(v => {
-        if (v.amount > 0 && (!category || category === 'all' || v.name.trim() === category.trim())) {
-          allExpenses.push({
-            id: `vouch_${date}_${v.name}`,
-            date,
-            time: '',
-            title: `${v.name} (दैनिक योग)`,
-            category: v.name,
-            categoryType: 'voucher',
-            amount: Number(v.amount) || 0,
-            remarks: 'वाउचर हिसाब'
-          });
-          categoryTotals[v.name] = (categoryTotals[v.name] || 0) + (Number(v.amount) || 0);
+      }
+    });
+
+    // 2. Process vouchers for categories not itemized in diary on this date
+    (rec.vouchers || []).forEach(v => {
+      const amt = Number(v.amount) || 0;
+      if (amt > 0) {
+        const canonCat = getCanonicalExpenseCategory(v.name);
+        if (!diaryCategories.has(canonCat)) {
+          if (!selectedCanonCat || canonCat === selectedCanonCat) {
+            allExpenses.push({
+              id: `vouch_${date}_${v.name}`,
+              date,
+              time: '',
+              title: `${canonCat} (વાઉચર હિસાબ)`,
+              category: canonCat,
+              categoryType: 'voucher',
+              amount: amt,
+              remarks: 'દૈનિક વાઉચર એન્ટ્રી'
+            });
+            categoryTotals[canonCat] = (categoryTotals[canonCat] || 0) + amt;
+          }
         }
-      });
-    }
+      }
+    });
   });
 
   // Sort descending by date, then time
@@ -630,6 +700,7 @@ app.get('/api/export/expenses-excel', (req, res) => {
   const toDate = to || getTodayDateStr();
 
   const filteredDates = allDates.filter(d => d >= fromDate && d <= toDate);
+  const selectedCanonCat = (!category || category === 'all') ? null : getCanonicalExpenseCategory(category);
   const settings = getSettings();
 
   const rows = [];
@@ -645,24 +716,31 @@ app.get('/api/export/expenses-excel', (req, res) => {
     const rec = records[date];
     const diaryItems = rec.expenseItems || [];
 
-    if (diaryItems.length > 0) {
-      diaryItems.forEach(item => {
-        if (!category || category === 'all' || item.category.trim() === category.trim()) {
-          const amt = Number(item.amount) || 0;
+    const diaryCategories = new Set(diaryItems.map(item => getCanonicalExpenseCategory(item.category)));
+
+    diaryItems.forEach(item => {
+      const amt = Number(item.amount) || 0;
+      if (amt > 0) {
+        const canonCat = getCanonicalExpenseCategory(item.category);
+        if (!selectedCanonCat || canonCat === selectedCanonCat) {
           grandTotal += amt;
-          rows.push([idx++, date, amt, item.title, getGujaratiKhataName(item.category), item.time || '', item.remarks || '']);
+          rows.push([idx++, date, amt, item.title, canonCat, item.time || '', item.remarks || '']);
         }
-      });
-    } else {
-      (rec.vouchers || []).forEach(v => {
-        if (v.amount > 0 && (!category || category === 'all' || v.name.trim() === category.trim())) {
-          const amt = Number(v.amount) || 0;
-          grandTotal += amt;
-          const guj = getGujaratiKhataName(v.name);
-          rows.push([idx++, date, amt, `${guj} (દૈનિક યોગ)`, guj, '', 'વાઉચર હિસાબ']);
+      }
+    });
+
+    (rec.vouchers || []).forEach(v => {
+      const amt = Number(v.amount) || 0;
+      if (amt > 0) {
+        const canonCat = getCanonicalExpenseCategory(v.name);
+        if (!diaryCategories.has(canonCat)) {
+          if (!selectedCanonCat || canonCat === selectedCanonCat) {
+            grandTotal += amt;
+            rows.push([idx++, date, amt, `${canonCat} (વાઉચર હિસાબ)`, canonCat, '', 'દૈનિક વાઉચર એન્ટ્રી']);
+          }
         }
-      });
-    }
+      }
+    });
   });
 
   rows.push(['']);

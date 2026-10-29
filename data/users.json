@@ -1,42 +1,30 @@
 [
   {
-    "createdAt": "2026-10-21T08:42:00.000Z",
-    "id": "usr_001",
-    "lastLogin": "2026-10-21T06:21:31.191Z",
-    "name": "કાઉન્ટર સ્ટાફ",
-    "phone": "9800000001",
-    "role": "user",
-    "roleTitle": "કાઉન્ટર સ્ટાફ",
+    "id": "usr_admin",
+    "username": "admin",
+    "name": "Admin",
+    "role": "admin",
+    "roleTitle": "Admin",
     "status": "active",
-    "username": "user",
-    "passwordHash": "$2b$10$gFjqJDeNBXk6smYJqOYnQOd6SjN2ocmPXhrKCMpEiTiAndDms4s56",
     "email": "teraiya.kaushik24@gmail.com",
-    "updatedAt": "2026-10-21T06:37:04.603Z"
+    "phone": "",
+    "password": "2412",
+    "passwordHash": "$2b$10$UJPGYPStKZyHP4wbvANWkeSjUUPvmsa6sWNhpCq6phhkaZIJCcW4S",
+    "createdAt": "2026-10-29T10:39:55.645Z",
+    "updatedAt": "2026-10-29T10:39:55.648Z",
+    "lastLogin": "2026-10-29T13:09:24.980Z"
   },
   {
-    "createdAt": "2026-10-21T08:42:00.000Z",
-    "id": "usr_002",
-    "lastLogin": "2026-10-21T06:11:51.415Z",
-    "name": "એકાઉન્ટ સ્ટાફ",
-    "phone": "9800000002",
-    "role": "accountant",
-    "roleTitle": "એકાઉન્ટન્ટ",
+    "createdAt": "2026-10-29T12:56:37.624Z",
+    "email": "teraiya.kaushik24@gmail.com",
+    "id": "usr_1793278597511_os9m",
+    "lastLogin": null,
+    "name": "Kaushik Teraiya",
+    "password": "kaushik97",
+    "passwordHash": "$2b$10$bm0Z.PnB9.4BMV3ojQH24eZQnSz.X09d5NZIT1/VAFF62CrsUYTXe",
+    "role": "user",
+    "roleTitle": "User",
     "status": "active",
-    "username": "account",
-    "passwordHash": "$2b$10$1U89Of8OrZ7noKKIvisdJekapJ5Egqe9ZbDO2S9xKQTHsT/po.hbK"
-  },
-  {
-    "createdAt": "2026-10-21T08:42:00.000Z",
-    "id": "usr_003",
-    "lastLogin": "2026-10-21T04:12:57.460Z",
-    "name": "મુખ્ય હિસાબનીશ",
-    "phone": "9800000003",
-    "role": "accountant",
-    "roleTitle": "એકાઉન્ટન્ટ",
-    "status": "inactive",
-    "username": "accountant",
-    "passwordHash": "$2b$10$zqqCqv/KaB.cUsE2k1sbEOQY/hBCRpXfHh782xEcL//jLZgbKDC4y",
-    "email": "",
-    "updatedAt": "2026-10-21T06:37:14.436Z"
+    "username": "tkaushik24"
   }
 ]

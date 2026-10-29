@@ -1,6 +1,8 @@
 node_modules/
 .env
 .env.local
+node.exe
+*.msi
 mingit/
 mingit.zip
 cloudflared.exe

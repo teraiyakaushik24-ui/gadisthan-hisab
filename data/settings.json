@@ -1,20 +1,13 @@
 {
-  "adminPin": "2412",
+  "orgName": "Gadisthan Jetpur",
+  "orgSubtitle": "",
+  "phone": "9714487883",
   "currencySymbol": "₹",
-  "defaultBanks": [
-    "IOB TRF",
-    "SBI TRF",
-    "BOB TRF"
-  ],
-  "defaultVouchers": [
-    "મંદિર ખર્ચ",
-    "RASODAKHARCH",
-    "PAGAR",
-    "હિંડોળા ખર્ચ",
-    "UPAD"
-  ],
   "exportFolder": "D:\\Account Report",
   "language": "en",
+  "theme": "light",
+  "printTopOffset": 140,
+  "printLeftOffset": 43,
   "notes": [
     500,
     200,
@@ -23,20 +16,57 @@
     20,
     10
   ],
-  "orgName": "Gadisthan Jetpur",
-  "orgSubtitle": "",
-  "phone": "9714487883",
-  "printLeftOffset": 43,
-  "printTopOffset": 140,
+  "defaultBanks": [
+    "IOB TRF",
+    "SBI TRF",
+    "BOB TRF"
+  ],
+  "inactiveBanks": [],
+  "defaultVouchers": [
+    "મંદિર ખર્ચ",
+    "RASODAKHARCH",
+    "PAGAR",
+    "હિંડોળા ખર્ચ",
+    "UPAD",
+    "ચંદનના વાઘા"
+  ],
+  "inactiveVouchers": [],
+  "smtpSenderName": "Gadisthan Jetpur",
+  "smtpEmail": "Teraiya.Kaushik24@gmail.com",
+  "smtpAppPassword": "bkqxvlmeqnpvoomb",
+  "adminAlertEmail": "teraiya.kaushik24@gmail.com",
+  "adminPin": "2412",
+  "rolePermissions": {
+    "accountant": {
+      "dailyHisab": "readonly",
+      "expenseLedger": "readonly",
+      "staffSalary": "hidden",
+      "uchakSubsystem": "hidden",
+      "duesSubsystem": "hidden",
+      "bankDeposits": "readonly",
+      "bhaktDeposits": "hidden",
+      "calculator": "readonly",
+      "exportReports": "readonly",
+      "historyLedger": "hidden"
+    },
+    "user": {
+      "dailyHisab": "full",
+      "expenseLedger": "full",
+      "staffSalary": "full",
+      "uchakSubsystem": "full",
+      "duesSubsystem": "full",
+      "bankDeposits": "full",
+      "bhaktDeposits": "full",
+      "calculator": "full",
+      "exportReports": "full"
+    }
+  },
   "signChecked": "તપાસનાર / સેક્રેટરી",
   "signPrepared": "હિસાબનીશ / એકાઉન્ટન્ટ",
   "signPresident": "પ્રમુખ / ટ્રસ્ટી",
-  "theme": "light",
-  "adminAlertEmail": "Teraiya.Kaushik24@gmail.com",
-  "smtpAppPassword": "bkqxvlmeqnpvoomb",
-  "smtpEmail": "Teraiya.Kaushik24@gmail.com",
-  "smtpSenderName": "Gadisthan Jetpur",
-  "inactiveBanks": [],
-  "inactiveVouchers": [],
-  "login2faEnabled": true
+  "login2faEnabled": false,
+  "adminPassword": "2412",
+  "adminEmail": "teraiya.kaushik24@gmail.com",
+  "adminName": "Admin",
+  "adminUsername": "admin"
 }

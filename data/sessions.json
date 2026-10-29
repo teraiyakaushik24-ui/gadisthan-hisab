@@ -1,0 +1,12 @@
+{
+  "appAuthSessions": {
+    "hisab_usr_040ab8b43f42f076efd4d0213dc067ba7e6fc47da99433f5944e3602f65be50f": {
+      "userId": "usr_admin",
+      "username": "admin",
+      "name": "Admin",
+      "role": "admin",
+      "expiresAt": 1824811521561
+    }
+  },
+  "adminSessions": {}
+}

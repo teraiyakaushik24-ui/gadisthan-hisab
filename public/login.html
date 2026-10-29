@@ -1,170 +1,137 @@
 <!DOCTYPE html>
-<html lang="gu">
+<html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | Shree Gadisthan Jetpur - Daily Accounting</title>
+  <title>Login | Shree Gadisthan Jetpur</title>
   <link rel="icon" type="image/png" href="images/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Noto+Sans+Gujarati:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
+    *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
     body {
-      font-family: 'Noto Sans Gujarati', 'Outfit', sans-serif;
+      font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       min-height: 100vh;
-      background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 50%, #020617 100%);
+      background-color: #0f172a;
+      background-image: radial-gradient(at 50% 0%, #1e293b 0%, #0f172a 75%);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
-      color: #334155;
-      position: relative;
-      overflow-x: hidden;
+      padding: 24px 16px;
+      color: #1e293b;
+      -webkit-font-smoothing: antialiased;
     }
 
-    /* Ambient Background Glow */
-    body::before {
-      content: '';
-      position: absolute;
-      width: 500px;
-      height: 500px;
-      background: radial-gradient(circle, rgba(217, 119, 6, 0.18) 0%, rgba(217, 119, 6, 0) 70%);
-      top: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      border-radius: 50%;
-      pointer-events: none;
-      filter: blur(40px);
-    }
-
-    .login-wrapper {
-      position: relative;
-      z-index: 10;
+    .login-container {
       width: 100%;
-      max-width: 440px;
-      animation: fadeInScale 0.4s ease-out;
+      max-width: 410px;
+      animation: fadeIn 0.35s ease-out;
     }
 
-    @keyframes fadeInScale {
+    @keyframes fadeIn {
       from {
         opacity: 0;
-        transform: translateY(16px) scale(0.97);
+        transform: translateY(12px);
       }
-
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-
-    .login-card {
-      background: linear-gradient(160deg, #ffffff 0%, #fffdfa 100%);
-      border: 2px solid #e8dec8;
-      border-radius: 24px;
-      padding: 36px 32px;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.45), 0 0 40px rgba(217, 119, 6, 0.18);
-      text-align: center;
-      position: relative;
-    }
-
-    .sacred-logo-box {
-      width: 90px;
-      height: 90px;
-      margin: 0 auto 16px;
-      background: radial-gradient(circle, #fffdf5 0%, #fef3c7 100%);
-      border: 2px solid #fde68a;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 24px rgba(217, 119, 6, 0.22);
-      transition: transform 0.3s ease;
-    }
-
-    .sacred-logo-box:hover {
-      transform: scale(1.05) rotate(2deg);
-    }
-
-    .sacred-logo {
-      width: 68px;
-      height: 68px;
-      object-fit: contain;
-      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.15));
-    }
-
-    .org-title {
-      font-size: 1.45rem;
-      font-weight: 800;
-      color: #92400e;
-      letter-spacing: -0.2px;
-      margin-bottom: 4px;
-    }
-
-    .org-subtitle {
-      font-size: 0.88rem;
-      color: #64748b;
-      font-weight: 600;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-
-    .org-subtitle .badge {
-      display: inline-block;
-      background: #fef3c7;
-      color: #b45309;
-      font-size: 0.75rem;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-weight: 700;
-      border: 1px solid #fde68a;
-    }
-
-    .alert-box {
-      display: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 0.86rem;
-      font-weight: 600;
-      margin-bottom: 18px;
-      text-align: left;
-      line-height: 1.4;
-      animation: alertSlide 0.25s ease-out;
-    }
-
-    @keyframes alertSlide {
-      from {
-        opacity: 0;
-        transform: translateY(-6px);
-      }
-
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
 
+    .login-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 40px 32px;
+      box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      text-align: center;
+    }
+
+    .brand-logo {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fffbeb;
+      border-radius: 50%;
+      border: 1px solid #fef3c7;
+      padding: 10px;
+    }
+
+    .brand-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #0f172a;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .brand-subtitle {
+      font-size: 0.88rem;
+      color: #64748b;
+      font-weight: 500;
+      margin-bottom: 28px;
+    }
+
+    /* Clean Alert */
+    .alert-box {
+      display: none;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      margin-bottom: 20px;
+      text-align: left;
+      line-height: 1.4;
+      animation: alertFade 0.2s ease-out;
+    }
+
+    @keyframes alertFade {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .alert-error {
       background: #fef2f2;
-      border: 1px solid #fecaca;
+      border: 1px solid #fee2e2;
       color: #dc2626;
     }
 
     .alert-success {
       background: #f0fdf4;
-      border: 1px solid #bbf7d0;
+      border: 1px solid #dcfce7;
       color: #16a34a;
+    }
+
+    .card-section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 4px;
+      text-align: left;
+    }
+
+    .card-section-desc {
+      font-size: 0.84rem;
+      color: #64748b;
+      line-height: 1.45;
+      margin-bottom: 20px;
+      text-align: left;
     }
 
     .form-group {
@@ -175,8 +142,8 @@
     .form-label {
       display: block;
       font-size: 0.85rem;
-      font-weight: 700;
-      color: #475569;
+      font-weight: 600;
+      color: #334155;
       margin-bottom: 6px;
     }
 
@@ -190,27 +157,43 @@
       position: absolute;
       left: 14px;
       color: #94a3b8;
-      font-size: 1rem;
+      width: 18px;
+      height: 18px;
       pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .input-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
     }
 
     .form-control {
       width: 100%;
-      height: 46px;
-      padding: 0 42px 0 40px;
-      border: 1.5px solid #cbd5e1;
-      border-radius: 12px;
-      font-size: 0.95rem;
-      color: #1e293b;
-      background: #ffffff;
+      height: 44px;
+      padding: 0 42px 0 42px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.94rem;
+      color: #0f172a;
+      background: #f8fafc;
       outline: none;
       transition: all 0.2s ease;
       font-family: inherit;
     }
 
     .form-control:focus {
+      background: #ffffff;
       border-color: #d97706;
-      box-shadow: 0 0 0 3.5px rgba(217, 119, 6, 0.18);
+      box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+    }
+
+    .form-control::placeholder {
+      color: #94a3b8;
+      font-size: 0.9rem;
     }
 
     .toggle-pass-btn {
@@ -220,17 +203,22 @@
       border: none;
       cursor: pointer;
       color: #94a3b8;
-      font-size: 1.1rem;
       padding: 4px;
       display: flex;
       align-items: center;
       justify-content: center;
       border-radius: 6px;
-      transition: color 0.2s;
+      transition: color 0.15s;
     }
 
     .toggle-pass-btn:hover {
-      color: #d97706;
+      color: #475569;
+    }
+
+    .toggle-pass-btn svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
     }
 
     .form-options {
@@ -238,7 +226,7 @@
       align-items: center;
       justify-content: space-between;
       margin-bottom: 22px;
-      font-size: 0.84rem;
+      font-size: 0.85rem;
     }
 
     .remember-label {
@@ -247,7 +235,7 @@
       gap: 8px;
       cursor: pointer;
       color: #475569;
-      font-weight: 600;
+      font-weight: 500;
       user-select: none;
     }
 
@@ -256,54 +244,51 @@
       height: 16px;
       accent-color: #d97706;
       cursor: pointer;
+      border-radius: 4px;
+    }
+
+    .forgot-link {
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.85rem;
+      transition: color 0.15s;
+    }
+
+    .forgot-link:hover {
+      color: #d97706;
     }
 
     .btn-login {
       width: 100%;
-      height: 48px;
-      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      height: 46px;
+      background: #d97706;
       color: #ffffff;
       border: none;
-      border-radius: 12px;
-      font-size: 1rem;
-      font-weight: 700;
+      border-radius: 10px;
+      font-size: 0.96rem;
+      font-weight: 600;
       font-family: inherit;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 8px 20px rgba(217, 119, 6, 0.35);
-      transition: all 0.2s ease;
+      transition: background 0.15s ease, transform 0.1s ease;
     }
 
     .btn-login:hover {
-      background: linear-gradient(135deg, #b45309 0%, #92400e 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 10px 24px rgba(217, 119, 6, 0.45);
+      background: #b45309;
     }
 
     .btn-login:active {
-      transform: translateY(1px);
-      box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+      transform: scale(0.99);
     }
 
     .btn-login:disabled {
       opacity: 0.65;
       cursor: not-allowed;
       transform: none;
-    }
-
-    .card-footer {
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px dashed #e2e8f0;
-      font-size: 0.78rem;
-      color: #94a3b8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
     }
 
     .spinner {
@@ -316,65 +301,113 @@
       display: none;
     }
 
-    .quick-user-btn {
-      flex: 1;
-      padding: 9px 12px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      border: 1.5px solid #e2e8f0;
-      background: #f8fafc;
-      color: #475569;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: inherit;
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .login-footer {
+      margin-top: 28px;
+      padding-top: 18px;
+      border-top: 1px solid #f1f5f9;
       display: flex;
-      align-items: center;
       justify-content: center;
-      gap: 6px;
+      align-items: center;
+      font-size: 0.8rem;
+      color: #94a3b8;
     }
 
-    .quick-user-btn:hover {
-      border-color: #d97706;
-      background: #fffbeb;
-      color: #92400e;
+    /* Clean 2-Step OTP styles */
+    .otp-info-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 20px;
+      text-align: left;
     }
 
-    .quick-user-btn.active {
-      border-color: #d97706;
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      color: #92400e;
-      box-shadow: 0 2px 6px rgba(217, 119, 6, 0.15);
+    .otp-info-title {
+      font-weight: 600;
+      color: #0f172a;
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .otp-info-desc {
+      font-size: 0.82rem;
+      color: #64748b;
+      line-height: 1.4;
+    }
+
+    .otp-input {
+      letter-spacing: 6px;
+      font-size: 1.25rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .otp-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      font-size: 0.84rem;
+    }
+
+    .text-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+      transition: color 0.15s;
+    }
+
+    .btn-back {
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .btn-back:hover {
+      color: #0f172a;
+    }
+
+    .btn-resend {
+      color: #d97706;
+      font-weight: 600;
+    }
+
+    .btn-resend:hover {
+      color: #b45309;
     }
   </style>
 </head>
 
 <body>
-  <div class="login-wrapper">
+  <div class="login-container">
     <div class="login-card">
-      <!-- Sacred Logo -->
-      <div class="sacred-logo-box">
-        <img src="images/logo.png" alt="Shree Gadisthan Jetpur" class="sacred-logo">
+      <!-- Brand Logo -->
+      <div class="brand-logo">
+        <img src="images/logo.png" alt="Shree Gadisthan Jetpur">
       </div>
 
-      <h1 class="org-title">Shree Gadisthan Jetpur</h1>
-      <div class="org-subtitle">
-        <span>Daily Accounting Software</span>
-        <span class="badge" style="background: #2563eb; color: #ffffff;">🔒 Authorized Login</span>
-      </div>
+      <!-- Title & Subtitle -->
+      <h1 class="brand-title">Shree Gadisthan Jetpur</h1>
+      <p class="brand-subtitle">Daily Accounting System</p>
 
-      <!-- Alert Notification Banner -->
+      <!-- Alert Notification -->
       <div id="login-alert" class="alert-box"></div>
 
-      <!-- Login Form -->
+      <!-- Main Login Form -->
       <form id="login-form" onsubmit="handleLoginSubmit(event)" autocomplete="on">
-        <!-- Username or Mobile -->
+        <!-- Username or Email -->
         <div class="form-group">
-          <label class="form-label" for="login-username">Username or Mobile Number</label>
+          <label class="form-label" for="login-username">Username or Email</label>
           <div class="input-wrapper">
-            <span class="input-icon">👤</span>
-            <input type="text" id="login-username" class="form-control" placeholder="Enter username or mobile number" required
-              autocomplete="username" autofocus>
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            </span>
+            <input type="text" id="login-username" class="form-control" placeholder="Enter username or email" required autocomplete="username" autofocus>
           </div>
         </div>
 
@@ -382,84 +415,150 @@
         <div class="form-group">
           <label class="form-label" for="login-password">Password</label>
           <div class="input-wrapper">
-            <span class="input-icon">🔑</span>
-            <input type="password" id="login-password" class="form-control" placeholder="Enter password" required
-              autocomplete="current-password">
-            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility()"
-              title="Show/Hide password">
-              <span id="eye-icon">👁️</span>
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </span>
+            <input type="password" id="login-password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+            <button type="button" class="toggle-pass-btn" onclick="togglePasswordVisibility()" title="Show/Hide password" aria-label="Toggle password visibility">
+              <span id="eye-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </span>
             </button>
           </div>
         </div>
 
-        <!-- Options: Remember Me -->
+        <!-- Options: Remember Me & Forgot Password -->
         <div class="form-options">
           <label class="remember-label">
             <input type="checkbox" id="login-remember" checked>
-            <span>Remember Me (Auto-Login)</span>
+            <span>Remember me</span>
           </label>
+          <a href="#" class="forgot-link" onclick="showForgotForm(event)">Forgot password?</a>
         </div>
 
         <!-- Submit Button -->
         <button type="submit" id="btn-submit" class="btn-login">
           <span class="spinner" id="login-spinner"></span>
-          <span id="btn-text">🔒 Secure Login</span>
+          <span id="btn-text">Sign In</span>
         </button>
       </form>
 
-      <!-- 2-Step OTP Verification Form (Hidden by default) -->
-      <form id="otp-form" style="display: none;" onsubmit="handleOtpSubmit(event)">
-        <div
-          style="background: #fef3c7; border: 1.5px solid #fde68a; border-radius: 12px; padding: 12px; margin-bottom: 18px; text-align: left;">
-          <div
-            style="font-weight: 700; color: #92400e; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
-            <span>🔐 2-Step Security Verification</span>
+      <!-- Forgot Password Step 1: Request Code Form (Hidden by default) -->
+      <form id="forgot-form" style="display: none;" onsubmit="handleForgotSubmit(event)">
+        <div class="card-section-title">Reset Password</div>
+        <p class="card-section-desc">Enter your username or email address to receive a 6-digit verification code.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="forgot-identifier">Username or Email</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+            </span>
+            <input type="text" id="forgot-identifier" class="form-control" placeholder="Enter username or email" required>
           </div>
-          <div style="font-size: 0.8rem; color: #b45309; margin-top: 4px;" id="otp-info-text">
-            A 6-digit security code has been sent to your registered email.
+        </div>
+
+        <button type="submit" id="btn-forgot-submit" class="btn-login" style="margin-top: 6px;">
+          <span class="spinner" id="forgot-spinner"></span>
+          <span id="btn-forgot-text">Send Verification Code</span>
+        </button>
+
+        <div class="otp-actions" style="justify-content: center; margin-top: 18px;">
+          <button type="button" class="text-btn btn-back" onclick="showLoginForm()">
+            &larr; Back to login
+          </button>
+        </div>
+      </form>
+
+      <!-- Forgot Password Step 2: Set New Password Form (Hidden by default) -->
+      <form id="reset-form" style="display: none;" onsubmit="handleResetSubmit(event)">
+        <div class="otp-info-card">
+          <div class="otp-info-title">Set New Password</div>
+          <div class="otp-info-desc" id="reset-info-text">
+            A 6-digit verification code has been sent to your email (valid for 2 minutes).
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="login-otp">6-Digit Security OTP</label>
+          <label class="form-label" for="reset-otp">6-Digit Code (OTP)</label>
           <div class="input-wrapper">
-            <span class="input-icon">🔢</span>
-            <input type="text" id="login-otp" class="form-control" placeholder="• • • • • •" maxlength="6"
-              style="letter-spacing: 6px; font-size: 1.25rem; font-weight: 800; text-align: center;"
-              autocomplete="one-time-code">
+            <input type="text" id="reset-otp" class="form-control otp-input" placeholder="••••••" maxlength="6" required autocomplete="one-time-code">
           </div>
         </div>
 
-        <button type="submit" id="btn-otp-submit" class="btn-login" style="margin-bottom: 12px;">
-          <span class="spinner" id="otp-spinner"></span>
-          <span id="btn-otp-text">✅ Verify OTP & Login</span>
+        <div class="form-group">
+          <label class="form-label" for="reset-new-password">New Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </span>
+            <input type="password" id="reset-new-password" class="form-control" placeholder="Enter new password (min. 4 chars)" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="reset-confirm-password">Confirm New Password</label>
+          <div class="input-wrapper">
+            <span class="input-icon">
+              <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+            </span>
+            <input type="password" id="reset-confirm-password" class="form-control" placeholder="Re-enter new password" required autocomplete="new-password">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-reset-submit" class="btn-login" style="margin-top: 6px;">
+          <span class="spinner" id="reset-spinner"></span>
+          <span id="btn-reset-text">Update Password</span>
         </button>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem;">
-          <button type="button" onclick="cancelOtpMode()"
-            style="background:none; border:none; color:#64748b; cursor:pointer; font-weight:600; text-decoration:underline;">
-            ← Go Back
-          </button>
-          <button type="button" id="btn-resend-otp" onclick="resendOtp()"
-            style="background:none; border:none; color:#d97706; cursor:pointer; font-weight:700;">
-            🔄 Resend Code
+        <div class="otp-actions" style="justify-content: center; margin-top: 18px;">
+          <button type="button" class="text-btn btn-back" onclick="showLoginForm()">
+            &larr; Cancel & back to login
           </button>
         </div>
       </form>
 
-      <div class="card-footer">
-        <span>🛡️ Secure Portal • Authorized Access Only</span>
-        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8f0;">
-          <a href="/admin" style="color: #94a3b8; font-size: 0.82rem; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 700;" onmouseover="this.style.color='#b45309'" onmouseout="this.style.color='#94a3b8'">
-            <span>👑</span> <span>Admin / Management Portal →</span>
-          </a>
+      <!-- 2-Step OTP Verification Form (Hidden by default) -->
+      <form id="otp-form" style="display: none;" onsubmit="handleOtpSubmit(event)">
+        <div class="otp-info-card">
+          <div class="otp-info-title">Two-Step Verification</div>
+          <div class="otp-info-desc" id="otp-info-text">
+            A 6-digit security code has been sent to your registered email address.
+          </div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label" for="login-otp">Security Code (OTP)</label>
+          <div class="input-wrapper">
+            <input type="text" id="login-otp" class="form-control otp-input" placeholder="••••••" maxlength="6" autocomplete="one-time-code">
+          </div>
+        </div>
+
+        <button type="submit" id="btn-otp-submit" class="btn-login">
+          <span class="spinner" id="otp-spinner"></span>
+          <span id="btn-otp-text">Verify & Sign In</span>
+        </button>
+
+        <div class="otp-actions">
+          <button type="button" class="text-btn btn-back" onclick="cancelOtpMode()">
+            &larr; Back to login
+          </button>
+          <button type="button" id="btn-resend-otp" class="text-btn btn-resend" onclick="resendOtp()">
+            Resend code
+          </button>
+        </div>
+      </form>
+
+      <!-- Footer Info -->
+      <div class="login-footer">
+        <span>Secure Access &bull; Authorized Personnel Only</span>
       </div>
     </div>
   </div>
 
   <script>
     let activeTempToken = null;
+    let activeResetToken = null;
     let activeRememberMe = true;
 
     // 1. Initial Check: If user already has a valid token, auto-redirect to dashboard
@@ -481,7 +580,7 @@
             return;
           }
         } catch (e) {
-          // Network issue or offline, continue to show login
+          // Offline or network error, proceed with normal login screen
         }
       }
 
@@ -498,14 +597,14 @@
       const eyeIcon = document.getElementById('eye-icon');
       if (passInput.type === 'password') {
         passInput.type = 'text';
-        eyeIcon.textContent = '🙈';
+        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>`;
       } else {
         passInput.type = 'password';
-        eyeIcon.textContent = '👁️';
+        eyeIcon.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
       }
     }
 
-    // 3. Show Alert Message
+    // 3. Show & Hide Alert
     function showAlert(msg, type = 'error') {
       const alertBox = document.getElementById('login-alert');
       alertBox.textContent = msg;
@@ -518,7 +617,33 @@
       alertBox.style.display = 'none';
     }
 
-    // 4. Handle Form Submit
+    // 4. Navigation between views
+    function showLoginForm() {
+      hideAlert();
+      document.getElementById('otp-form').style.display = 'none';
+      document.getElementById('forgot-form').style.display = 'none';
+      document.getElementById('reset-form').style.display = 'none';
+      document.getElementById('login-form').style.display = 'block';
+      setTimeout(() => {
+        const uInp = document.getElementById('login-username');
+        if (uInp) uInp.focus();
+      }, 50);
+    }
+
+    function showForgotForm(e) {
+      if (e) e.preventDefault();
+      hideAlert();
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('otp-form').style.display = 'none';
+      document.getElementById('reset-form').style.display = 'none';
+      document.getElementById('forgot-form').style.display = 'block';
+      setTimeout(() => {
+        const fInp = document.getElementById('forgot-identifier');
+        if (fInp) fInp.focus();
+      }, 50);
+    }
+
+    // 5. Handle Login Submit
     async function handleLoginSubmit(e) {
       e.preventDefault();
       hideAlert();
@@ -533,18 +658,17 @@
       const btnText = document.getElementById('btn-text');
 
       if (!username) {
-        showAlert('Please enter username!');
+        showAlert('Please enter your username or email.');
         return;
       }
       if (!password) {
-        showAlert('Please enter password!');
+        showAlert('Please enter your password.');
         return;
       }
 
-      // Set loading state
       btn.disabled = true;
       spinner.style.display = 'inline-block';
-      btnText.textContent = 'Authenticating...';
+      btnText.textContent = 'Signing in...';
 
       try {
         const res = await fetch('/api/auth/login', {
@@ -555,7 +679,7 @@
 
         const data = await res.json();
 
-        // Check if 2-Step OTP is required
+        // 2-Step OTP required
         if (res.ok && data.requireOtp && data.tempToken) {
           activeTempToken = data.tempToken;
           document.getElementById('login-form').style.display = 'none';
@@ -564,16 +688,15 @@
           if (data.maskedEmail) {
             document.getElementById('otp-info-text').textContent = `A 6-digit security code has been sent to your registered email (${data.maskedEmail}).`;
           }
-          showAlert('📧 Security OTP sent! Please enter the code.', 'success');
+          showAlert('Security code sent! Please check your email.', 'success');
           setTimeout(() => document.getElementById('login-otp').focus(), 150);
           btn.disabled = false;
           spinner.style.display = 'none';
-          btnText.textContent = '🔒 Secure Login';
+          btnText.textContent = 'Sign In';
           return;
         }
 
         if (res.ok && data.success && data.token) {
-          // Store token and user info
           if (rememberMe) {
             localStorage.setItem('hisab_auth_token', data.token);
             sessionStorage.removeItem('hisab_auth_token');
@@ -586,28 +709,140 @@
             localStorage.setItem('hisab_user_info', JSON.stringify(data.user));
           }
 
-          showAlert('✅ Login successful! Welcome...', 'success');
-          btnText.textContent = 'Logging in...';
+          showAlert('Login successful! Redirecting...', 'success');
+          btnText.textContent = 'Redirecting...';
 
           setTimeout(() => {
             window.location.replace('/');
-          }, 350);
+          }, 300);
         } else {
-          showAlert(data.error || 'Invalid username or password! Please check and try again.');
+          showAlert(data.error || 'Invalid username or password. Please try again.');
           btn.disabled = false;
           spinner.style.display = 'none';
-          btnText.textContent = '🔒 Secure Login';
+          btnText.textContent = 'Sign In';
           document.getElementById('login-password').select();
         }
       } catch (err) {
         showAlert('Unable to connect to server. Please try again in a moment.');
         btn.disabled = false;
         spinner.style.display = 'none';
-        btnText.textContent = '🔒 Secure Login';
+        btnText.textContent = 'Sign In';
       }
     }
 
-    // 5. Handle OTP Submit
+    // 6. Handle Forgot Password Submit (Request Code)
+    async function handleForgotSubmit(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const identifier = document.getElementById('forgot-identifier').value.trim();
+      const btn = document.getElementById('btn-forgot-submit');
+      const spinner = document.getElementById('forgot-spinner');
+      const btnText = document.getElementById('btn-forgot-text');
+
+      if (!identifier) {
+        showAlert('Please enter your username or registered email.');
+        return;
+      }
+
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      btnText.textContent = 'Sending code...';
+
+      try {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success && data.resetToken) {
+          activeResetToken = data.resetToken;
+          document.getElementById('forgot-form').style.display = 'none';
+          document.getElementById('reset-form').style.display = 'block';
+
+          if (data.maskedEmail) {
+            document.getElementById('reset-info-text').textContent = `A 6-digit verification code has been sent to your registered email (${data.maskedEmail}). Valid for 2 minutes.`;
+          }
+          showAlert('Verification code sent! Please check your inbox.', 'success');
+          setTimeout(() => document.getElementById('reset-otp').focus(), 100);
+        } else {
+          showAlert(data.error || 'Could not find account. Please verify username or email.');
+        }
+      } catch (err) {
+        showAlert('Unable to connect to server. Please try again.');
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = 'Send Verification Code';
+      }
+    }
+
+    // 7. Handle Reset Submit (Verify OTP & Set New Password)
+    async function handleResetSubmit(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const otp = document.getElementById('reset-otp').value.trim();
+      const newPassword = document.getElementById('reset-new-password').value.trim();
+      const confirmPassword = document.getElementById('reset-confirm-password').value.trim();
+
+      const btn = document.getElementById('btn-reset-submit');
+      const spinner = document.getElementById('reset-spinner');
+      const btnText = document.getElementById('btn-reset-text');
+
+      if (!otp || otp.length < 6) {
+        showAlert('Please enter the full 6-digit verification code.');
+        return;
+      }
+      if (!newPassword || newPassword.length < 4) {
+        showAlert('Password must be at least 4 characters long.');
+        return;
+      }
+      if (newPassword !== confirmPassword) {
+        showAlert('New passwords do not match. Please verify.');
+        return;
+      }
+
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      btnText.textContent = 'Updating password...';
+
+      try {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            resetToken: activeResetToken,
+            otp,
+            newPassword
+          })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+          activeResetToken = null;
+          showLoginForm();
+          showAlert('Password reset successful! You can now sign in with your new password.', 'success');
+          const identifier = document.getElementById('forgot-identifier').value.trim();
+          if (identifier) {
+            document.getElementById('login-username').value = identifier;
+            setTimeout(() => document.getElementById('login-password').focus(), 150);
+          }
+        } else {
+          showAlert(data.error || 'Failed to reset password. Please check your code.');
+        }
+      } catch (err) {
+        showAlert('Unable to connect to server.');
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = 'Update Password';
+      }
+    }
+
+    // 8. Handle 2-Step Login OTP Submit
     async function handleOtpSubmit(e) {
       e.preventDefault();
       hideAlert();
@@ -618,7 +853,7 @@
       const btnText = document.getElementById('btn-otp-text');
 
       if (!otp || otp.length < 6) {
-        showAlert('Please enter full 6-digit OTP!');
+        showAlert('Please enter the 6-digit security code.');
         return;
       }
 
@@ -647,32 +882,32 @@
             localStorage.setItem('hisab_user_info', JSON.stringify(data.user));
           }
 
-          showAlert('✅ 2-Step verification successful! Welcome...', 'success');
-          btnText.textContent = 'Logging in...';
+          showAlert('Verification successful! Redirecting...', 'success');
+          btnText.textContent = 'Redirecting...';
 
           setTimeout(() => {
             window.location.replace('/');
-          }, 350);
+          }, 300);
         } else {
-          showAlert(data.error || 'Invalid OTP code!');
+          showAlert(data.error || 'Invalid security code. Please check and try again.');
           btn.disabled = false;
           spinner.style.display = 'none';
-          btnText.textContent = '✅ Verify OTP & Login';
+          btnText.textContent = 'Verify & Sign In';
           document.getElementById('login-otp').select();
         }
       } catch (err) {
         showAlert('Unable to connect to server.');
         btn.disabled = false;
         spinner.style.display = 'none';
-        btnText.textContent = '✅ Verify OTP & Login';
+        btnText.textContent = 'Verify & Sign In';
       }
     }
 
-    // 6. Resend OTP
+    // 9. Resend Login OTP
     async function resendOtp() {
       const btnResend = document.getElementById('btn-resend-otp');
       btnResend.disabled = true;
-      btnResend.textContent = '⏳ Sending...';
+      btnResend.textContent = 'Sending...';
 
       try {
         const res = await fetch('/api/auth/resend-login-otp', {
@@ -682,9 +917,9 @@
         });
         const data = await res.json();
         if (res.ok && data.success) {
-          showAlert('✅ New OTP sent successfully!', 'success');
+          showAlert('A new code has been sent to your email.', 'success');
         } else {
-          showAlert(data.error || 'Failed to send OTP.');
+          showAlert(data.error || 'Failed to resend code.');
         }
       } catch (e) {
         showAlert('Unable to connect to server.');
@@ -692,11 +927,11 @@
 
       setTimeout(() => {
         btnResend.disabled = false;
-        btnResend.textContent = '🔄 Resend Code';
+        btnResend.textContent = 'Resend code';
       }, 5000);
     }
 
-    // 7. Cancel OTP Mode
+    // 10. Cancel 2-Step Login OTP Mode
     function cancelOtpMode() {
       activeTempToken = null;
       document.getElementById('otp-form').style.display = 'none';

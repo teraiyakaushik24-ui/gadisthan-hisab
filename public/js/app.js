@@ -1,5 +1,45 @@
 // Main Application Logic for HISAB PRO
 
+// Global Authenticated Fetch Interceptor
+(function installFetchAuthInterceptor() {
+  const originalFetch = window.fetch;
+  window.fetch = function (url, options = {}) {
+    try {
+      const urlStr = typeof url === 'string' ? url : (url && url.url) || '';
+      if (typeof urlStr === 'string' && urlStr.startsWith('/api/') && !urlStr.startsWith('/api/auth/login')) {
+        const token = localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
+        let rawUser = null;
+        try {
+          rawUser = JSON.parse(localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info') || '{}');
+        } catch (e) {}
+
+        options = options || {};
+        const existingHeaders = options.headers || {};
+        const newHeaders = new Headers(existingHeaders);
+
+        if (token && !newHeaders.has('Authorization')) {
+          newHeaders.set('Authorization', `Bearer ${token}`);
+        }
+        if (rawUser && rawUser.role && !newHeaders.has('x-user-role')) {
+          newHeaders.set('x-user-role', rawUser.role);
+        }
+        if (rawUser && rawUser.id && !newHeaders.has('x-user-id')) {
+          newHeaders.set('x-user-id', rawUser.id);
+        }
+        if (rawUser && rawUser.username && !newHeaders.has('x-user-username')) {
+          newHeaders.set('x-user-username', rawUser.username);
+        }
+        const adminToken = sessionStorage.getItem('hisab_admin_token');
+        if (adminToken && !newHeaders.has('x-admin-token')) {
+          newHeaders.set('x-admin-token', adminToken);
+        }
+        options.headers = newHeaders;
+      }
+    } catch (e) {}
+    return originalFetch.call(this, url, options);
+  };
+})();
+
 const App = {
   currentDate: new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date()),
   record: null,
@@ -102,6 +142,7 @@ const App = {
 
     // 1. Load settings first so notes denominations and bank accounts are available
     await this.loadSettings();
+    this.initUserRoleUI();
 
     // 2. Load auxiliary records in parallel
     await Promise.all([
@@ -137,10 +178,20 @@ const App = {
 
     // Verify token with backend
     try {
+      let rawUser = null;
+      try {
+        rawUser = JSON.parse(localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info') || '{}');
+      } catch (err) {}
       const res = await fetch('/api/auth/verify', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ token })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          ...(rawUser && rawUser.id ? { 'x-user-id': rawUser.id } : {}),
+          ...(rawUser && rawUser.username ? { 'x-user-username': rawUser.username } : {}),
+          ...(rawUser && rawUser.role ? { 'x-user-role': rawUser.role } : {})
+        },
+        body: JSON.stringify({ token, userId: rawUser ? rawUser.id : null, username: rawUser ? rawUser.username : null })
       });
       const data = await res.json();
       if (data && data.valid) {
@@ -217,7 +268,7 @@ const App = {
 
         this.hideAuthLoginOverlay();
         await this.initAppData();
-        this.showToast('✅ સ્વાગત છે! પ્રવેશ સફળ રહ્યો.', 'success');
+        const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '✅ Welcome! Login successful.' : '✅ સ્વાગત છે! પ્રવેશ સફળ રહ્યો.', 'success');
       } else {
         if (errBox) errBox.style.display = 'block';
         if (errText) errText.textContent = data.error || 'અમાન્ય ઇમેઇલ અથવા પાસવર્ડ!';
@@ -265,7 +316,7 @@ const App = {
       badge.style.boxShadow = '0 0 5px rgba(245, 158, 11, 0.6)';
       badge.title = 'Offline (Local Cache) - ઇન્ટરનેટ બંધ છે';
       if (showToast) {
-        this.showToast('🟡 Offline: ઇન્ટરનેટ બંધ છે, હિસાબ લોકલ સુરક્ષિત રહેશે.', 'warning');
+        const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '🟡 Offline: Internet disconnected, local hisab is secure.' : '🟡 Offline: ઇન્ટરનેટ બંધ છે, હિસાબ લોકલ સુરક્ષિત રહેશે.', 'warning');
       }
       return;
     }
@@ -279,14 +330,14 @@ const App = {
         badge.style.boxShadow = '0 0 6px #22c55e';
         badge.title = 'Cloud DB Online: MongoDB Atlas Connected';
         if (showToast) {
-          this.showToast('🟢 Cloud DB Online (MongoDB Atlas જોડાયેલ છે)', 'success');
+          const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '🟢 Cloud DB Online (MongoDB Atlas Connected)' : '🟢 Cloud DB Online (MongoDB Atlas જોડાયેલ છે)', 'success');
         }
       } else {
         badge.style.background = '#f59e0b';
         badge.style.boxShadow = '0 0 5px rgba(245, 158, 11, 0.6)';
         badge.title = 'Offline (Local Cache) - ક્લાઉડ સાથે કનેક્શન નથી';
         if (showToast) {
-          this.showToast('🟡 Offline: ક્લાઉડ સાથે કનેક્શન નથી, લોકલ સેવ ચાલુ છે.', 'warning');
+          const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '🟡 Offline: No cloud connection, saving to local cache.' : '🟡 Offline: ક્લાઉડ સાથે કનેક્શન નથી, લોકલ સેવ ચાલુ છે.', 'warning');
         }
       }
     } catch (e) {
@@ -559,6 +610,11 @@ const App = {
         this.closeHeaderMenu();
       }
 
+      const brandProfileContainer = document.getElementById('brand-profile-container');
+      if (brandProfileContainer && !brandProfileContainer.contains(e.target)) {
+        this.closeLogoProfileDropdown();
+      }
+
       // Custom Calendar Popover click outside to auto close
       const calPop = document.getElementById('custom-calendar-popover');
       const calTrigger = document.getElementById('date-picker-trigger');
@@ -644,6 +700,12 @@ const App = {
       if (typeof this.renderAdminBhaktsList === 'function') {
         this.renderAdminBhaktsList();
       }
+      if (typeof this.renderPermissionsMatrix === 'function') {
+        this.renderPermissionsMatrix();
+      }
+      if (typeof this.renderUsersList === 'function' && this.usersList) {
+        this.renderUsersList(this.usersList);
+      }
 
       // Update active admin tab placeholders/labels
       const vInp = document.getElementById('admin-input-new-voucher');
@@ -728,12 +790,18 @@ const App = {
       // Ctrl+S to save current record
       if ((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
         e.preventDefault();
+        if (this.hasFeatureAccess && !this.hasFeatureAccess('dailyHisab', 'full')) {
+          return;
+        }
         this.saveCurrentRecord(true);
       }
 
       // Ctrl+P to trigger print
       if ((e.ctrlKey || e.metaKey) && (e.key === 'p' || e.key === 'P')) {
         e.preventDefault();
+        if (this.hasFeatureAccess && !this.hasFeatureAccess('exportReports', 'visible')) {
+          return;
+        }
         this.triggerPrint();
       }
 
@@ -747,6 +815,9 @@ const App = {
       // F1 (or Alt+V): Daily Expense Diary Modal (દૈનિક ખર્ચ ડાયરી)
       if (e.key === 'F1' || (e.altKey && (e.key === 'v' || e.key === 'V' || e.key === 'વ' || e.code === 'KeyV'))) {
         e.preventDefault();
+        if (this.hasFeatureAccess && !this.hasFeatureAccess('expenseLedger', 'visible')) {
+          return;
+        }
         const expModal = document.getElementById('modal-expense-diary');
         if (expModal && expModal.classList.contains('active')) {
           this.closeModal('modal-expense-diary');
@@ -758,6 +829,9 @@ const App = {
       // F2 (or Alt+B): Unbanked Cash Modal (એકઠી થયેલ રોકડ)
       if (e.key === 'F2' || (e.altKey && (e.key === 'b' || e.key === 'B' || e.key === 'બ' || e.code === 'KeyB'))) {
         e.preventDefault();
+        if (this.hasFeatureAccess && !this.hasFeatureAccess('bankDeposits', 'visible')) {
+          return;
+        }
         const accumModal = document.getElementById('modal-bank-accumulated-detail');
         const depModal = document.getElementById('modal-bank-deposit');
         if (depModal && depModal.classList.contains('active')) {
@@ -772,6 +846,9 @@ const App = {
       // F3 (or Alt+H): History Modal (પાછલો હિસાબ)
       if (e.key === 'F3' || (e.altKey && (e.key === 'h' || e.key === 'H' || e.code === 'KeyH'))) {
         e.preventDefault();
+        if (this.hasFeatureAccess && !this.hasFeatureAccess('historyLedger', 'visible')) {
+          return;
+        }
         const histModal = document.getElementById('modal-history');
         if (histModal && histModal.classList.contains('active')) {
           this.closeModal('modal-history');
@@ -783,6 +860,9 @@ const App = {
       // F4: Quick Uchak, Shift+F4: Full Uchak Register
       if (e.key === 'F4' || (e.altKey && (e.key === 'u' || e.key === 'U' || e.key === 'ઉ' || e.code === 'KeyU'))) {
         e.preventDefault();
+        if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'visible')) {
+          return;
+        }
         if (e.shiftKey) {
           this.openUchakModal();
         } else {
@@ -795,6 +875,9 @@ const App = {
       // F6 (or Alt+E): Staff Directory & Salary Modal (કર્મચારીઓ)
       if (e.key === 'F6' || (e.altKey && (e.key === 'e' || e.key === 'E' || e.code === 'KeyE'))) {
         e.preventDefault();
+        if (this.hasFeatureAccess && !this.hasFeatureAccess('staffSalary', 'visible')) {
+          return;
+        }
         const empModal = document.getElementById('modal-employees');
         if (empModal && empModal.classList.contains('active')) {
           this.closeModal('modal-employees');
@@ -806,6 +889,9 @@ const App = {
       // F7 (or Alt+D): Dues Modal (લેણાં અને દેવાં / બાકી હિસાબ)
       if (e.key === 'F7' || (e.altKey && (e.key === 'd' || e.key === 'D' || e.key === 'દ' || e.code === 'KeyD'))) {
         e.preventDefault();
+        if (this.hasFeatureAccess && !this.hasFeatureAccess('duesSubsystem', 'visible')) {
+          return;
+        }
         const dModal = document.getElementById('modal-dues');
         if (dModal && dModal.classList.contains('active')) {
           this.closeModal('modal-dues');
@@ -817,13 +903,21 @@ const App = {
       // F8 (or Alt+C): On-Screen Mini Calculator
       if (e.key === 'F8' || (e.altKey && (e.key === 'c' || e.key === 'C' || e.key === 'ક' || e.code === 'KeyC'))) {
         e.preventDefault();
+        if (this.hasFeatureAccess && !this.hasFeatureAccess('calculator', 'visible')) {
+          return;
+        }
         this.toggleCalculator();
       }
 
-      // F12: Shortcuts Help Modal (શોર્ટકટ હેલ્પ)
+      // F12: Shortcuts Help Modal (શોર્ટકટ હેલ્પ - Toggle)
       if (e.key === 'F12') {
         e.preventDefault();
-        this.openShortcutsHelpModal();
+        const helpModal = document.getElementById('modal-shortcuts-help');
+        if (helpModal && helpModal.classList.contains('active')) {
+          this.closeModal('modal-shortcuts-help');
+        } else {
+          this.openShortcutsHelpModal();
+        }
       }
 
       // Alt+M to toggle Header Menu (or Admin Sidebar if in Admin View)
@@ -939,7 +1033,6 @@ const App = {
       { sel: '#btn-employees-menu', shortcut: 'F6', pos: 'left', title: isEn ? 'Staff Directory & Salary (F6)' : 'કર્મચારીઓ (F6)' },
       { sel: '#btn-dues-menu', shortcut: 'F7', pos: 'left', title: isEn ? 'Dues (F7)' : 'લેણાં - દેવાં (F7)' },
       { sel: '#btn-calc-menu', shortcut: 'F8', pos: 'left', title: isEn ? 'Calculator (F8)' : 'કેલ્ક્યુલેટર (F8)' },
-      { sel: '#btn-shortcuts-help-menu', shortcut: 'F12', pos: 'left', title: isEn ? 'Shortcuts Guide (F12)' : 'શોર્ટકટ હેલ્પ (F12)' },
       { sel: '#btn-header-more-menu', shortcut: 'Alt+M', pos: 'bottom', title: isEn ? 'Menu (Alt+M)' : 'મેનુ (Alt+M)' },
       { sel: '#btn-prev-day', shortcut: 'Alt+←', pos: 'bottom', title: isEn ? 'Previous Day (Alt+←)' : 'અગાઉનો દિવસ (Alt+←)' },
       { sel: '#btn-next-day', shortcut: 'Alt+→', pos: 'bottom', title: isEn ? 'Next Day (Alt+→)' : 'આગળનો દિવસ (Alt+→)' },
@@ -1236,11 +1329,15 @@ const App = {
   adminUnlockedDate: null,
 
   isDateLocked(dateStr) {
-    return false; // Free accounting editing enabled on all dates
+    if (!dateStr) return false;
+    return dateStr < this.getTodayDateStr();
   },
 
   isCurrentDateLocked() {
-    return false;
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('dailyHisab', 'full')) {
+      return true;
+    }
+    return this.isDateLocked(this.currentDate);
   },
 
   async setDateAndLoad(dateStr) {
@@ -1378,6 +1475,9 @@ const App = {
     if (viewContainer) {
       if (isLocked) viewContainer.classList.add('is-date-locked');
       else viewContainer.classList.remove('is-date-locked');
+
+      const oldLockBanner = document.getElementById('past-date-locked-banner');
+      if (oldLockBanner) oldLockBanner.remove();
     }
 
     const statusEl = document.getElementById('save-status-text');
@@ -1633,7 +1733,7 @@ const App = {
 
   async clearVoucherExpenses(vName) {
     if (this.isCurrentDateLocked()) {
-      this.showToast('આ તારીખ લોક થયેલ છે!', 'error');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'This date is locked!' : 'આ તારીખ લોક થયેલ છે!', 'error');
       return;
     }
     if (!this.record) return;
@@ -1885,6 +1985,13 @@ const App = {
 
   async saveCurrentRecord(showFeedback = true) {
     if (!this.record) return;
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('dailyHisab', 'full')) {
+      if (showFeedback) {
+        const isEn = window.i18n && window.i18n.currentLang === 'en';
+        this.showToast(isEn ? 'Read-only mode: Cannot edit Daily Hisab!' : 'ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે દૈનિક હિસાબ ફક્ત વાંચવા માટે (Read-Only Mode) છે.', 'warning');
+      }
+      return;
+    }
     if (this.isCurrentDateLocked()) {
       return;
     }
@@ -1904,15 +2011,28 @@ const App = {
         ...this.record,
         adminOverride: isAdminOverridden
       };
+      const rawUser = localStorage.getItem('hisab_user_info');
+      const u = rawUser ? JSON.parse(rawUser) : null;
+      const token = this.authToken || localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
       const res = await fetch(`/api/records/${this.currentDate}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          ...(u && u.id ? { 'x-user-id': u.id } : {}),
+          ...(u && u.username ? { 'x-user-username': u.username } : {}),
+          ...(u && u.role ? { 'x-user-role': u.role } : {}),
           ...(isAdminOverridden ? { 'x-admin-override': 'true' } : {})
         },
         body: JSON.stringify(payload)
       });
       const data = await res.json();
+      if (!res.ok || !data.success) {
+        if (data && data.error) {
+          this.showToast(data.error, 'error');
+        }
+        return;
+      }
       if (data.success) {
         this.isDirty = false;
         if (data.employeesUpdated) {
@@ -1986,9 +2106,10 @@ const App = {
 
   getAdminAuthHeaders(extraHeaders = {}) {
     const headers = { 'Content-Type': 'application/json', ...extraHeaders };
-    if (this.adminToken) {
-      headers['Authorization'] = `Bearer ${this.adminToken}`;
-      headers['x-admin-token'] = this.adminToken;
+    const token = this.adminToken || this.authToken || (typeof localStorage !== 'undefined' ? (localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token')) : null);
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+      headers['x-admin-token'] = token;
     }
     return headers;
   },
@@ -2053,11 +2174,16 @@ const App = {
   },
 
   async openAdminModal(initialTab = null, focusEmpId = null) {
-    // 1. Session Token & PIN Security Check (RBAC: Only 'admin' role bypasses PIN, others require Admin PIN)
     let currentUser = null;
     try {
       currentUser = JSON.parse(localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info') || '{}');
     } catch (e) {}
+
+    const isEn = (window.i18n && window.i18n.currentLang === 'en');
+    if (currentUser && currentUser.role && currentUser.role !== 'admin') {
+      this.showToast(isEn ? 'Access Denied! Admin Control Center is strictly restricted to Super Admin.' : 'ઍક્સેસ નકારવામાં આવ્યો! એડમિન કંટ્રોલ સેન્ટર ફક્ત સુપર એડમિન માટે જ છે.', 'error');
+      return;
+    }
 
     const appToken = this.authToken || localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
     if (currentUser && currentUser.role === 'admin' && appToken && !this.adminToken) {
@@ -2142,6 +2268,16 @@ const App = {
   async submitAdminPin(e) {
     if (e) e.preventDefault();
     const isEn = window.i18n && window.i18n.currentLang === 'en';
+
+    let currentUser = null;
+    try {
+      currentUser = JSON.parse(localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info') || '{}');
+    } catch (err) {}
+    if (currentUser && currentUser.role && currentUser.role !== 'admin') {
+      this.showToast(isEn ? 'Access Denied! Staff/Accountant cannot access Admin.' : 'ઍક્સેસ નકારવામાં આવ્યો! એકાઉન્ટન્ટ અથવા સ્ટાફ આઈડી દ્વારા એડમિન એક્સેસ પ્રતિબંધિત છે.', 'error');
+      return;
+    }
+
     const pinInput = document.getElementById('input-admin-pin-auth');
     const pin = pinInput ? pinInput.value.trim() : '';
     if (!pin) {
@@ -2413,6 +2549,7 @@ const App = {
     } else if (tabName === 'users') {
       this.loadUsersList();
       this.loadLoginHistory();
+      this.loadRolePermissions();
     }
   },
 
@@ -3665,6 +3802,18 @@ const App = {
   },
 
   openAdminHistoryClearModal() {
+    const list = this.adminHistoryData || [];
+    const now = Date.now();
+    const count30 = list.filter(i => (now - Number(i.timestamp)) > (30 * 24 * 60 * 60 * 1000)).length;
+    const count7 = list.filter(i => (now - Number(i.timestamp)) > (7 * 24 * 60 * 60 * 1000)).length;
+    const countAll = list.length;
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    const el30 = document.getElementById('clear-count-30days');
+    const el7 = document.getElementById('clear-count-7days');
+    const elAll = document.getElementById('clear-count-all');
+    if (el30) el30.textContent = isEn ? `(${count30} records)` : `(${count30} રેકોર્ડ્સ)`;
+    if (el7) el7.textContent = isEn ? `(${count7} records)` : `(${count7} રેકોર્ડ્સ)`;
+    if (elAll) elAll.textContent = isEn ? `(${countAll} records)` : `(${countAll} રેકોર્ડ્સ)`;
     this.selectClearOption('30days');
     this.openModal('modal-admin-history-clear');
   },
@@ -3711,7 +3860,8 @@ const App = {
 
       if (res.ok && data.success) {
         this.closeModal('modal-admin-history-clear');
-        this.showToast(data.message || (isEn ? 'History cleared successfully' : 'હિસ્ટ્રી સફળતાપૂર્વક સાફ થઈ ગઈ'), 'success');
+        const successMsg = isEn ? (data.messageEn || data.message || 'History cleared successfully') : (data.message || 'હિસ્ટ્રી સફળતાપૂર્વક સાફ થઈ ગઈ');
+        this.showToast(successMsg, 'success');
         await this.loadAdminHistory();
       } else {
         this.showToast(data.error || (isEn ? 'Failed to clear history' : 'હિસ્ટ્રી સાફ કરવામાં ભૂલ'), 'error');
@@ -3739,7 +3889,7 @@ const App = {
 
   initUserRoleUI() {
     try {
-      const rawUser = localStorage.getItem('hisab_user_info');
+      const rawUser = localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info');
       if (rawUser) {
         const u = JSON.parse(rawUser);
 
@@ -3755,9 +3905,324 @@ const App = {
             adminMenuBtn.style.display = 'none';
           }
         }
+
+        this.renderHeaderUserInfo();
+
+        this.applyRolePermissions();
       }
     } catch (e) {
       console.error('Error initializing user role UI:', e);
+    }
+  },
+
+  // =========================================================================
+  // DYNAMIC ROLE & FEATURE PERMISSIONS MANAGEMENT
+  // =========================================================================
+  activePermRole: 'accountant',
+  permFeatures: [
+    { key: 'dailyHisab', label: 'દૈનિક હિસાબ / રોજમેળ', labelEn: 'Daily Hisab / Rozmel', icon: '📋', desc: 'રોકડ ગણતરી, બેંક અને વાઉચર વિગતો', descEn: 'Cash count, bank and voucher details' },
+    { key: 'historyLedger', label: 'પાછલો હિસાબ / ઇતિહાસ (F3)', labelEn: 'History / Past Records (F3)', icon: '📜', desc: 'પાછલા દિવસોનો રોજમેળ ઇતિહાસ અને પત્રક', descEn: 'Previous days Rozmel history & statements' },
+    { key: 'expenseLedger', label: 'ખર્ચ રજિસ્ટર & લેજર', labelEn: 'Expense Register & Ledger', icon: '📊', desc: 'તમામ ખાતાવહી અને કેટેગરી સરવૈયું', descEn: 'All ledger accounts & category balance' },
+    { key: 'staffSalary', label: 'સ્ટાફ પગાર & ઉપાડ', labelEn: 'Staff Salary & Advance', icon: '👥', desc: 'પગાર પત્રક, હાજરી અને ઉપાડ ખાતાઓ', descEn: 'Salary sheets, attendance and advance accounts' },
+    { key: 'uchakSubsystem', label: 'ઉચક હિસાબ પ્રણાલી', labelEn: 'Uchak Subsystem', icon: '🤝', desc: 'ઉચક ખાતેદારો અને એડવાન્સ પતાવટ', descEn: 'Uchak accounts and advance settlements' },
+    { key: 'duesSubsystem', label: 'લેણાં & દેવાં વ્યવસ્થાપન', labelEn: 'Receivables & Payables', icon: '📑', desc: 'મળવાપાત્ર અને ચૂકવવાપાત્ર બિલો', descEn: 'Receivable and payable dues management' },
+    { key: 'bankDeposits', label: 'બેંક રોકડ જમા', labelEn: 'Bank Cash Deposits', icon: '🏦', desc: 'સંસ્થાન બેંકમાં રોકડ જમા એન્ટ્રી', descEn: 'Cash deposit entries to temple bank' },
+    { key: 'bhaktDeposits', label: 'ભક્ત થાપણ & મહાપૂજા', labelEn: 'Bhakt Deposits & Mahapooja', icon: '🙏', desc: 'ભક્ત રજિસ્ટ્રેશન અને થાપણ પાસબુક', descEn: 'Devotee registration and passbook' },
+    { key: 'calculator', label: 'ઓન-સ્ક્રીન કેલ્ક્યુલેટર (F8)', labelEn: 'On-Screen Calculator (F8)', icon: '🧮', desc: 'ગણતરી માટે પોપઅપ કેલ્ક્યુલેટર ટૂલ', descEn: 'Popup calculator tool for quick counts' },
+    { key: 'exportReports', label: 'એક્સેલ & રિપોર્ટ એક્સપોર્ટ', labelEn: 'Excel & Report Export', icon: '📂', desc: 'એક્સેલ ડાઉનલોડ અને પ્રિન્ટ આઉટપુટ', descEn: 'Excel download and print outputs' }
+  ],
+
+  hasFeatureAccess(featureKey, requiredMode = 'visible') {
+    try {
+      const rawUser = localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info');
+      const u = rawUser ? JSON.parse(rawUser) : null;
+      if (u && u.role === 'admin') return true; // Only Super Admin has unrestricted access
+
+      const role = (u && u.role) ? u.role : 'user';
+      const rolePerms = (this.settings && this.settings.rolePermissions) || {};
+      const perms = rolePerms[role] || {};
+      let perm = perms[featureKey];
+      if (!perm) {
+        if (role === 'accountant') perm = 'hidden';
+        else perm = 'full';
+      }
+
+      if (requiredMode === 'visible') {
+        return perm !== 'hidden';
+      }
+      if (requiredMode === 'full') {
+        return perm === 'full';
+      }
+      return perm === 'full' || perm === 'readonly';
+    } catch (e) {
+      return false;
+    }
+  },
+
+  applyRolePermissions() {
+    try {
+      const rawUser = localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info');
+      const u = rawUser ? JSON.parse(rawUser) : null;
+      const role = u ? (u.role || 'user') : 'user';
+
+      // 1. Admin button strictly for admin role
+      const adminMenuBtn = document.getElementById('btn-admin-panel-menu');
+      if (adminMenuBtn) {
+        if (role === 'admin') {
+          adminMenuBtn.style.display = 'flex';
+          adminMenuBtn.onclick = () => { window.location.href = '/admin'; };
+        } else {
+          adminMenuBtn.style.display = 'none';
+        }
+      }
+
+      if (role === 'admin') {
+        const roBanner = document.getElementById('readonly-auditor-banner');
+        if (roBanner) roBanner.style.display = 'none';
+        const hiddenDaily = document.getElementById('hidden-daily-hisab-banner');
+        if (hiddenDaily) hiddenDaily.style.display = 'none';
+        const dailyContainer = document.getElementById('view-daily-hisab');
+        const isAdminMode = (this.currentView === 'admin' || window.location.pathname.startsWith('/admin') || document.body.classList.contains('admin-mode-active'));
+        if (dailyContainer && !isAdminMode) {
+          dailyContainer.style.display = '';
+        }
+        const calcBtn = document.getElementById('btn-calc-menu');
+        if (calcBtn) calcBtn.style.display = '';
+        const btnHistory = document.getElementById('btn-history');
+        if (btnHistory) btnHistory.style.display = '';
+        const btnBankAcc = document.getElementById('btn-header-bank-accumulated');
+        if (btnBankAcc) btnBankAcc.style.removeProperty('display');
+        return;
+      }
+
+      const rolePerms = (this.settings && this.settings.rolePermissions) || {};
+      const perms = rolePerms[role] || {};
+
+      // 2. Calculator Visibility & Shortcuts
+      const calcPerm = perms.calculator || (role === 'accountant' ? 'hidden' : 'full');
+      const calcBtn = document.getElementById('btn-calc-menu');
+      if (calcBtn) {
+        calcBtn.style.display = (calcPerm === 'hidden') ? 'none' : '';
+      }
+
+      // 3. Daily Hisab Controls
+      const dailyPerm = perms.dailyHisab || (role === 'accountant' ? 'readonly' : 'full');
+      let roBanner = document.getElementById('readonly-auditor-banner');
+      let hiddenDailyBanner = document.getElementById('hidden-daily-hisab-banner');
+      const dailyContainer = document.getElementById('view-daily-hisab');
+      const dailyTabBtn = document.getElementById('tab-btn-daily-hisab');
+      const saveHisabBtn = document.getElementById('btn-save-hisab');
+      // History Ledger Controls
+      const histPerm = perms.historyLedger || (role === 'accountant' ? 'readonly' : 'full');
+      const btnHistory = document.getElementById('btn-history');
+      if (btnHistory) {
+        btnHistory.style.display = (histPerm === 'hidden') ? 'none' : '';
+      }
+      const btnPrintHistory = document.querySelector('button[onclick*="printHistoryStatement"]');
+      if (btnPrintHistory) {
+        btnPrintHistory.style.display = (histPerm === 'readonly' && perms.exportReports === 'hidden') ? 'none' : '';
+      }
+
+      if (roBanner) roBanner.remove();
+      if (hiddenDailyBanner) hiddenDailyBanner.remove();
+
+      const isAdminMode = (this.currentView === 'admin' || window.location.pathname.startsWith('/admin') || document.body.classList.contains('admin-mode-active'));
+      if (dailyPerm === 'hidden' || isAdminMode) {
+        if (dailyContainer) dailyContainer.style.display = 'none';
+        if (dailyTabBtn && isAdminMode) dailyTabBtn.style.display = 'none';
+        else if (dailyTabBtn) dailyTabBtn.style.display = (dailyPerm === 'hidden') ? 'none' : '';
+        if (saveHisabBtn) saveHisabBtn.style.display = 'none';
+      } else if (dailyPerm === 'readonly') {
+        if (dailyContainer) dailyContainer.style.display = '';
+        if (dailyTabBtn) dailyTabBtn.style.display = '';
+        if (saveHisabBtn) saveHisabBtn.style.display = 'none';
+      } else {
+        if (dailyContainer) dailyContainer.style.display = '';
+        if (dailyTabBtn) dailyTabBtn.style.display = '';
+        if (saveHisabBtn) saveHisabBtn.style.display = '';
+      }
+
+      // 4. Expense Ledger / Diary Controls
+      const expPerm = perms.expenseLedger || (role === 'accountant' ? 'readonly' : 'full');
+      const btnExpenseDiary = document.getElementById('btn-expense-diary');
+      const tabExpenseReport = document.getElementById('tab-btn-expense-report');
+      if (btnExpenseDiary) btnExpenseDiary.style.display = (expPerm === 'hidden') ? 'none' : '';
+      if (tabExpenseReport) tabExpenseReport.style.display = (expPerm === 'hidden') ? 'none' : '';
+
+      // 5. Staff Salary Controls
+      const staffPerm = perms.staffSalary || (role === 'user' ? 'hidden' : 'readonly');
+      const btnEmployeesMenu = document.getElementById('btn-employees-menu');
+      if (btnEmployeesMenu) btnEmployeesMenu.style.display = (staffPerm === 'hidden') ? 'none' : '';
+      const btnBulkPagar = document.getElementById('btn-bulk-salary-pagar');
+      if (btnBulkPagar) btnBulkPagar.style.display = (staffPerm === 'full') ? '' : 'none';
+
+      // 6. Uchak Controls
+      const uchakPerm = perms.uchakSubsystem || (role === 'user' ? 'hidden' : 'readonly');
+      const btnUchakMenu = document.getElementById('btn-uchak-menu');
+      const bannerUchak = document.getElementById('uchak-quick-banner-container');
+      if (btnUchakMenu) btnUchakMenu.style.display = (uchakPerm === 'hidden') ? 'none' : '';
+      if (bannerUchak) bannerUchak.style.display = (uchakPerm === 'hidden') ? 'none' : '';
+      const btnAddUchak = document.getElementById('btn-add-uchak');
+      if (btnAddUchak) btnAddUchak.style.display = (uchakPerm === 'full') ? '' : 'none';
+
+      // 7. Dues Controls
+      const duesPerm = perms.duesSubsystem || (role === 'user' ? 'hidden' : 'readonly');
+      const btnDuesMenu = document.getElementById('btn-dues-menu');
+      if (btnDuesMenu) btnDuesMenu.style.display = (duesPerm === 'hidden') ? 'none' : '';
+      const btnAddDue = document.getElementById('btn-add-due');
+      if (btnAddDue) btnAddDue.style.display = (duesPerm === 'full') ? '' : 'none';
+
+      // 8. Bank Deposits Controls
+      const bankPerm = perms.bankDeposits || (role === 'accountant' ? 'hidden' : 'full');
+      const btnBankAcc = document.getElementById('btn-header-bank-accumulated');
+      if (btnBankAcc) {
+        if (bankPerm === 'hidden') {
+          btnBankAcc.style.setProperty('display', 'none', 'important');
+        } else {
+          btnBankAcc.style.removeProperty('display');
+        }
+      }
+      const btnDepositToBank = document.querySelector('button[onclick*="openBankDepositModal"]');
+      if (btnDepositToBank) btnDepositToBank.style.display = (bankPerm === 'full') ? '' : 'none';
+
+      // 9. Bhakt Deposits Controls
+      const bhaktPerm = perms.bhaktDeposits || (role === 'accountant' ? 'readonly' : 'full');
+      const btnBhaktMenu = document.getElementById('btn-bhakts-register');
+      if (btnBhaktMenu) btnBhaktMenu.style.display = (bhaktPerm === 'hidden') ? 'none' : '';
+
+      // 10. Export Reports Controls
+      const exportPerm = perms.exportReports || 'full';
+      const exportEls = document.querySelectorAll('.export-btn-container, #btn-export-excel, button[onclick*="exportToExcel"], button[onclick*="openExportModal"]');
+      exportEls.forEach(el => {
+        el.style.display = (exportPerm === 'hidden') ? 'none' : '';
+      });
+
+      // 11. Re-render records to apply readonly attributes across all input tables
+      if (typeof this.renderRecord === 'function' && this.record) {
+        this.renderRecord();
+      }
+    } catch (e) {
+      console.error('Error applying role permissions:', e);
+    }
+  },
+
+  switchPermRoleView(role) {
+    this.activePermRole = role;
+    const btnAcc = document.getElementById('perm-role-btn-accountant');
+    const btnUsr = document.getElementById('perm-role-btn-user');
+    const badge = document.getElementById('perm-current-role-badge');
+    if (role === 'accountant') {
+      if (btnAcc) { btnAcc.style.background = '#2563eb'; btnAcc.style.color = '#ffffff'; btnAcc.style.borderColor = '#2563eb'; }
+      if (btnUsr) { btnUsr.style.background = '#ffffff'; btnUsr.style.color = '#475569'; btnUsr.style.borderColor = '#cbd5e1'; }
+      if (badge) { const isEn = window.i18n && window.i18n.currentLang === 'en'; badge.textContent = isEn ? 'Currently Selected: Accountant' : 'હાલમાં પસંદ કરેલ: Accountant (હિસાબનીશ)'; badge.style.background = '#dbeafe'; badge.style.color = '#1e40af'; }
+    } else {
+      if (btnUsr) { btnUsr.style.background = '#2563eb'; btnUsr.style.color = '#ffffff'; btnUsr.style.borderColor = '#2563eb'; }
+      if (btnAcc) { btnAcc.style.background = '#ffffff'; btnAcc.style.color = '#475569'; btnAcc.style.borderColor = '#cbd5e1'; }
+      if (badge) { const isEn = window.i18n && window.i18n.currentLang === 'en'; badge.textContent = isEn ? 'Currently Selected: Counter Staff' : 'હાલમાં પસંદ કરેલ: Counter Staff (કાઉન્ટર સ્ટાફ)'; badge.style.background = '#e0e7ff'; badge.style.color = '#3730a3'; }
+    }
+    this.renderPermissionsMatrix();
+  },
+
+  openRolePermissionsModal() {
+    this.activePermRole = 'accountant';
+    this.openModal('modal-role-permissions', { isChild: true });
+    this.loadRolePermissions();
+  },
+
+  closeRolePermissionsModal() {
+    this.closeModal('modal-role-permissions');
+  },
+
+  async loadRolePermissions() {
+    try {
+      const res = await fetch('/api/admin/permissions', {
+        headers: this.getAdminAuthHeaders()
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.rolePermissions) {
+        if (!this.settings) this.settings = {};
+        this.settings.rolePermissions = data.rolePermissions;
+      }
+    } catch (err) {
+      console.warn('Could not fetch role permissions:', err);
+    }
+    this.renderPermissionsMatrix();
+  },
+
+  renderPermissionsMatrix() {
+    const container = document.getElementById('permissions-matrix-container');
+    if (!container) return;
+
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    const role = this.activePermRole || 'accountant';
+    const rolePerms = (this.settings && this.settings.rolePermissions) || {};
+    const currentRolePerms = rolePerms[role] || {};
+
+    let html = '';
+    for (const feat of this.permFeatures) {
+      const val = currentRolePerms[feat.key] || (role === 'accountant' ? 'readonly' : 'full');
+      html += `
+        <div style="border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; background: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+          <div style="display: flex; align-items: flex-start; gap: 10px;">
+            <span style="font-size: 1.4rem; line-height: 1;">${feat.icon}</span>
+            <div>
+              <div style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">${isEn ? (feat.labelEn || feat.label) : feat.label}</div>
+              <div style="font-size: 0.78rem; color: #64748b; margin-top: 2px;">${isEn ? (feat.descEn || feat.desc) : feat.desc}</div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 8px;">
+            <button type="button" onclick="App.setFeaturePerm('${feat.key}', 'full')"
+              style="flex: 1; padding: 6px 4px; font-size: 0.78rem; font-weight: 800; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s; ${val === 'full' ? 'background: #16a34a; color: #ffffff; box-shadow: 0 2px 4px rgba(22,163,74,0.3);' : 'background: transparent; color: #475569;'}">
+              🟢 ${isEn ? 'Full' : 'પૂર્ણ'}
+            </button>
+            <button type="button" onclick="App.setFeaturePerm('${feat.key}', 'readonly')"
+              style="flex: 1; padding: 6px 4px; font-size: 0.78rem; font-weight: 800; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s; ${val === 'readonly' ? 'background: #d97706; color: #ffffff; box-shadow: 0 2px 4px rgba(217,119,6,0.3);' : 'background: transparent; color: #475569;'}">
+              🟡 ${isEn ? 'Read-Only' : 'વાંચવા'}
+            </button>
+            <button type="button" onclick="App.setFeaturePerm('${feat.key}', 'hidden')"
+              style="flex: 1; padding: 6px 4px; font-size: 0.78rem; font-weight: 800; border-radius: 6px; border: none; cursor: pointer; transition: all 0.15s; ${val === 'hidden' ? 'background: #dc2626; color: #ffffff; box-shadow: 0 2px 4px rgba(220,38,38,0.3);' : 'background: transparent; color: #475569;'}">
+              🔴 ${isEn ? 'Hidden' : 'છુપાવો'}
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    container.innerHTML = html;
+  },
+
+  setFeaturePerm(featureKey, mode) {
+    if (!this.settings) this.settings = {};
+    if (!this.settings.rolePermissions) this.settings.rolePermissions = {};
+    const role = this.activePermRole || 'accountant';
+    if (!this.settings.rolePermissions[role]) this.settings.rolePermissions[role] = {};
+    this.settings.rolePermissions[role][featureKey] = mode;
+    this.renderPermissionsMatrix();
+  },
+
+  async saveRolePermissionsFromUI() {
+    const isEn = window.i18n && window.i18n.currentLang === 'en';
+    try {
+      const perms = (this.settings && this.settings.rolePermissions) || {};
+      const res = await fetch('/api/admin/permissions', {
+        method: 'POST',
+        headers: {
+          ...this.getAdminAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rolePermissions: perms })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        this.showToast(isEn ? 'Role permissions updated successfully!' : 'રોલ અને ફીચર પરમિશન સફળતાપૂર્વક સાચવવામાં આવી!', 'success');
+        this.applyRolePermissions();
+        this.closeRolePermissionsModal();
+      } else {
+        this.showToast(data.error || (isEn ? 'Error saving permissions' : 'પરમિશન સાચવવામાં ભૂલ થઈ'), 'error');
+      }
+    } catch (err) {
+      console.error('Error saving permissions:', err);
+      this.showToast(isEn ? 'Server connection error' : 'સર્વર કનેક્શનમાં ભૂલ આવી', 'error');
     }
   },
 
@@ -3779,6 +4244,175 @@ const App = {
     }
   },
 
+  
+  // =========================================================================
+  // USER PROFILE & SELF-SERVICE PASSWORD CHANGE
+  // =========================================================================
+  togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (!input) return;
+    if (input.type === 'password') {
+      input.type = 'text';
+      if (icon) icon.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      if (icon) icon.textContent = '👁️';
+    }
+  },
+
+  toggleLogoProfileDropdown(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const dropdown = document.getElementById('logo-profile-dropdown');
+    if (!dropdown) return;
+    const isShown = dropdown.classList.contains('show');
+    if (isShown) {
+      this.closeLogoProfileDropdown();
+    } else {
+      this.closeHeaderMenu();
+      this.renderLogoProfileDropdownInfo();
+      dropdown.classList.add('show');
+    }
+  },
+
+  closeLogoProfileDropdown() {
+    const dropdown = document.getElementById('logo-profile-dropdown');
+    if (dropdown) dropdown.classList.remove('show');
+  },
+
+  renderLogoProfileDropdownInfo() {
+    let u = null;
+    try {
+      u = JSON.parse(localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info') || '{}');
+    } catch (e) {}
+
+    const nameEl = document.getElementById('logo-drop-name');
+    const userEl = document.getElementById('logo-drop-username');
+    const emailEl = document.getElementById('logo-drop-email');
+    const roleBadgeEl = document.getElementById('logo-drop-role-badge');
+    const avatarEl = document.getElementById('logo-drop-avatar');
+
+    const roleName = u && u.role ? (u.role === 'admin' ? '🛡️ Admin' : (u.role === 'accountant' ? '💼 Accountant' : '👤 User')) : '👤 User';
+    const roleAvatar = u && u.role ? (u.role === 'admin' ? '🛡️' : (u.role === 'accountant' ? '💼' : '👤')) : '👤';
+
+    if (nameEl) nameEl.textContent = (u && u.name) || 'User';
+    if (userEl) userEl.textContent = (u && u.username) || '-';
+    if (emailEl) emailEl.textContent = (u && u.email) || 'ઈમેલ સેટ કરેલ નથી';
+    if (roleBadgeEl) roleBadgeEl.textContent = roleName;
+    if (avatarEl) avatarEl.textContent = roleAvatar;
+  },
+
+  openChangePasswordModal() {
+    this.closeLogoProfileDropdown();
+    const oldP = document.getElementById('profile-old-password');
+    const newP = document.getElementById('profile-new-password');
+    const confP = document.getElementById('profile-confirm-password');
+    if (oldP) { oldP.value = ''; oldP.type = 'password'; }
+    if (newP) { newP.value = ''; newP.type = 'password'; }
+    if (confP) { confP.value = ''; confP.type = 'password'; }
+
+    ['profile-old-pwd-icon', 'profile-new-pwd-icon', 'profile-confirm-pwd-icon'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '👁️';
+    });
+
+    this.openModal('modal-change-password');
+  },
+
+  async submitChangePassword(event) {
+    if (event) event.preventDefault();
+    const oldPassword = (document.getElementById('profile-old-password') ? document.getElementById('profile-old-password').value : '').trim();
+    const newPassword = (document.getElementById('profile-new-password') ? document.getElementById('profile-new-password').value : '').trim();
+    const confirmPassword = (document.getElementById('profile-confirm-password') ? document.getElementById('profile-confirm-password').value : '').trim();
+
+    if (!oldPassword) {
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Please enter current password.' : 'કૃપા કરીને હાલનો (જૂનો) પાસવર્ડ દાખલ કરો.', 'error');
+      document.getElementById('profile-old-password')?.focus();
+      return;
+    }
+    if (!newPassword) {
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Please enter new password.' : 'કૃપા કરીને નવો પાસવર્ડ દાખલ કરો.', 'error');
+      document.getElementById('profile-new-password')?.focus();
+      return;
+    }
+    if (newPassword.length < 6) {
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'New password must be at least 6 characters.' : 'નવો પાસવર્ડ ઓછામાં ઓછો 6 અક્ષરનો હોવો જોઈએ.', 'error');
+      document.getElementById('profile-new-password')?.focus();
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'New password and confirm password must match!' : 'નવો પાસવર્ડ અને કન્ફર્મ પાસવર્ડ બંને સરખા હોવા જોઈએ!', 'error');
+      document.getElementById('profile-confirm-password')?.focus();
+      return;
+    }
+    if (oldPassword === newPassword) {
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'New password must be different from current password!' : 'નવો પાસવર્ડ જૂના પાસવર્ડ કરતાં અલગ હોવો જોઈએ!', 'error');
+      document.getElementById('profile-new-password')?.focus();
+      return;
+    }
+
+    const btn = document.getElementById('btn-save-profile-password');
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '⏳ પાસવર્ડ બદલાઈ રહ્યો છે...';
+    }
+
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldPassword, newPassword })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? '✅ Password changed successfully!' : '✅ પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે!', 'success');
+        if (document.getElementById('profile-old-password')) document.getElementById('profile-old-password').value = '';
+        if (document.getElementById('profile-new-password')) document.getElementById('profile-new-password').value = '';
+        if (document.getElementById('profile-confirm-password')) document.getElementById('profile-confirm-password').value = '';
+        this.closeModal('modal-change-password');
+      } else {
+        this.showToast(data.error || 'પાસવર્ડ બદલવામાં ભૂલ આવી!', 'error');
+      }
+    } catch (err) {
+      console.error('Change password error:', err);
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Could not connect to server.' : 'સર્વર સાથે કનેક્ટ થઈ શક્યું નથી.', 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = '💾 પાસવર્ડ સાચવો (Update Password)';
+      }
+    }
+  },
+
+  renderHeaderUserInfo() {
+    try {
+      const rawUser = localStorage.getItem('hisab_user_info') || sessionStorage.getItem('hisab_user_info');
+      if (!rawUser) return;
+      const u = JSON.parse(rawUser);
+
+      const roleLabel = u.role === 'admin' ? '🛡️ Admin' : (u.role === 'accountant' ? '💼 Accountant' : '👤 User');
+
+      // Update Logo tooltip & click
+      const logoEl = document.getElementById('header-brand-logo');
+      if (logoEl) {
+        logoEl.style.cursor = 'pointer';
+        logoEl.title = `👤 મારી પ્રોફાઇલ (My Profile) - ${u.name || u.username} (${roleLabel})`;
+        logoEl.onclick = (e) => this.toggleLogoProfileDropdown(e);
+      }
+      const brandInfo = document.querySelector('.brand-info');
+      if (brandInfo) {
+        brandInfo.style.cursor = 'pointer';
+        brandInfo.title = `👤 મારી પ્રોફાઇલ (My Profile) - ${u.name || u.username} (${roleLabel})`;
+        brandInfo.onclick = (e) => this.toggleLogoProfileDropdown(e);
+      }
+    } catch (e) {
+      console.error('Error rendering header user info:', e);
+    }
+  },
+
   toggleAddUserForm(show) {
     const card = document.getElementById('admin-user-form-card');
     if (!card) return;
@@ -3791,6 +4425,10 @@ const App = {
         document.getElementById('user-form-password').required = true;
         document.getElementById('user-form-password').placeholder = 'પાસવર્ડ દાખલ કરો';
       }
+      const passInp = document.getElementById('user-form-password');
+      if (passInp) passInp.type = 'password';
+      const eyeIcon = document.getElementById('user-password-eye-icon');
+      if (eyeIcon) eyeIcon.textContent = '👁️';
       const nameInput = document.getElementById('user-form-name');
       if (nameInput) nameInput.focus();
     } else {
@@ -3798,10 +4436,30 @@ const App = {
       document.getElementById('user-form-id').value = '';
       document.getElementById('user-form-name').value = '';
       document.getElementById('user-form-username').value = '';
-      document.getElementById('user-form-password').value = '';
-      document.getElementById('user-form-phone').value = '';
+      const passInp = document.getElementById('user-form-password');
+      if (passInp) {
+        passInp.value = '';
+        passInp.type = 'password';
+      }
+      const eyeIcon = document.getElementById('user-password-eye-icon');
+      if (eyeIcon) eyeIcon.textContent = '👁️';
+      const pInp = document.getElementById('user-form-phone'); if (pInp) pInp.value = '';
+      const emInp = document.getElementById('user-form-email'); if (emInp) emInp.value = '';
       document.getElementById('user-form-role').value = 'user';
       document.getElementById('user-form-status').value = 'active';
+    }
+  },
+
+  toggleUserFormPassword() {
+    const passInput = document.getElementById('user-form-password');
+    const eyeIcon = document.getElementById('user-password-eye-icon');
+    if (!passInput) return;
+    if (passInput.type === 'password') {
+      passInput.type = 'text';
+      if (eyeIcon) eyeIcon.textContent = '🙈';
+    } else {
+      passInput.type = 'password';
+      if (eyeIcon) eyeIcon.textContent = '👁️';
     }
   },
 
@@ -3837,10 +4495,20 @@ const App = {
       return;
     }
 
-    tbody.innerHTML = users.map((u, idx) => {
-      const roleBadge = (u.role === 'accountant')
-        ? `<span style="background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.78rem;">${isEn ? '💼 Accountant' : '💼 એકાઉન્ટન્ટ'}</span>`
-        : `<span style="background: #e0e7ff; color: #3730a3; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.78rem;">${isEn ? '👤 Counter Staff' : '👤 કાઉન્ટર સ્ટાફ'}</span>`;
+    const sortedUsers = [...users].sort((a, b) => {
+      const aAdmin = (a.role === 'admin' || a.username === 'admin');
+      const bAdmin = (b.role === 'admin' || b.username === 'admin');
+      if (aAdmin && !bAdmin) return -1;
+      if (!aAdmin && bAdmin) return 1;
+      return 0;
+    });
+
+    tbody.innerHTML = sortedUsers.map((u, idx) => {
+      const roleBadge = (u.role === 'admin')
+        ? `<span style="background: #fef2f2; color: #991b1b; padding: 2px 10px; border-radius: 6px; font-weight: 800; font-size: 0.78rem; border: 1px solid #fca5a5;">🛡️ Admin</span>`
+        : (u.role === 'accountant')
+          ? `<span style="background: #fef3c7; color: #92400e; padding: 2px 10px; border-radius: 6px; font-weight: 800; font-size: 0.78rem; border: 1px solid #fde68a;">💼 Accountant</span>`
+          : `<span style="background: #e0e7ff; color: #3730a3; padding: 2px 10px; border-radius: 6px; font-weight: 800; font-size: 0.78rem; border: 1px solid #c7d2fe;">👤 User</span>`;
       
       const statusBadge = (u.status === 'inactive')
         ? `<span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.76rem;">${isEn ? '🔴 Inactive' : '🔴 નિષ્ક્રિય'}</span>`
@@ -3864,20 +4532,22 @@ const App = {
           <td style="padding: 10px 14px; font-weight: 800; color: #0f172a;">${this.escapeHtml(u.name)}</td>
           <td style="padding: 10px 14px; font-family: monospace; font-weight: 700; color: #2563eb;">${this.escapeHtml(u.username)}</td>
           <td style="padding: 10px 14px;">${roleBadge}</td>
-          <td style="padding: 10px 14px; color: #475569;">
-            ${this.escapeHtml(u.phone || '-')}
-            ${u.email ? `<div style="font-size: 0.74rem; color: #2563eb; margin-top: 2px;">✉️ ${this.escapeHtml(u.email)}</div>` : ''}
+          <td style="padding: 10px 14px; color: #1e40af; font-weight: 600;">
+            ${u.email ? `✉️ ${this.escapeHtml(u.email)}` : '-'}
           </td>
           <td style="padding: 10px 14px; font-size: 0.8rem; color: #64748b;">${lastLoginText}</td>
           <td style="padding: 10px 14px; text-align: center;">${statusBadge}</td>
           <td style="padding: 10px 14px; text-align: center;">
-            <div style="display: flex; gap: 6px; justify-content: center;">
+            <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
               <button type="button" class="btn-icon" onclick="App.editUser('${u.id}')"
                 style="padding: 4px 8px; font-size: 0.78rem; font-weight: 700; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px;"
                 title="${isEn ? 'Edit user or change password' : 'સુધારો અથવા પાસવર્ડ બદલો'}">${isEn ? '✏️ Edit' : '✏️ સુધારો'}</button>
-              <button type="button" class="btn-icon" onclick="App.deleteUser('${u.id}')"
-                style="padding: 4px 8px; font-size: 0.78rem; font-weight: 700; background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; border-radius: 6px;"
-                title="${isEn ? 'Delete User' : 'યુઝર ડિલીટ કરો'}">🗑️</button>
+              ${(u.role === 'admin' || u.username === 'admin' || u.id === 'usr_admin')
+                ? `<span style="padding: 4px 8px; font-size: 0.76rem; font-weight: 700; color: #64748b; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 6px; user-select: none;" title="${isEn ? 'Super Admin account is protected' : 'સુપર એડમિન સુરક્ષિત છે'}">🔒 ${isEn ? 'Protected' : 'સુરક્ષિત'}</span>`
+                : `<button type="button" class="btn-icon" onclick="App.deleteUser('${u.id}')"
+                    style="padding: 4px 8px; font-size: 0.78rem; font-weight: 700; background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; border-radius: 6px;"
+                    title="${isEn ? 'Delete User' : 'યુઝર ડિલીટ કરો'}">🗑️</button>`
+              }
             </div>
           </td>
         </tr>
@@ -3893,15 +4563,22 @@ const App = {
     document.getElementById('user-form-id').value = u.id;
     document.getElementById('user-form-name').value = u.name || '';
     document.getElementById('user-form-username').value = u.username || '';
-    document.getElementById('user-form-username').disabled = true; // Username immutable once created
+    document.getElementById('user-form-username').disabled = false; // Editable, checked for uniqueness on save
     const isEn = window.i18n && window.i18n.currentLang === 'en';
-    document.getElementById('user-form-password').value = '';
-    document.getElementById('user-form-password').required = false;
-    document.getElementById('user-form-password').placeholder = isEn ? 'Leave blank to keep current password' : 'પાસવર્ડ બદલવો હોય તો જ લખો';
+    const pwdInp = document.getElementById('user-form-password');
+    if (pwdInp) {
+      pwdInp.value = u.password || '';
+      pwdInp.type = 'password';
+      pwdInp.required = false;
+      pwdInp.placeholder = isEn ? 'Enter password' : 'પાસવર્ડ દાખલ કરો';
+    }
+    const eyeIcon = document.getElementById('user-password-eye-icon');
+    if (eyeIcon) eyeIcon.textContent = '👁️';
     document.getElementById('user-form-role').value = u.role || 'user';
-    document.getElementById('user-form-phone').value = u.phone || '';
     const emailInp = document.getElementById('user-form-email');
     if (emailInp) emailInp.value = u.email || '';
+    const pInp = document.getElementById('user-form-phone');
+    if (pInp) pInp.value = u.phone || '';
     document.getElementById('user-form-status').value = u.status || 'active';
     document.getElementById('user-form-title').innerHTML = isEn ? `✏️ Edit details for <strong>${u.name}</strong>` : `✏️ <strong>${u.name}</strong> ની વિગતો સુધારો`;
 
@@ -3927,7 +4604,7 @@ const App = {
       }
     } catch (err) {
       console.error('Error deleting user:', err);
-      this.showToast('સર્વર કનેક્શન એરર', 'error');
+      this.showToast(isEn ? 'Server connection error' : 'સર્વર કનેક્શન એરર', 'error');
     }
   },
 
@@ -3939,12 +4616,23 @@ const App = {
     const username = document.getElementById('user-form-username').value.trim();
     const password = document.getElementById('user-form-password').value.trim();
     const role = document.getElementById('user-form-role').value;
-    const phone = document.getElementById('user-form-phone').value.trim();
-    const email = (document.getElementById('user-form-email')?.value || '').trim();
+    const email = (document.getElementById('user-form-email')?.value || '').trim().toLowerCase();
     const status = document.getElementById('user-form-status').value;
+    const isEn = (window.i18n && window.i18n.currentLang === 'en');
 
     if (!name) {
-      this.showToast('કૃપા કરીને પૂરું નામ લખો!', 'error');
+      this.showToast(isEn ? 'Please enter full name!' : 'કૃપા કરીને પૂરું નામ લખો!', 'error');
+      return;
+    }
+
+    if (!email) {
+      this.showToast(isEn ? 'Email ID is required!' : 'કૃપા કરીને ઈમેલ એડ્રેસ લખો!', 'error');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      this.showToast(isEn ? 'Please enter a valid email address!' : 'કૃપા કરીને માન્ય ઈમેલ એડ્રેસ દાખલ કરો!', 'error');
       return;
     }
 
@@ -3952,22 +4640,26 @@ const App = {
       let res, data;
       if (id) {
         // Edit existing user
+        if (!username) {
+          this.showToast(isEn ? 'Username is required!' : 'કૃપા કરીને યુઝરનેમ દાખલ કરો!', 'error');
+          return;
+        }
         res = await fetch(`/api/users/${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, password, role, phone, email, status })
+          body: JSON.stringify({ name, username, password, role, email, status })
         });
         data = await res.json();
       } else {
         // Add new user
         if (!username || !password) {
-          this.showToast('યુઝરનેમ અને પાસવર્ડ ફરજિયાત છે!', 'error');
+          this.showToast(isEn ? 'Username and password are required!' : 'યુઝરનેમ અને પાસવર્ડ ફરજિયાત છે!', 'error');
           return;
         }
         res = await fetch('/api/users', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, username, password, role, phone, email })
+          body: JSON.stringify({ name, username, password, role, email })
         });
         data = await res.json();
       }
@@ -4030,11 +4722,11 @@ const App = {
         ? `<span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.76rem;">${isEn ? '🟢 Success' : '🟢 સફળ'}</span>`
         : `<span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 6px; font-weight: 800; font-size: 0.76rem;">${isEn ? '🔴 Failed' : '🔴 નિષ્ફળ'}</span>`;
 
-      const roleBadge = (item.role === 'accountant')
-        ? `<span style="background: #fef3c7; color: #92400e; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.74rem;">${isEn ? 'Accountant' : 'એકાઉન્ટન્ટ'}</span>`
-        : (item.role === 'admin')
-        ? `<span style="background: #fee2e2; color: #991b1b; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.74rem;">${isEn ? 'Admin' : 'એડમિન'}</span>`
-        : `<span style="background: #e0e7ff; color: #3730a3; padding: 1px 6px; border-radius: 4px; font-weight: 700; font-size: 0.74rem;">${isEn ? 'Counter Staff' : 'કાઉન્ટર સ્ટાફ'}</span>`;
+      const roleBadge = (item.role === 'admin')
+        ? `<span style="background: #fee2e2; color: #991b1b; padding: 1px 8px; border-radius: 4px; font-weight: 800; font-size: 0.74rem;">🛡️ Admin</span>`
+        : (item.role === 'accountant')
+          ? `<span style="background: #fef3c7; color: #92400e; padding: 1px 8px; border-radius: 4px; font-weight: 800; font-size: 0.74rem;">💼 Accountant</span>`
+          : `<span style="background: #e0e7ff; color: #3730a3; padding: 1px 8px; border-radius: 4px; font-weight: 800; font-size: 0.74rem;">👤 User</span>`;
 
       return `
         <tr style="border-bottom: 1px solid #f1f5f9;">
@@ -4473,12 +5165,12 @@ const App = {
     const status = document.getElementById('admin-bhakt-status').value || 'active';
 
     if (!name) {
-      this.showToast('કૃપા કરીને ભક્તનું પૂરું નામ લખો', 'error');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Please enter devotee full name' : 'કૃપા કરીને ભક્તનું પૂરું નામ લખો', 'error');
       document.getElementById('admin-bhakt-name').focus();
       return;
     }
     if (isNaN(dailyAmount) || dailyAmount <= 0) {
-      this.showToast('કૃપા કરીને સાચી રોજીંદી રકમ (દા.ત. ૧૫ અથવા ૧૦૦) લખો', 'error');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Please enter valid daily amount' : 'કૃપા કરીને સાચી રોજીંદી રકમ (દા.ત. ૧૫ અથવા ૧૦૦) લખો', 'error');
       document.getElementById('admin-bhakt-rate').focus();
       return;
     }
@@ -4539,7 +5231,7 @@ const App = {
         this.showToast((data && data.error) || 'સ્ટેટસ બદલવામાં ભૂલ આવી', 'error');
       }
     } catch (e) {
-      this.showToast('સ્ટેટસ બદલવામાં ભૂલ આવી', 'error');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Failed to change status' : 'સ્ટેટસ બદલવામાં ભૂલ આવી', 'error');
     }
   },
 
@@ -4563,7 +5255,7 @@ const App = {
         this.showToast((data && data.error) || 'કાઢી નાખવામાં ભૂલ આવી', 'error');
       }
     } catch (e) {
-      this.showToast('કાઢી નાખવામાં ભૂલ આવી', 'error');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Failed to remove devotee' : 'કાઢી નાખવામાં ભૂલ આવી', 'error');
     }
   },
 
@@ -5499,7 +6191,7 @@ const App = {
       targetItem = this.adminMasterRecord.expenseItems.find(x => x.id === id);
     }
     if (!targetItem) {
-      this.showToast('ખર્ચ એન્ટ્રી મળી નથી', 'error');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Expense item not found' : 'ખર્ચ એન્ટ્રી મળી નથી', 'error');
       return;
     }
 
@@ -5544,11 +6236,11 @@ const App = {
     const source = document.getElementById('edit-exp-source').value;
 
     if (!title) {
-      this.showToast('ખર્ચ વિગત લખો', 'error');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Please enter expense description' : 'ખર્ચ વિગત લખો', 'error');
       return;
     }
     if (newAmt <= 0) {
-      this.showToast('સાચી રકમ લખો', 'error');
+      const isEn = window.i18n && window.i18n.currentLang === 'en'; this.showToast(isEn ? 'Please enter valid amount' : 'સાચી રકમ લખો', 'error');
       return;
     }
 
@@ -5918,6 +6610,10 @@ const App = {
   },
 
   async openExpenseDiaryModal(preselectedCategory = null) {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('expenseLedger', 'visible')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ખર્ચ ડાયરીની પરમિશન નથી (Access Denied).', 'error');
+      return;
+    }
     await this.flushPendingSave();
     if (!this.record) return;
     if (!Array.isArray(this.record.expenseItems)) {
@@ -5967,8 +6663,8 @@ const App = {
     // Populate employees dropdown
     this.populateExpenseEmployeeDropdown();
 
-    // Clear form inputs
-    const isLocked = this.isCurrentDateLocked();
+    // Clear form inputs & lock down if readonly
+    const isLocked = this.isCurrentDateLocked() || (this.hasFeatureAccess && !this.hasFeatureAccess('expenseLedger', 'full'));
     const titleInp = document.getElementById('expense-input-title');
     const amtInp = document.getElementById('expense-input-amount');
     const remInp = document.getElementById('expense-input-remark');
@@ -5983,7 +6679,7 @@ const App = {
       addBtn.disabled = isLocked;
       addBtn.style.opacity = isLocked ? '0.5' : '1';
       addBtn.style.cursor = isLocked ? 'not-allowed' : 'pointer';
-      addBtn.title = isLocked ? '' : 'આ ખર્ચ હિસાબમાં ઉમેરો';
+      addBtn.title = isLocked ? 'આ આઈડી માટે ખર્ચ ઉમેરવાની પરમિશન નથી' : 'આ ખર્ચ હિસાબમાં ઉમેરો';
     }
 
     this.onExpenseCategoryChange();
@@ -6265,7 +6961,8 @@ const App = {
   },
 
   addExpenseFromDiary() {
-    if (this.isCurrentDateLocked()) {
+    if (this.isCurrentDateLocked() || (this.hasFeatureAccess && !this.hasFeatureAccess('expenseLedger', 'full'))) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ખર્ચ ઉમેરવાની પરમિશન નથી.', 'error');
       return;
     }
     const titleInp = document.getElementById('expense-input-title');
@@ -6422,8 +7119,8 @@ const App = {
 
   async removeExpenseItem(id) {
     const isEn = window.i18n && window.i18n.currentLang === 'en';
-    if (this.isCurrentDateLocked()) {
-      this.showToast(isEn ? 'This date is locked!' : 'આ તારીખ લોક થયેલ છે!', 'error');
+    if (this.isCurrentDateLocked() || (this.hasFeatureAccess && !this.hasFeatureAccess('expenseLedger', 'full'))) {
+      this.showToast(isEn ? 'Access denied! No permission to delete expenses.' : 'ઍક્સેસ નકારવામાં આવ્યો! ખર્ચ ડિલીટ કરવાની પરમિશન નથી.', 'error');
       return;
     }
     if (!this.record || !Array.isArray(this.record.expenseItems)) return;
@@ -6982,6 +7679,22 @@ const App = {
     printWin.document.open();
     printWin.document.write(htmlContent);
     printWin.document.close();
+
+    const trigger = () => {
+      try {
+        printWin.focus();
+        printWin.print();
+      } catch (err) {
+        console.warn('Print trigger fallback:', err);
+      }
+    };
+
+    if (printWin.document.readyState === 'complete') {
+      setTimeout(trigger, 40);
+    } else {
+      printWin.onload = () => setTimeout(trigger, 40);
+      setTimeout(trigger, 180); // Fast safety fallback
+    }
   },
 
   generateDateWiseExpensePrintHtml({ title, subtitle, items = [], categoryTotals = null, grandTotal = null, fromDate = null, toDate = null, includeAllDates = false }) {
@@ -7366,11 +8079,11 @@ const App = {
         ${dateSectionsHtml}
 
         <script>
-          window.addEventListener('load', function() {
-            setTimeout(function() {
-              window.print();
-            }, 350);
-          });
+          if (document.readyState === 'complete') {
+            window.focus(); window.print();
+          } else {
+            window.addEventListener('DOMContentLoaded', () => { window.focus(); window.print(); });
+          }
         </script>
       </body>
       </html>
@@ -7408,24 +8121,36 @@ const App = {
     this.applyOffsetsToCSS();
   },
 
-  // Trigger Print (Exact Excel Size & Position)
+  // Trigger Print (Exact Excel Size & Position) - Instant & Optimized
   triggerPrint() {
     this.populateExactExcelPrintDOM();
     this.applyOffsetsToCSS();
+
+    const curDate = this.currentDate;
+    const topOff = this.printTopOffset;
+    const leftOff = this.printLeftOffset;
+    const cssTag = document.querySelector('link[href*="print.css"]')?.outerHTML || '';
+    const exactSheet = document.getElementById('excel-exact-sheet');
+    const printHtml = exactSheet ? exactSheet.innerHTML : '';
+
+    // Trigger browser print immediately
     setTimeout(() => {
       window.print();
-    }, 60);
+    }, 20);
 
-    // Auto save report copy to disk mimicking VBA
-    const printHtml = document.getElementById('excel-exact-sheet').innerHTML;
-    fetch('/api/save-report', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        date: this.currentDate,
-        htmlContent: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>HISAB ${this.currentDate}</title><style>${document.querySelector('link[href*="print.css"]').outerHTML}</style></head><body><div id="excel-exact-sheet" style="display:block; position:absolute; top:${this.printTopOffset}mm; left:${this.printLeftOffset}mm;">${printHtml}</div></body></html>`
-      })
-    }).catch(e => console.log('Disk report auto-save err:', e));
+    // Save report copy to disk in background after print dialog to prevent thread contention
+    setTimeout(() => {
+      if (printHtml) {
+        fetch('/api/save-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            date: curDate,
+            htmlContent: `<!DOCTYPE html><html><head><meta charset="utf-8"><title>HISAB ${curDate}</title><style>${cssTag}</style></head><body><div id="excel-exact-sheet" style="display:block; position:absolute; top:${topOff}mm; left:${leftOff}mm;">${printHtml}</div></body></html>`
+          })
+        }).catch(e => console.log('Disk report auto-save err:', e));
+      }
+    }, 1200);
   },
 
   // WhatsApp Share
@@ -7743,6 +8468,11 @@ const App = {
 
   // History Modal
   async openHistoryModal() {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('historyLedger', 'visible')) {
+      const isEn = window.i18n && window.i18n.currentLang === 'en';
+      this.showToast(isEn ? 'Access to History Ledger is restricted' : 'પાછલો હિસાબ (ઇતિહાસ) જોવાનો અધિકાર નથી', 'error');
+      return;
+    }
     await this.flushPendingSave();
     this.openModal('modal-history');
 
@@ -8418,9 +9148,11 @@ const App = {
         </div>
 
         <script>
-          window.addEventListener('load', () => {
-            setTimeout(() => { window.print(); }, 300);
-          });
+          if (document.readyState === 'complete') {
+            window.focus(); window.print();
+          } else {
+            window.addEventListener('DOMContentLoaded', () => { window.focus(); window.print(); });
+          }
         </script>
       </body>
       </html>
@@ -8466,6 +9198,22 @@ const App = {
         if (d.success) this.showToast(isEn ? `Folder opened: ${d.folder}` : `ફોલ્ડર ખોલવામાં આવ્યું: ${d.folder}`);
       })
       .catch(e => console.warn('Could not open folder', e));
+  },
+
+  // =========================================================================
+  // MOBILE SECTION SWITCHING (CASH / BANK / VOUCHER TABS)
+  // =========================================================================
+  currentMobileSection: 'cash',
+  switchMobileSection(sectionName) {
+    this.currentMobileSection = sectionName;
+    const grid = document.querySelector('.hisab-grid');
+    if (grid) {
+      grid.setAttribute('data-active-section', sectionName);
+    }
+    const btns = document.querySelectorAll('.mobile-sec-btn');
+    btns.forEach(b => b.classList.remove('active'));
+    const activeBtn = document.getElementById(`mob-sec-${sectionName}`);
+    if (activeBtn) activeBtn.classList.add('active');
   },
 
   // =========================================================================
@@ -8529,17 +9277,19 @@ const App = {
       const allLabel = (i18n.currentLang === 'en') ? '🔍 All Categories' : '🔍 બધા ખાતાઓ';
       catSelect.innerHTML = `<option value="all">${allLabel}</option>`;
       const allCategories = new Set();
-      (this.fixedVouchers || []).forEach(v => allCategories.add(v));
+      (this.fixedVouchers || []).forEach(v => allCategories.add(this.getKhataNameInGujarati(v)));
       if (this.record && Array.isArray(this.record.vouchers)) {
         this.record.vouchers.forEach(v => {
-          if (v && v.name) allCategories.add(v.name);
+          if (v && v.name) allCategories.add(this.getKhataNameInGujarati(v.name));
         });
       }
       allCategories.forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = `🧾 ${this.getKhataNameInGujarati(cat)}`;
-        catSelect.appendChild(opt);
+        if (![...catSelect.options].some(o => o.value === cat)) {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = `🧾 ${cat}`;
+          catSelect.appendChild(opt);
+        }
       });
       if ([...catSelect.options].some(o => o.value === prevVal)) {
         catSelect.value = prevVal;
@@ -8691,6 +9441,12 @@ const App = {
           card.onclick = () => {
             const catSel = document.getElementById('exp-filter-category');
             if (catSel) {
+              if (![...catSel.options].some(o => o.value === catName)) {
+                const opt = document.createElement('option');
+                opt.value = catName;
+                opt.textContent = `🧾 ${catName}`;
+                catSel.appendChild(opt);
+              }
               catSel.value = catName;
               this.applyExpenseFilter();
             }
@@ -8929,6 +9685,10 @@ const App = {
   },
 
   async openEmployeesModal(month = null) {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('staffSalary', 'visible')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે કર્મચારી હિસાબની પરમિશન નથી (Access Denied).', 'error');
+      return;
+    }
     if (window.i18n) window.i18n.updateDOM();
     this.openModal('modal-employees');
 
@@ -9101,6 +9861,8 @@ const App = {
 
     const q = (filterQuery || '').toLowerCase().trim();
     let list = (this.employeesList || []).filter(e => {
+      // Inactive staff should NOT be shown in the daily staff directory
+      if (e.status === 'inactive') return false;
       if (!q) return true;
       return (e.name || '').toLowerCase().includes(q) ||
         (e.role || '').toLowerCase().includes(q) ||
@@ -9193,10 +9955,15 @@ const App = {
         }
       }
 
-      // Checkbox logic: Bank employees cannot be selected for daily cash voucher payout
-      const checkboxHtml = isBank
+      const isInactive = (emp.status === 'inactive');
+      const inactiveBadge = isInactive
+        ? `<span style="font-size: 0.68rem; background: #fee2e2; color: #991b1b; font-weight: 800; padding: 1px 6px; border-radius: 4px; border: 1px solid #fca5a5;">🚫 ${isEn ? 'Inactive' : 'બંધ'}</span>`
+        : '';
+
+      // Checkbox logic: Bank employees & Inactive employees cannot be selected for daily cash voucher payout
+      const checkboxHtml = (isBank || isInactive)
         ? `<input type="checkbox" class="emp-row-check" data-id="${emp.id}" disabled
-            title="${isEn ? 'Bank staff salary is display only (not added to voucher)' : 'બેંક સ્ટાફનો પગાર માત્ર શો થાય છે (વાઉચરમાં એડ થતો નથી)'}" 
+            title="${isInactive ? (isEn ? 'Inactive employee cannot be selected' : 'ઇનએક્ટિવ કર્મચારી પસંદ થઈ શકે નહીં') : (isEn ? 'Bank staff salary is display only (not added to voucher)' : 'બેંક સ્ટાફનો પગાર માત્ર શો થાય છે (વાઉચરમાં એડ થતો નથી)')}" 
             style="width: 16px; height: 16px; cursor: not-allowed; opacity: 0.35;">`
         : `<input type="checkbox" class="emp-row-check" data-id="${emp.id}" 
             ${isSelected ? 'checked' : ''} 
@@ -9204,25 +9971,36 @@ const App = {
             onchange="App.toggleEmployeeSelection('${emp.id}', this.checked)" 
             style="width: 16px; height: 16px; cursor: ${balance <= 0 ? 'not-allowed' : 'pointer'};">`;
 
-      // Action buttons: Bank staff ONLY have Upad (which adds to UPAD voucher) & Ledger; NO Pagar button
-      const actionButtons = isBank ? `
-        <button class="emp-btn-upad-mini" onclick="App.openQuickUpadModal('${emp.id}')" title="${isEn ? 'Give Cash Advance (adds to Upad voucher)' : 'રોકડ ઉપાડ આપો (ઉપાડ વાઉચરમાં એડ થશે)'}">
-          <span>💸</span> <span>${isEn ? 'Advance' : 'ઉપાડ'}</span>
-        </button>
-        <button class="emp-btn-ledger-mini" onclick="App.openEmployeeLedger('${emp.id}')" title="${isEn ? 'View Ledger' : 'ખાતાવહી જુઓ'}">
-          <span>📋</span> <span>${isEn ? 'Ledger' : 'ખાતાવહી'}</span>
-        </button>
-      ` : `
-        <button class="emp-btn-pagar-mini" onclick="App.openQuickPagarModal('${emp.id}')" title="${isEn ? 'Pay Salary & add to expense' : 'પગાર ચૂકવો અને ખર્ચમાં ચડાવો'}">
-          <span>💵</span> <span>${isEn ? 'Salary' : 'પગાર'}</span>
-        </button>
-        <button class="emp-btn-upad-mini" onclick="App.openQuickUpadModal('${emp.id}')" title="${isEn ? 'Give Advance' : 'ઉપાડ આપો'}">
-          <span>💸</span> <span>${isEn ? 'Advance' : 'ઉપાડ'}</span>
-        </button>
-        <button class="emp-btn-ledger-mini" onclick="App.openEmployeeLedger('${emp.id}')" title="${isEn ? 'View Ledger' : 'ખાતાવહી જુઓ'}">
-          <span>📋</span> <span>${isEn ? 'Ledger' : 'ખાતાવહી'}</span>
-        </button>
-      `;
+      // Action buttons: Inactive has ledger only; Bank has upad & ledger; Active cash has all
+      let actionButtons = '';
+      if (isInactive) {
+        actionButtons = `
+          <button class="emp-btn-ledger-mini" onclick="App.openEmployeeLedger('${emp.id}')" title="${isEn ? 'View Ledger' : 'ખાતાવહી જુઓ'}">
+            <span>📋</span> <span>${isEn ? 'Ledger' : 'ખાતાવહી'}</span>
+          </button>
+        `;
+      } else if (isBank) {
+        actionButtons = `
+          <button class="emp-btn-upad-mini" onclick="App.openQuickUpadModal('${emp.id}')" title="${isEn ? 'Give Cash Advance (adds to Upad voucher)' : 'રોકડ ઉપાડ આપો (ઉપાડ વાઉચરમાં એડ થશે)'}">
+            <span>💸</span> <span>${isEn ? 'Advance' : 'ઉપાડ'}</span>
+          </button>
+          <button class="emp-btn-ledger-mini" onclick="App.openEmployeeLedger('${emp.id}')" title="${isEn ? 'View Ledger' : 'ખાતાવહી જુઓ'}">
+            <span>📋</span> <span>${isEn ? 'Ledger' : 'ખાતાવહી'}</span>
+          </button>
+        `;
+      } else {
+        actionButtons = `
+          <button class="emp-btn-pagar-mini" onclick="App.openQuickPagarModal('${emp.id}')" title="${isEn ? 'Pay Salary & add to expense' : 'પગાર ચૂકવો અને ખર્ચમાં ચડાવો'}">
+            <span>💵</span> <span>${isEn ? 'Salary' : 'પગાર'}</span>
+          </button>
+          <button class="emp-btn-upad-mini" onclick="App.openQuickUpadModal('${emp.id}')" title="${isEn ? 'Give Advance' : 'ઉપાડ આપો'}">
+            <span>💸</span> <span>${isEn ? 'Advance' : 'ઉપાડ'}</span>
+          </button>
+          <button class="emp-btn-ledger-mini" onclick="App.openEmployeeLedger('${emp.id}')" title="${isEn ? 'View Ledger' : 'ખાતાવહી જુઓ'}">
+            <span>📋</span> <span>${isEn ? 'Ledger' : 'ખાતાવહી'}</span>
+          </button>
+        `;
+      }
 
       const tr = document.createElement('tr');
       tr.className = 'emp-compact-row';
@@ -9232,9 +10010,10 @@ const App = {
         </td>
         <td style="text-align: center; font-weight: 600; color: var(--text-muted); font-size: 0.82rem;">${idx + 1}</td>
         <td>
-          <div style="font-weight: 700; color: var(--text-main); font-size: 0.90rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+          <div style="font-weight: 700; color: ${isInactive ? '#94a3b8' : 'var(--text-main)'}; font-size: 0.90rem; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
             <span>${emp.name}</span>
             ${modeBadge}
+            ${inactiveBadge}
           </div>
         </td>
         <td style="text-align: right; font-family: var(--font-heading); font-weight: 700; font-size: 0.92rem; color: var(--text-main);">
@@ -9262,6 +10041,31 @@ const App = {
       tbody.appendChild(tr);
     });
 
+    // Dynamic footer recalculation based on currently visible/filtered rows
+    const visibleSalary = list.reduce((s, e) => s + (e.status === 'inactive' ? 0 : (Number(e.salary) || 0)), 0);
+    const visibleOpening = list.reduce((s, e) => s + (Number(e.openingBalance) || 0), 0);
+    const visibleUpad = list.reduce((s, e) => s + (Number(e.currentMonthUpad) || 0), 0);
+    const visiblePaid = list.reduce((s, e) => s + (Number(e.currentMonthPagarPaid) || 0), 0);
+    const visibleBal = list.reduce((s, e) => {
+      if (e.paymentMode === 'bank' || e.status === 'inactive') return s;
+      return s + (Number(e.netBalance) > 0 ? Number(e.netBalance) : 0);
+    }, 0);
+
+    const footSalary = document.getElementById('emp-foot-total-salary');
+    const footOpening = document.getElementById('emp-foot-total-opening');
+    const footUpad = document.getElementById('emp-foot-total-upad');
+    const footPaid = document.getElementById('emp-foot-total-paid');
+    const footBal = document.getElementById('emp-foot-total-balance');
+
+    if (footSalary) footSalary.textContent = '₹ ' + visibleSalary.toLocaleString('en-IN');
+    if (footOpening) {
+      footOpening.textContent = (visibleOpening >= 0 ? '+₹ ' : '-₹ ') + Math.abs(visibleOpening).toLocaleString('en-IN');
+      footOpening.style.color = visibleOpening >= 0 ? '#4338ca' : '#ea580c';
+    }
+    if (footUpad) footUpad.textContent = '₹ ' + visibleUpad.toLocaleString('en-IN');
+    if (footPaid) footPaid.textContent = '₹ ' + visiblePaid.toLocaleString('en-IN');
+    if (footBal) footBal.textContent = '₹ ' + visibleBal.toLocaleString('en-IN');
+
     this.updateSelectedStaffUI();
   },
 
@@ -9271,9 +10075,10 @@ const App = {
 
     if (checked) {
       (this.employeesList || []).forEach(emp => {
-        // Bank staff cannot be selected for daily cash salary voucher
+        // Bank staff and inactive staff cannot be selected for daily cash salary voucher
         const isBank = (emp.paymentMode === 'bank');
-        if (!isBank && Number(emp.netBalance) > 0) {
+        const isInactive = (emp.status === 'inactive');
+        if (!isBank && !isInactive && Number(emp.netBalance) > 0) {
           this.selectedStaffIds.add(emp.id);
         }
       });
@@ -9310,8 +10115,8 @@ const App = {
       }
     });
 
-    // Only cash staff are eligible for daily cash salary voucher
-    const eligibleStaff = (this.employeesList || []).filter(e => (e.paymentMode !== 'bank') && Number(e.netBalance) > 0);
+    // Only active cash staff are eligible for daily cash salary voucher
+    const eligibleStaff = (this.employeesList || []).filter(e => (e.paymentMode !== 'bank') && e.status !== 'inactive' && Number(e.netBalance) > 0);
     const eligibleCount = eligibleStaff.length;
 
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
@@ -9365,8 +10170,8 @@ const App = {
     let targets = [];
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
     if (payAll) {
-      // Exclude bank staff from cash voucher payout
-      targets = (this.employeesList || []).filter(e => (e.paymentMode !== 'bank') && Number(e.netBalance) > 0);
+      // Exclude bank staff AND inactive staff from cash voucher payout
+      targets = (this.employeesList || []).filter(e => (e.paymentMode !== 'bank') && e.status !== 'inactive' && Number(e.netBalance) > 0);
       if (targets.length === 0) {
         this.showToast(isEn ? `All eligible cash employees' salary for ${monthLabel} has been paid (no balance remaining).` : `${monthLabel} માસનો બધા રોકડ કર્મચારીઓનો પગાર ચૂકવાઈ ગયેલ છે (કોઈ બાકી નથી).`, 'info');
         return;
@@ -9376,7 +10181,7 @@ const App = {
         this.showToast(isEn ? 'Please select staff to pay salary first.' : 'કૃપા કરીને પહેલા પગાર ચૂકવવા માટે સ્ટાફ પસંદ કરો.', 'warning');
         return;
       }
-      targets = (this.employeesList || []).filter(e => (e.paymentMode !== 'bank') && this.selectedStaffIds.has(e.id) && Number(e.netBalance) > 0);
+      targets = (this.employeesList || []).filter(e => (e.paymentMode !== 'bank') && e.status !== 'inactive' && this.selectedStaffIds.has(e.id) && Number(e.netBalance) > 0);
       if (targets.length === 0) {
         return;
       }
@@ -9415,11 +10220,18 @@ const App = {
         const tr = document.createElement('tr');
         const roleText = emp.role || (isEn ? 'Staff' : 'સ્ટાફ');
         const salaryText = isEn ? 'Monthly Salary' : 'માસિક પગાર';
+        const detailParts = [`${roleText} | ${salaryText}: ₹${(emp.salary || 0).toLocaleString('en-IN')}`];
+        if (emp.openingBalance) {
+          detailParts.push(`${isEn ? 'Prev Due' : 'અગાઉની બાકી'}: ${emp.openingBalance >= 0 ? '+' : '-'}₹${Math.abs(emp.openingBalance).toLocaleString('en-IN')}`);
+        }
+        if (emp.currentMonthPagarPaid) {
+          detailParts.push(`${isEn ? 'Paid' : 'ચૂકવેલ'}: ₹${emp.currentMonthPagarPaid.toLocaleString('en-IN')}`);
+        }
         tr.innerHTML = `
           <td style="text-align: center; font-weight: 700; color: var(--text-muted);">${i + 1}</td>
           <td>
             <div style="font-weight: 700; color: var(--text-main); font-size: 0.92rem;">${emp.name}</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">${roleText} | ${salaryText}: ₹${(emp.salary || 0).toLocaleString('en-IN')}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">${detailParts.join(' | ')}</div>
           </td>
           <td style="text-align: right; color: #b91c1c; font-weight: 700;">₹ ${(emp.currentMonthUpad || 0).toLocaleString('en-IN')}</td>
           <td style="text-align: right; font-weight: 800; color: #059669; font-size: 1.05rem; font-family: var(--font-heading);">
@@ -9463,15 +10275,20 @@ const App = {
 
     const items = this.pendingBulkStaff.map(emp => {
       const is15 = emp.paymentType === '15days';
+      const remarkDetails = [];
+      remarkDetails.push(`પગાર: ₹${emp.salary}`);
+      if (emp.openingBalance) remarkDetails.push(`અગાઉની બાકી: ${emp.openingBalance >= 0 ? '+' : '-'}₹${Math.abs(emp.openingBalance)}`);
+      if (emp.currentMonthUpad) remarkDetails.push(`ઉપાડ કપાત: -₹${emp.currentMonthUpad}`);
+      if (emp.currentMonthPagarPaid) remarkDetails.push(`અગાઉ ચૂકવેલ: -₹${emp.currentMonthPagarPaid}`);
+      remarkDetails.push(`ચોખ્ખો ચૂકવ્યો: ₹${emp.netBalance}`);
+
       return {
         id: emp.id,
         amount: Number(emp.netBalance),
         title: is15
           ? (isEn ? `${emp.name} - 15-Day Salary` : `${emp.name} - ૧૫ દિવસનો પગાર`)
           : (isEn ? `${emp.name} - ${monthLabel} Salary` : `${emp.name} - ${monthLabel} માસનો પગાર`),
-        remarks: is15
-          ? (isEn ? `15-Day Salary: ₹${emp.salary}, Advance Deduction: ₹${emp.currentMonthUpad || 0}` : `૧૫ દિવસીય પગાર: ₹${emp.salary}, ઉપાડ કપાત: ₹${emp.currentMonthUpad || 0}`)
-          : (isEn ? `Monthly Salary: ₹${emp.salary}, ${monthLabel} Advance Deduction: ₹${emp.currentMonthUpad || 0}` : `માસિક પગાર: ₹${emp.salary}, ${monthLabel} ઉપાડ કપાત: ₹${emp.currentMonthUpad || 0}`)
+        remarks: remarkDetails.join(' | ')
       };
     });
 
@@ -9554,6 +10371,10 @@ const App = {
 
   async saveEmployeeForm() {
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('staffSalary', 'full')) {
+      this.showToast(isEn ? 'Read-only Mode: Access Denied for Staff Salary!' : 'ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે સ્ટાફ પગાર ફક્ત વાંચવા માટે (Read-Only) છે.', 'error');
+      return;
+    }
     const id = document.getElementById('emp-form-id').value;
     const name = document.getElementById('emp-form-name').value.trim();
     const role = document.getElementById('emp-form-role').value.trim();
@@ -9573,11 +10394,20 @@ const App = {
     }
 
     try {
+      const rawUser = localStorage.getItem('hisab_user_info');
+      const u = rawUser ? JSON.parse(rawUser) : null;
+      const token = this.authToken || localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
       const url = id ? `/api/employees/${id}` : '/api/employees';
       const method = id ? 'PUT' : 'POST';
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          ...(u && u.id ? { 'x-user-id': u.id } : {}),
+          ...(u && u.username ? { 'x-user-username': u.username } : {}),
+          ...(u && u.role ? { 'x-user-role': u.role } : {})
+        },
         body: JSON.stringify({ name, role, salary, phone, joiningDate })
       });
       const data = await res.json();
@@ -9742,6 +10572,10 @@ const App = {
   },
 
   openQuickUpadModal(id) {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('staffSalary', 'full')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે કર્મચારી ઉપાડ આપવાની પરમિશન નથી.', 'error');
+      return;
+    }
     const emp = (this.employeesList || []).find(e => e.id === id);
     if (!emp) return;
 
@@ -9903,6 +10737,10 @@ const App = {
   },
 
   openQuickPagarModal(id) {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('staffSalary', 'full')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે કર્મચારી પગાર ચૂકવવાની પરમિશન નથી.', 'error');
+      return;
+    }
     const emp = (this.employeesList || []).find(e => e.id === id);
     if (!emp) return;
 
@@ -10862,11 +11700,11 @@ const App = {
         </div>
 
         <script>
-          window.addEventListener('load', () => {
-            setTimeout(() => {
-              window.print();
-            }, 300);
-          });
+          if (document.readyState === 'complete') {
+            window.focus(); window.print();
+          } else {
+            window.addEventListener('DOMContentLoaded', () => { window.focus(); window.print(); });
+          }
         </script>
       </body>
       </html>
@@ -10904,6 +11742,10 @@ const App = {
   },
 
   async toggleQuickUchak(forceState = null) {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'visible')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ઉચક હિસાબની પરમિશન નથી (Access Denied).', 'error');
+      return;
+    }
     const modal = document.getElementById('modal-quick-uchak');
     if (!modal) return;
 
@@ -10911,6 +11753,10 @@ const App = {
     const shouldOpen = forceState !== null ? forceState : !isOpen;
 
     if (shouldOpen) {
+      if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'full')) {
+        this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે નવો ઉચક આપવાની પરમિશન નથી (Read-Only Mode).', 'error');
+        return;
+      }
       this.openModal('modal-quick-uchak', { isChild: true });
 
       if (window.i18n) {
@@ -11147,6 +11993,10 @@ const App = {
 
   async submitFastUchak(e) {
     e.preventDefault();
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'full')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ઉચક નોંધ કરવાની પરમિશન નથી.', 'error');
+      return;
+    }
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
     const date = document.getElementById('fast-uchak-date').value;
     const time = document.getElementById('fast-uchak-time').value;
@@ -11403,6 +12253,10 @@ const App = {
   },
 
   async openUchakModal() {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'visible')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ઉચક હિસાબની પરમિશન નથી (Access Denied).', 'error');
+      return;
+    }
     if (window.i18n) window.i18n.updateDOM();
     await this.loadUchakRecords();
     this.renderUchakKPIs();
@@ -11415,6 +12269,10 @@ const App = {
   },
 
   openNewUchakModal() {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'full')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે નવો ઉચક ઉમેરવાની પરમિશન નથી.', 'error');
+      return;
+    }
     this.closeModal('modal-uchak');
     this.toggleQuickUchak(true);
   },
@@ -11473,6 +12331,10 @@ const App = {
 
   async submitNewUchak(e) {
     e.preventDefault();
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'full')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ઉચક નોંધ કરવાની પરમિશન નથી.', 'error');
+      return;
+    }
     const date = document.getElementById('uchak-input-date').value;
     const time = document.getElementById('uchak-input-time').value;
     const personName = document.getElementById('uchak-input-name').value;
@@ -11790,6 +12652,10 @@ const App = {
   },
 
   openSettleModal(uchakId) {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'full')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ઉચક પતાવટ કરવાની પરમિશન નથી.', 'error');
+      return;
+    }
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
     const item = (this.uchakList || []).find(x => x.id === uchakId);
     if (!item) {
@@ -12041,8 +12907,12 @@ const App = {
 
   async submitUchakSettlement(e) {
     e.preventDefault();
-    const id = document.getElementById('settle-uchak-id').value;
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'full')) {
+      this.showToast(isEn ? 'Read-only Mode: Access Denied for Uchak!' : 'ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ઉચક ફક્ત વાંચવા માટે (Read-Only) છે.', 'error');
+      return;
+    }
+    const id = document.getElementById('settle-uchak-id').value;
     const settledDate = document.getElementById('settle-input-date')?.value || this.getTodayDateStr();
     const today = this.getTodayDateStr();
     if (settledDate < today) {
@@ -12186,6 +13056,10 @@ const App = {
   },
 
   async unsettleUchak(id) {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'full')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ઉચક પતાવટ રદ કરવાની પરમિશન નથી.', 'error');
+      return;
+    }
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
     const item = (this.uchakList || []).find(x => x.id === id);
 
@@ -12211,6 +13085,10 @@ const App = {
   },
 
   async deleteUchak(id) {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('uchakSubsystem', 'full')) {
+      this.showToast('ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ઉચક ડિલીટ કરવાની પરમિશન નથી.', 'error');
+      return;
+    }
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
     try {
       const res = await fetch(`/api/uchak/${id}`, { method: 'DELETE' });
@@ -12232,6 +13110,9 @@ const App = {
   },
 
   async openBankAccumulatedModal() {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('bankDeposits', 'visible')) {
+      return;
+    }
     await this.flushPendingSave();
     await this.loadBankDepositSummary();
     if (window.i18n) window.i18n.updateDOM();
@@ -12241,6 +13122,12 @@ const App = {
   // Bank Cash Deposit & Rolling Day-by-Day Accumulator Summary
   async loadBankDepositSummary() {
     try {
+      if (this.hasFeatureAccess && !this.hasFeatureAccess('bankDeposits', 'visible')) {
+        const btnBankAcc = document.getElementById('btn-header-bank-accumulated');
+        if (btnBankAcc) btnBankAcc.style.setProperty('display', 'none', 'important');
+        return;
+      }
+
       const res = await fetch(`/api/bank-deposits?date=${this.currentDate}`);
       const data = await res.json();
       if (!data) return;
@@ -12362,6 +13249,9 @@ const App = {
   },
 
   openBankDepositModal() {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('bankDeposits', 'full')) {
+      return;
+    }
     const summary = (this.bankDepositData && this.bankDepositData.unbankedSummary) || {};
     const availableBanks = (this.bankDepositData && this.bankDepositData.availableBanks) || this.activeBanks || ['IOB TRF', 'BOB TRF ', 'SBI TRF'];
 
@@ -12393,6 +13283,9 @@ const App = {
 
   async saveBankDeposit(e) {
     e.preventDefault();
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('bankDeposits', 'full')) {
+      return;
+    }
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
     const summary = (this.bankDepositData && this.bankDepositData.unbankedSummary) || {};
 
@@ -12410,9 +13303,18 @@ const App = {
     }
 
     try {
+      const rawUser = localStorage.getItem('hisab_user_info');
+      const u = rawUser ? JSON.parse(rawUser) : null;
+      const token = this.authToken || localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
       const res = await fetch('/api/bank-deposits', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          ...(u && u.id ? { 'x-user-id': u.id } : {}),
+          ...(u && u.username ? { 'x-user-username': u.username } : {}),
+          ...(u && u.role ? { 'x-user-role': u.role } : {})
+        },
         body: JSON.stringify({
           depositDate,
           bankName,
@@ -12734,6 +13636,7 @@ const App = {
       'modal-employee-quick-upad',
       'modal-employee-quick-pagar',
       'modal-bulk-pagar-confirm',
+      'modal-role-permissions',
     ];
 
     const isExplicitChild = isChild || childModalIds.includes(modalId);
@@ -12786,11 +13689,6 @@ const App = {
   },
 
   showToast(msg, type = 'info') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-
     let text = msg;
     if (typeof msg === 'object' && msg !== null) {
       const lang = (window.i18n && window.i18n.currentLang) || 'gu';
@@ -12799,6 +13697,26 @@ const App = {
       text = window.i18n.t(msg);
     }
 
+    const strText = String(text || '');
+    if (
+      strText.includes('પરમિશન નથી') ||
+      strText.includes('પરવાનગી નથી') ||
+      strText.includes('ઍક્સેસ નકારવામાં આવ્યો') ||
+      strText.includes('Access Denied') ||
+      strText.includes('Access denied') ||
+      strText.includes('ફક્ત વાંચવા માટે') ||
+      strText.includes('Read-only Mode') ||
+      strText.includes('Read-Only Mode') ||
+      strText.includes('Read-only mode') ||
+      strText.includes('પ્રતિબંધિત')
+    ) {
+      return; // Do not show any toast or notification for permission restrictions
+    }
+
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
     toast.textContent = text;
     container.appendChild(toast);
     setTimeout(() => {
@@ -13236,6 +14154,11 @@ const App = {
   },
 
   openBhaktDepositModal(id) {
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('bhaktDeposits', 'full')) {
+      const isEn = (window.i18n && window.i18n.currentLang === 'en');
+      this.showToast(isEn ? 'Read-only Mode: Access Denied for Bhakt Deposits!' : 'ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ભક્ત અનામત ફક્ત વાંચવા માટે (Read-Only) છે.', 'warning');
+      return;
+    }
     const bhakt = (this.bhaktsList || []).find(b => b.id === id);
     if (!bhakt) return;
     this.activeBhaktForDeposit = bhakt;
@@ -13636,6 +14559,10 @@ const App = {
 
   async submitBhaktDeposit(e) {
     e.preventDefault();
+    if (this.hasFeatureAccess && !this.hasFeatureAccess('bhaktDeposits', 'full')) {
+      const isEn = (window.i18n && window.i18n.currentLang === 'en');
+      return this.showToast(isEn ? 'Read-only Mode: Access Denied for Bhakt Deposits!' : 'ઍક્સેસ નકારવામાં આવ્યો! આ આઈડી માટે ભક્ત અનામત ફક્ત વાંચવા માટે (Read-Only) છે.', 'error');
+    }
     const bhaktId = document.getElementById('bhakt-deposit-bhakt-id').value;
     const date = document.getElementById('bhakt-dep-date').value;
     const periodStart = document.getElementById('bhakt-dep-period-start').value;
@@ -13655,9 +14582,18 @@ const App = {
     }
 
     try {
+      const rawUser = localStorage.getItem('hisab_user_info');
+      const u = rawUser ? JSON.parse(rawUser) : null;
+      const token = this.authToken || localStorage.getItem('hisab_auth_token') || sessionStorage.getItem('hisab_auth_token');
       const res = await fetch(`/api/bhakts/${bhaktId}/deposit`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          ...(u && u.id ? { 'x-user-id': u.id } : {}),
+          ...(u && u.username ? { 'x-user-username': u.username } : {}),
+          ...(u && u.role ? { 'x-user-role': u.role } : {})
+        },
         body: JSON.stringify({
           date,
           periodStart,
@@ -13805,8 +14741,11 @@ const App = {
     if (!slip) return;
     const isEn = (window.i18n && window.i18n.currentLang === 'en');
 
-    const printWin = window.open('', '', 'width=600,height=700');
+    const printWin = window.open('', '_blank', 'width=600,height=700');
+    if (!printWin) return;
+    printWin.document.open();
     printWin.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
           <title>${isEn ? 'Donation Receipt Print' : 'પહોંચ પ્રિન્ટ'}</title>
@@ -13815,14 +14754,17 @@ const App = {
           </style>
         </head>
         <body>
-          \${slip.outerHTML}
-          <script>
-            window.onload = function() { window.print(); window.close(); }
-          </script>
+          ${slip.outerHTML}
         </body>
       </html>
     `);
     printWin.document.close();
+    printWin.focus();
+    setTimeout(() => {
+      try {
+        printWin.print();
+      } catch (e) {}
+    }, 40);
   },
 
   shareBhaktReceiptWhatsApp() {

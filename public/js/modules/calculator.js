@@ -11,6 +11,11 @@ window.AppCalculatorModule = {
   calcDragInitialized: false,
 
   toggleCalculator(forceState) {
+    if (window.App && typeof window.App.hasFeatureAccess === 'function') {
+      if (!window.App.hasFeatureAccess('calculator')) {
+        return;
+      }
+    }
     const el = document.getElementById('floating-calc-widget');
     if (!el) return;
     const shouldShow = (typeof forceState === 'boolean') ? forceState : (el.style.display === 'none' || !el.style.display);
