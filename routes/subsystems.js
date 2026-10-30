@@ -781,6 +781,13 @@ const GUJ_TO_ENG_KHATA_MAP = {
 function getEnglishKhataNameServer(name) {
   if (!name) return '';
   const trimmed = String(name).trim();
+  try {
+    const s = getSettings();
+    if (s && s.customKhataMap) {
+      if (s.customKhataMap[trimmed]) return s.customKhataMap[trimmed];
+      if (s.customKhataMap[trimmed.toUpperCase()]) return s.customKhataMap[trimmed.toUpperCase()];
+    }
+  } catch (e) {}
   if (GUJ_TO_ENG_KHATA_MAP[trimmed]) return GUJ_TO_ENG_KHATA_MAP[trimmed];
   return trimmed.toUpperCase();
 }

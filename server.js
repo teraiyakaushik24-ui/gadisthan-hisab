@@ -459,6 +459,13 @@ function getGujaratiKhataName(name) {
   if (!name) return '';
   const trimmed = String(name).trim();
   const upper = trimmed.toUpperCase();
+  try {
+    const s = getSettings();
+    if (s && s.customKhataMap) {
+      if (s.customKhataMap[upper]) return s.customKhataMap[upper];
+      if (s.customKhataMap[trimmed]) return s.customKhataMap[trimmed];
+    }
+  } catch (e) {}
   if (KHATA_GUJARATI_MAP[upper]) return KHATA_GUJARATI_MAP[upper];
   return trimmed;
 }

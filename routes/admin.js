@@ -646,6 +646,13 @@ module.exports = function registerAdminRoutes(app, deps) {
       found = true;
     }
 
+    if (req.body.nameGu && req.body.nameEn) {
+      if (!settings.customKhataMap) settings.customKhataMap = {};
+      const gu = String(req.body.nameGu).trim();
+      const en = String(req.body.nameEn).trim().toUpperCase();
+      settings.customKhataMap[gu] = en;
+      settings.customKhataMap[en] = gu;
+    }
     if (found) {
       saveSettings(settings);
       logAdminActivity(
@@ -1171,7 +1178,10 @@ module.exports = function registerAdminRoutes(app, deps) {
       defaultBanks: cleanBanks.length > 0 ? cleanBanks : ['IOB TRF', 'BOB TRF ', 'SBI TRF'],
       inactiveBanks: cleanInactiveBanks,
       defaultVouchers: cleanVouchers.length > 0 ? cleanVouchers : ['MANDIRKHARCH', 'RASODAKHARCH', 'PAGAR'],
-      inactiveVouchers: cleanInactiveVouchers
+      inactiveVouchers: cleanInactiveVouchers,
+      customKhataMap: (req.body.customKhataMap && typeof req.body.customKhataMap === 'object')
+        ? { ...(current.customKhataMap || {}), ...req.body.customKhataMap }
+        : (current.customKhataMap || {})
     };
 
     if (orgName !== undefined) updatedSettings.orgName = String(orgName).trim();

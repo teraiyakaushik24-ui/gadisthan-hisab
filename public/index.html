@@ -1154,17 +1154,30 @@
                   style="padding: 2px 8px; font-size: 0.82rem; font-weight: 700; color: #64748b;"
                   title="બંધ કરો">✕</button>
               </div>
-              <div class="admin-input-group"
-                style="margin-top: 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                <input type="text" id="admin-input-new-voucher" class="input-text auto-gujarati"
-                  placeholder="વાઉચર / ખર્ચનું નામ લખો..." data-i18n-ph="adminVoucherInputPh"
-                  oninput="App.onAdminVoucherInput(this.value)"
-                  onkeydown="if(event.key==='Enter') App.adminAddVoucher()" style="flex: 1; min-width: 250px;">
-                <div id="admin-voucher-auto-eng-container" style="display: none;">
-                  <span id="admin-voucher-auto-eng-preview">-</span>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 8px;">
+                <div>
+                  <label for="admin-input-new-voucher-gu" style="display: flex; align-items: center; gap: 6px; font-size: 0.84rem; font-weight: 700; color: #4338ca; margin-bottom: 4px;">
+                    <span>🇮🇳</span> <span>ગુજરાતી નામ (Gujarati Name) *</span>
+                  </label>
+                  <input type="text" id="admin-input-new-voucher-gu" class="input-text auto-gujarati"
+                    placeholder="દા.ત. ગૌશાળા ખર્ચ, લાઈટ બિલ..."
+                    oninput="App.onAdminVoucherGuInput(this.value)"
+                    onkeydown="if(event.key==='Enter') document.getElementById('admin-input-new-voucher-en').focus()"
+                    style="width: 100%; box-sizing: border-box; font-weight: 700;">
                 </div>
-                <button class="btn-primary" onclick="App.adminAddVoucher()"
-                  style="background: linear-gradient(135deg, #6366f1, #4f46e5); font-weight: 800; padding: 7px 18px; white-space: nowrap;">
+                <div>
+                  <label for="admin-input-new-voucher-en" style="display: flex; align-items: center; gap: 6px; font-size: 0.84rem; font-weight: 700; color: #4338ca; margin-bottom: 4px;">
+                    <span>🔤</span> <span>English Name (પ્રિન્ટ / એક્સપોર્ટ માટે) *</span>
+                  </label>
+                  <input type="text" id="admin-input-new-voucher-en" class="input-text"
+                    placeholder="e.g. GAUSHALA KHARCH, LIGHT BILL..."
+                    onkeydown="if(event.key==='Enter') App.adminAddVoucher()"
+                    style="width: 100%; box-sizing: border-box; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">
+                </div>
+              </div>
+              <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+                <button type="button" class="btn-primary" onclick="App.adminAddVoucher()"
+                  style="background: linear-gradient(135deg, #6366f1, #4f46e5); font-weight: 800; padding: 8px 22px; white-space: nowrap;">
                   <span>➕</span> <span data-i18n="adminVoucherAddBtn">વાઉચર ઉમેરો</span>
                 </button>
               </div>
@@ -1945,12 +1958,30 @@
             <input type="text" id="admin-rename-old-disp" class="input-text" disabled
               style="background: #f1f5f9; color: #64748b; font-weight: 700;">
           </div>
-          <div style="margin-bottom: 20px;">
+          <div id="admin-rename-single-wrap" style="margin-bottom: 20px;">
             <label for="admin-rename-new-input"
               style="font-size: 0.85rem; font-weight: 700; color: #0f172a; display: block; margin-bottom: 4px;"
               data-i18n="adminRenameNewLbl">નવું નામ *:</label>
             <input type="text" id="admin-rename-new-input" class="input-text auto-gujarati"
-              placeholder="નવું નામ લખો..." data-i18n-ph="adminRenameNewPh" required autofocus>
+              placeholder="નવું નામ લખો..." data-i18n-ph="adminRenameNewPh">
+          </div>
+          <div id="admin-rename-dual-wrap" style="display: none; margin-bottom: 20px;">
+            <div style="margin-bottom: 12px;">
+              <label for="admin-rename-new-gu"
+                style="font-size: 0.85rem; font-weight: 700; color: #4338ca; display: block; margin-bottom: 4px;">
+                🇮🇳 ગુજરાતી નામ (Gujarati Name) *:
+              </label>
+              <input type="text" id="admin-rename-new-gu" class="input-text auto-gujarati"
+                placeholder="ગુજરાતી નામ લખો..." style="width: 100%; box-sizing: border-box; font-weight: 700;">
+            </div>
+            <div>
+              <label for="admin-rename-new-en"
+                style="font-size: 0.85rem; font-weight: 700; color: #4338ca; display: block; margin-bottom: 4px;">
+                🔤 English Name (પ્રિન્ટ / એક્સપોર્ટ માટે) *:
+              </label>
+              <input type="text" id="admin-rename-new-en" class="input-text"
+                placeholder="English name..." style="width: 100%; box-sizing: border-box; text-transform: uppercase; font-weight: 700;">
+            </div>
           </div>
           <div style="display: flex; justify-content: flex-end; gap: 10px;">
             <button type="button" class="btn-icon" onclick="App.closeModal('modal-admin-rename')" data-i18n="cancel">રદ
@@ -4953,7 +4984,7 @@
     <script src="js/gujaratiTyping.js?v=20261030_default_en_v1"></script>
     <script src="js/modules/calculator.js?v=20261028_clean_roles_v6"></script>
     <script src="js/modules/dues.js?v=20261028_clean_roles_v6"></script>
-    <script src="js/app.js?v=20261029_perm_fix_v1"></script>
+    <script src="js/app.js?v=20261030_dual_vouchers_v2"></script>
 </body>
 
 </html>

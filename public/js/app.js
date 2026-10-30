@@ -2684,7 +2684,7 @@ const App = {
     if (text) text.textContent = shouldOpen ? (isEn ? 'Close' : 'બંધ કરો') : (isEn ? 'Add Voucher' : 'નવું વાઉચર ઉમેરો');
     if (shouldOpen) {
       setTimeout(() => {
-        const inp = document.getElementById('admin-input-new-voucher');
+        const inp = document.getElementById('admin-input-new-voucher-gu') || document.getElementById('admin-input-new-voucher');
         if (inp) inp.focus();
       }, 50);
     }
@@ -3192,21 +3192,35 @@ const App = {
       ? (isEn ? '🏦 Rename Bank Account' : '🏦 બેંક ખાતાનું નામ સુધારો')
       : (isEn ? '🧾 Rename Voucher / Expense' : '🧾 વાઉચર / ખર્ચનું નામ સુધારો');
 
+    const singleWrap = document.getElementById('admin-rename-single-wrap');
+    const dualWrap = document.getElementById('admin-rename-dual-wrap');
+    const newGuInp = document.getElementById('admin-rename-new-gu');
+    const newEnInp = document.getElementById('admin-rename-new-en');
+
     if (type === 'voucher') {
-      newInp.classList.add('auto-gujarati');
-      newInp.style.textTransform = 'none';
-      newInp.placeholder = isEn
-        ? 'Enter new voucher name (e.g. Light Bill, Repairs, Stationery)...'
-        : 'વાઉચરનું નવું નામ લખો (દા.ત. લાઈટ બિલ, રીપેરીંગ, સ્ટેશનરી)...';
-      if (!isEn && window.GujaratiTyping) window.GujaratiTyping.attach(newInp);
+      if (singleWrap) singleWrap.style.display = 'none';
+      if (dualWrap) dualWrap.style.display = 'block';
+      const gujOld = this.getKhataNameInGujarati(oldName);
+      const engOld = this.getEnglishKhataName(oldName);
+      if (newGuInp) {
+        newGuInp.value = gujOld || oldName;
+        if (!isEn && window.GujaratiTyping) window.GujaratiTyping.attach(newGuInp);
+      }
+      if (newEnInp) {
+        newEnInp.value = (engOld || oldName).toUpperCase();
+      }
+      this.openModal('modal-admin-rename', { isChild: true });
+      setTimeout(() => { if (newGuInp) { newGuInp.focus(); newGuInp.select(); } }, 100);
+      return;
     } else {
+      if (singleWrap) singleWrap.style.display = 'block';
+      if (dualWrap) dualWrap.style.display = 'none';
       newInp.classList.remove('auto-gujarati');
       newInp.style.textTransform = 'uppercase';
       newInp.placeholder = 'Enter new bank name in English (e.g. SBI, HDFC)...';
+      this.openModal('modal-admin-rename', { isChild: true });
+      setTimeout(() => { newInp.focus(); newInp.select(); }, 100);
     }
-
-    this.openModal('modal-admin-rename', { isChild: true });
-    setTimeout(() => { newInp.focus(); newInp.select(); }, 100);
   },
 
   async submitAdminRename(e) {
@@ -3214,9 +3228,30 @@ const App = {
     const isEn = window.i18n && window.i18n.currentLang === 'en';
     const type = document.getElementById('admin-rename-type').value;
     const oldName = document.getElementById('admin-rename-old').value;
-    let newName = document.getElementById('admin-rename-new-input').value.trim();
-    if (type === 'bank') {
-      newName = newName.toUpperCase();
+    let newName = '';
+    let nameGu = '';
+    let nameEn = '';
+
+    if (type === 'voucher') {
+      nameGu = (document.getElementById('admin-rename-new-gu')?.value || '').trim();
+      nameEn = (document.getElementById('admin-rename-new-en')?.value || '').trim().toUpperCase();
+      if (!nameGu && !nameEn) {
+        this.showToast(isEn ? 'Enter voucher name' : 'વાઉચરનું નામ લખો', 'error');
+        return;
+      }
+      if (!nameGu) nameGu = this.getKhataNameInGujarati(nameEn) || nameEn;
+      if (!nameEn) nameEn = (this.getEnglishKhataName(nameGu) || nameGu).toUpperCase();
+      newName = nameGu;
+
+      if (!this.settings) this.settings = {};
+      if (!this.settings.customKhataMap) this.settings.customKhataMap = {};
+      this.settings.customKhataMap[nameGu] = nameEn;
+      this.settings.customKhataMap[nameEn] = nameGu;
+    } else {
+      newName = document.getElementById('admin-rename-new-input').value.trim();
+      if (type === 'bank') {
+        newName = newName.toUpperCase();
+      }
     }
 
     if (!newName) {
@@ -3233,7 +3268,7 @@ const App = {
       const res = await fetch(url, {
         method: 'POST',
         headers: this.getAdminAuthHeaders(),
-        body: JSON.stringify({ oldName, newName })
+        body: JSON.stringify({ oldName, newName, nameGu: type === 'voucher' ? nameGu : undefined, nameEn: type === 'voucher' ? nameEn : undefined })
       });
       const data = await res.json();
       if (this.handleAdminAuthError(res, data)) return;
@@ -5423,60 +5458,95 @@ const App = {
     }
   },
 
-  // Voucher Admin Actions
+  onAdminVoucherGuInput(val) {
+    const enInp = document.getElementById('admin-input-new-voucher-en');
+    if (!enInp) return;
+    const trimmed = (val || '').trim();
+    if (!trimmed) {
+      if (enInp.dataset.autofilled === 'true') {
+        enInp.value = '';
+      }
+      return;
+    }
+    if (!enInp.value || enInp.dataset.autofilled === 'true') {
+      const eng = this.getEnglishKhataName(trimmed);
+      if (eng && eng !== trimmed) {
+        enInp.value = eng.toUpperCase();
+        enInp.dataset.autofilled = 'true';
+      }
+    }
+  },
+
+  // Voucher Admin Actions with 2 Boxes (Gujarati & English)
   async adminAddVoucher(presetName = null) {
     const isEn = window.i18n && window.i18n.currentLang === 'en';
-    const inp = document.getElementById('admin-input-new-voucher');
-    let name = (presetName || (inp ? inp.value : '')).trim();
-    if (!name) {
+    const inpGu = document.getElementById('admin-input-new-voucher-gu');
+    const inpEn = document.getElementById('admin-input-new-voucher-en');
+    const oldInp = document.getElementById('admin-input-new-voucher');
+
+    let guName = (inpGu ? inpGu.value : (oldInp ? oldInp.value : '')).trim();
+    let engName = (inpEn ? inpEn.value : '').trim().toUpperCase();
+
+    if (presetName) {
+      guName = this.getKhataNameInGujarati(presetName) || presetName;
+      engName = (this.getEnglishKhataName(presetName) || presetName).toUpperCase();
+    }
+
+    if (!guName && !engName) {
       this.showToast(isEn ? 'Please enter voucher / expense name' : 'કૃપા કરીને વાઉચર / ખર્ચનું નામ લખો', 'error');
+      if (inpGu) inpGu.focus();
       return;
     }
 
-    const gujName = this.getKhataNameInGujarati(name);
-    const engName = this.getEnglishKhataName(name);
-    const storeKey = engName || name;
+    if (!guName) guName = this.getKhataNameInGujarati(engName) || engName;
+    if (!engName) engName = (this.getEnglishKhataName(guName) || guName).toUpperCase();
+
+    const storeKey = guName;
 
     // Check if in active list
     const existsActive = (this.adminData.vouchers || []).some(v =>
       v.trim().toUpperCase() === storeKey.toUpperCase() ||
-      v.trim().toUpperCase() === name.toUpperCase() ||
-      this.getKhataNameInGujarati(v).trim().toUpperCase() === gujName.toUpperCase()
+      v.trim().toUpperCase() === engName.toUpperCase() ||
+      this.getKhataNameInGujarati(v).trim().toUpperCase() === guName.toUpperCase()
     );
     if (existsActive) {
-      this.showToast(isEn ? `Voucher "${gujName} (${storeKey})" is already active!` : `"${gujName} (${storeKey})" વાઉચર પહેલાંથી સક્રિય છે!`, 'warning');
+      this.showToast(isEn ? `Voucher "${guName} (${engName})" is already active!` : `"${guName} (${engName})" વાઉચર પહેલાંથી સક્રિય છે!`, 'warning');
       return;
     }
 
     // Check if in inactive list - if so, offer to reactivate
     const inactiveMatch = (this.adminData.inactiveVouchers || []).find(v =>
       v.trim().toUpperCase() === storeKey.toUpperCase() ||
-      v.trim().toUpperCase() === name.toUpperCase() ||
-      this.getKhataNameInGujarati(v).trim().toUpperCase() === gujName.toUpperCase()
+      v.trim().toUpperCase() === engName.toUpperCase() ||
+      this.getKhataNameInGujarati(v).trim().toUpperCase() === guName.toUpperCase()
     );
     if (inactiveMatch) {
       const doReactivate = confirm(isEn
-        ? `Voucher "${gujName} (${inactiveMatch})" is currently Inactive. Do you want to activate it?`
-        : `"${gujName} (${inactiveMatch})" વાઉચર હાલમાં નિષ્ક્રિય છે. શું તમે તેને ફરી સક્રિય (ચાલુ) કરવા માંગો છો?`);
+        ? `Voucher "${guName} (${engName})" is currently Inactive. Do you want to activate it?`
+        : `"${guName} (${engName})" વાઉચર હાલમાં નિષ્ક્રિય છે. શું તમે તેને ફરી સક્રિય (ચાલુ) કરવા માંગો છો?`);
       if (doReactivate) {
-        if (inp) {
-          inp.value = '';
-          this.onAdminVoucherInput('');
-        }
+        if (inpGu) inpGu.value = '';
+        if (inpEn) { inpEn.value = ''; delete inpEn.dataset.autofilled; }
         await this.adminToggleVoucherStatus(inactiveMatch, true);
       }
       return;
     }
 
+    // Save mapping into customKhataMap
+    if (!this.settings) this.settings = {};
+    if (!this.settings.customKhataMap) this.settings.customKhataMap = {};
+    this.settings.customKhataMap[guName] = engName;
+    this.settings.customKhataMap[engName] = guName;
+
     this.adminData.vouchers.push(storeKey);
-    if (inp) {
-      inp.value = '';
-      this.onAdminVoucherInput('');
-    }
+    if (inpGu) inpGu.value = '';
+    if (inpEn) { inpEn.value = ''; delete inpEn.dataset.autofilled; }
+    if (oldInp) oldInp.value = '';
+
     this.renderAdminLists();
     await this.adminSaveAndApply();
     this.toggleAdminVoucherAddForm(false);
-    this.showToast(isEn ? `🧾 Voucher ${gujName} (${storeKey}) added successfully` : `🧾 ${gujName} (${storeKey}) વાઉચર સફળતાપૂર્વક ઉમેરાઈ ગયું`, 'success');
+    this.showToast(isEn ? `🧾 Voucher ${guName} (${engName}) added successfully` : `🧾 ${guName} (${engName}) વાઉચર સફળતાપૂર્વક ઉમેરાઈ ગયું`, 'success');
   },
 
   async adminToggleVoucherStatus(name, active) {
@@ -5575,6 +5645,7 @@ const App = {
       inactiveBanks: this.adminData.inactiveBanks || [],
       vouchers: this.adminData.vouchers,
       inactiveVouchers: this.adminData.inactiveVouchers || [],
+      customKhataMap: this.settings?.customKhataMap || {},
       orgName: (document.getElementById('admin-setting-org-name')?.value || this.settings.orgName || 'Gadisthan Jetpur').trim(),
       orgSubtitle: (document.getElementById('admin-setting-org-sub')?.value || this.settings.orgSubtitle || '').trim(),
       phone: (document.getElementById('admin-setting-phone')?.value || this.settings.phone || '').trim(),
@@ -7332,6 +7403,11 @@ const App = {
     const trimmed = String(khataName).trim();
     const upper = trimmed.toUpperCase();
 
+    if (this.settings && this.settings.customKhataMap) {
+      if (this.settings.customKhataMap[upper]) return this.settings.customKhataMap[upper];
+      if (this.settings.customKhataMap[trimmed]) return this.settings.customKhataMap[trimmed];
+    }
+
     const khataMap = {
       'MANDIRKHARCH': 'મંદિર ખર્ચ',
       'MANDIR KHARCH': 'મંદિર ખર્ચ',
@@ -7409,6 +7485,11 @@ const App = {
     if (!khataName) return '';
     const trimmed = String(khataName).trim();
     const upper = trimmed.toUpperCase();
+
+    if (this.settings && this.settings.customKhataMap) {
+      if (this.settings.customKhataMap[trimmed]) return this.settings.customKhataMap[trimmed];
+      if (this.settings.customKhataMap[upper]) return this.settings.customKhataMap[upper];
+    }
 
     // 1. Direct Comprehensive Dictionary (exact matches)
     const gujToEngMap = {
