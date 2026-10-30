@@ -5,7 +5,13 @@
  */
 
 const GujaratiTyping = {
-  enabled: true,
+  enabled: (function() {
+    try {
+      const saved = localStorage.getItem('hisab_gujarati_typing_enabled');
+      if (saved !== null) return saved === 'true';
+    } catch(e) {}
+    return false; // Default English as requested
+  })(),
   cache: new Map(),
   lastConversion: null, // Stores { el, rawWord, convertedWord, startPos, endPos } for Backspace undo
 
@@ -352,6 +358,9 @@ const GujaratiTyping = {
   // Toggle ON/OFF
   toggle() {
     this.enabled = !this.enabled;
+    try {
+      localStorage.setItem('hisab_gujarati_typing_enabled', String(this.enabled));
+    } catch(e) {}
     this.updateBadges();
     if (typeof App !== 'undefined' && App.showToast) {
       App.showToast(
